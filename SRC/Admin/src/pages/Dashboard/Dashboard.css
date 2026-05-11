@@ -1,0 +1,66 @@
+.dashboard { display:flex;flex-direction:column;gap:20px; }
+
+/* Stat grid */
+.dash-stat-grid {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:16px;
+}
+.dash-stat-card {
+  background:#fff;border-radius:14px;padding:18px 20px;
+  display:flex;align-items:center;gap:14px;
+  box-shadow:0 2px 8px rgba(0,0,0,.06);
+  border-left:4px solid var(--c);
+  transition:transform .2s,box-shadow .2s;
+  cursor:pointer;
+}
+.dash-stat-card:hover { transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.1); }
+.dsc-icon { font-size:28px;flex-shrink:0; }
+.dsc-body { flex:1; }
+.dsc-body p  { font-size:12px;color:#718096;margin-bottom:3px; }
+.dsc-body h3 { font-size:22px;font-weight:800;color:#1a202c; }
+.dsc-arrow { font-size:16px;color:#cbd5e0; }
+
+/* Charts */
+.dash-charts-row { display:grid;grid-template-columns:1.6fr 1fr;gap:16px; }
+.dash-chart-card { }
+.dash-pie-card { }
+.dash-pie-body { display:flex;align-items:center;justify-content:center; }
+
+/* Quick actions */
+.dash-quick-grid {
+  display:grid;grid-template-columns:repeat(6,1fr);gap:12px;
+}
+.dash-quick-card {
+  background:#f8fafc;border-radius:12px;padding:16px 10px;
+  text-align:center;border:1px solid #e2e8f0;
+  transition:all .2s;cursor:pointer;display:block;
+}
+.dash-quick-card:hover { background:#eff6ff;border-color:#bfdbfe;transform:translateY(-2px); }
+.dash-quick-card span { font-size:26px;display:block;margin-bottom:6px; }
+.dash-quick-card p    { font-size:12px;font-weight:700;color:#1a202c;margin-bottom:2px; }
+.dash-quick-card small { font-size:11px;color:#a0aec0; }
+
+/* GV lịch */
+.gv-lich-list { display:flex;flex-direction:column;gap:10px; }
+.gv-lich-item {
+  display:flex;align-items:center;gap:16px;
+  padding:14px 16px;border-radius:10px;border-left:4px solid #e2e8f0;
+  background:#f8fafc;
+}
+.gv-lich-item.ly_thuyet { border-left-color:#3b82f6;background:#eff6ff; }
+.gv-lich-item.thuc_hanh { border-left-color:#10b981;background:#f0fdf4; }
+.gli-time { display:flex;flex-direction:column;align-items:center;font-size:13px;font-weight:700;color:#4a5568;min-width:60px; }
+.gli-info { flex:1; }
+.gli-lop  { font-size:14px;font-weight:700;color:#1a202c;margin-bottom:2px; }
+.gli-type,.gli-dia { font-size:12px;color:#718096; }
+
+@media (max-width:1100px) {
+  .dash-stat-grid  { grid-template-columns:repeat(2,1fr); }
+  .dash-charts-row { grid-template-columns:1fr; }
+  .dash-quick-grid { grid-template-columns:repeat(3,1fr); }
+}
+@media (max-width:640px) {
+  .dash-stat-grid  { grid-template-columns:1fr 1fr; }
+  .dash-quick-grid { grid-template-columns:repeat(2,1fr); }
+}

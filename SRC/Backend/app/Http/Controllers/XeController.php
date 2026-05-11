@@ -1,0 +1,260 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Xe;
+use App\Models\BaoLoiXe;
+use App\Models\GiangVien;
+use App\Models\LichHoc;
+use Illuminate\Http\Request;
+
+class XeController extends Controller
+{
+    // ═══════════════════════════════════════════════════════
+    // ADMIN — Quản lý xe
+    // ═══════════════════════════════════════════════════════
+
+    // Danh sách xe
+    public function index(Request $request)
+    {
+        $query = Xe::withCount(['baoLoi' => fn($q) => $q->where('trang_thai', '!=', 'da_xu_ly')])
+            ->when($request->trang_thai, fn($q) => $q->where('trang_thai', $request->trang_thai))
+            ->when($request->hang_bang,  fn($q) => $q->where('hang_bang', $request->hang_bang))
+            ->when($request->search,     fn($q) => $q->where('bien_so', 'like', "%{$request->search}%")
+                ->orWhere('hang_xe', 'like', "%{$request->search}%"))
+            ->orderBy('bien_so');
+
+        return response()->json(['success' => true, 'data' => $query->get()]);
+    }
+
+    // Chi tiết xe
+    public function show($id)
+    {
+        $xe = Xe::with([
+            'baoLoi.giangVien.user',
+            'lichHoc' => fn($q) => $q->with('lopHoc')->orderByDesc('ngay_hoc')->limit(10),
+        ])->findOrFail($id);
+
+        return response()->json(['success' => true, 'data' => $xe]);
+    }
+
+    // Thêm xe mới
+    public function store(Request $request)
+    {
+        $request->validate([
+            'bien_so'    => 'required|string|max:20|unique:xe,bien_so',
+            'hang_xe'    => 'required|string|max:50',
+            'hang_bang'  => 'required|in:A1,A2,B1,B2,C,D,E',
+            'loai_xe'    => 'required|in:so_san,so_tu_dong',
+        ]);
+
+        $xe = Xe::create($request->all());
+        return response()->json(['success' => true, 'message' => 'Thêm xe thành công', 'data' => $xe], 201);
+    }
+
+    // Cập nhật xe
+    public function update(Request $request, $id)
+    {
+        $xe = Xe::findOrFail($id);
+        $request->validate([
+            'bien_so' => "sometimes|string|max:20|unique:xe,bien_so,{$id}",
+        ]);
+        $xe->update($request->all());
+        return response()->json(['success' => true, 'message' => 'Cập nhật xe thành công', 'data' => $xe->fresh()]);
+    }
+
+    // Xóa xe
+    public function destroy($id)
+    {
+        $xe = Xe::findOrFail($id);
+        if ($xe->trang_thai === 'dang_su_dung') {
+            return response()->json(['success' => false, 'message' => 'Xe đang được sử dụng, không thể xóa'], 400);
+        }
+        $xe->delete();
+        return response()->json(['success' => true, 'message' => 'Đã xóa xe']);
+    }
+
+    // Cập nhật trạng thái xe
+    public function capNhatTrangThai(Request $request, $id)
+    {
+        $request->validate([
+            'trang_thai' => 'required|in:san_sang,dang_su_dung,bao_tri,hong,nghi_huu',
+        ]);
+        $xe = Xe::findOrFail($id);
+        $xe->update(['trang_thai' => $request->trang_thai]);
+        return response()->json(['success' => true, 'message' => 'Cập nhật trạng thái thành công']);
+    }
+
+    // Cập nhật km xe
+    public function capNhatKm(Request $request, $id)
+    {
+        $request->validate(['so_km_hien_tai' => 'required|integer|min:0']);
+        $xe = Xe::findOrFail($id);
+        if ($request->so_km_hien_tai < $xe->so_km_hien_tai) {
+            return response()->json(['success' => false, 'message' => 'Số km mới không thể nhỏ hơn km hiện tại'], 400);
+        }
+        $xe->update(['so_km_hien_tai' => $request->so_km_hien_tai]);
+        return response()->json(['success' => true, 'message' => 'Cập nhật km thành công']);
+    }
+
+    // Phân xe cho buổi học
+    public function phanXeChoLichHoc(Request $request, $lichHocId)
+    {
+        $request->validate([
+            'xe_id' => 'nullable|exists:xe,id',
+        ]);
+
+        $lichHoc = LichHoc::findOrFail($lichHocId);
+
+        // Nếu có xe_id mới, kiểm tra xe có sẵn sàng không
+        if ($request->xe_id) {
+            $xe = Xe::findOrFail($request->xe_id);
+            if (!in_array($xe->trang_thai, ['san_sang', 'dang_su_dung'])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Xe {$xe->bien_so} đang ở trạng thái '{$xe->trang_thai}', không thể phân công",
+                ], 400);
+            }
+        }
+
+        $lichHoc->update(['xe_id' => $request->xe_id]);
+
+        return response()->json([
+            'success' => true,
+            'message' => $request->xe_id ? 'Phân xe thành công' : 'Đã hủy phân xe',
+            'data'    => $lichHoc->load('xe'),
+        ]);
+    }
+
+    // Danh sách xe sẵn sàng (để chọn khi tạo/sửa lịch học)
+    public function xeSanSang(Request $request)
+    {
+        $xe = Xe::where('trang_thai', 'san_sang')
+            ->when($request->hang_bang, fn($q) => $q->where('hang_bang', $request->hang_bang))
+            ->orderBy('bien_so')
+            ->get();
+
+        return response()->json(['success' => true, 'data' => $xe]);
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // ADMIN — Quản lý báo lỗi xe
+    // ═══════════════════════════════════════════════════════
+
+    // Danh sách tất cả báo lỗi
+    public function danhSachBaoLoi(Request $request)
+    {
+        $query = BaoLoiXe::with(['xe', 'giangVien.user', 'lichHoc'])
+            ->when($request->trang_thai, fn($q) => $q->where('trang_thai', $request->trang_thai))
+            ->when($request->xe_id,      fn($q) => $q->where('xe_id', $request->xe_id))
+            ->when($request->muc_do,     fn($q) => $q->where('muc_do', $request->muc_do))
+            ->orderByDesc('created_at');
+
+        return response()->json(['success' => true, 'data' => $query->get()]);
+    }
+
+    // Xử lý báo lỗi (admin cập nhật trạng thái)
+    public function xuLyBaoLoi(Request $request, $id)
+    {
+        $request->validate([
+            'trang_thai'    => 'required|in:cho_xu_ly,dang_xu_ly,da_xu_ly',
+            'ghi_chu_xu_ly' => 'nullable|string',
+        ]);
+
+        $baoLoi = BaoLoiXe::findOrFail($id);
+        $baoLoi->update([
+            'trang_thai'    => $request->trang_thai,
+            'ghi_chu_xu_ly' => $request->ghi_chu_xu_ly,
+            'ngay_xu_ly'    => $request->trang_thai === 'da_xu_ly' ? now() : null,
+        ]);
+
+        // Nếu đã xử lý xong, tự động chuyển xe về sẵn sàng nếu đang ở trạng thái hỏng
+        if ($request->trang_thai === 'da_xu_ly') {
+            $xe = $baoLoi->xe;
+            if ($xe->trang_thai === 'hong') {
+                $xe->update(['trang_thai' => 'san_sang']);
+            }
+        }
+
+        return response()->json(['success' => true, 'message' => 'Cập nhật trạng thái xử lý thành công']);
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // GIẢNG VIÊN — Xem xe & báo lỗi
+    // ═══════════════════════════════════════════════════════
+
+    // Giảng viên xem xe được cấp cho buổi học hôm nay / sắp tới
+    public function xeCuaToi(Request $request)
+    {
+        $user = $request->auth_user;
+        $gv   = GiangVien::where('user_id', $user->id)->first();
+
+        if (!$gv) return response()->json(['success' => true, 'data' => []]);
+
+        // Lấy các buổi thực hành sắp tới có xe được phân
+        $lichHoc = LichHoc::with(['xe', 'lopHoc'])
+            ->whereHas('lopHoc', fn($q) => $q
+                ->where('giang_vien_thuc_hanh_id', $gv->id)
+                ->orWhere('giang_vien_ly_thuyet_id', $gv->id))
+            ->where('loai_buoi', 'thuc_hanh')
+            ->whereNotNull('xe_id')
+            ->where('ngay_hoc', '>=', today())
+            ->orderBy('ngay_hoc')->orderBy('gio_bat_dau')
+            ->limit(20)
+            ->get();
+
+        return response()->json(['success' => true, 'data' => $lichHoc]);
+    }
+
+    // Giảng viên báo lỗi xe
+    public function baoBaoLoi(Request $request)
+    {
+        $request->validate([
+            'xe_id'       => 'required|exists:xe,id',
+            'lich_hoc_id' => 'nullable|exists:lich_hoc,id',
+            'tieu_de'     => 'required|string|max:200',
+            'mo_ta'       => 'required|string',
+            'muc_do'      => 'required|in:nhe,trung_binh,nghiem_trong',
+        ]);
+
+        $user = $request->auth_user;
+        $gv   = GiangVien::where('user_id', $user->id)->firstOrFail();
+
+        $baoLoi = BaoLoiXe::create([
+            'xe_id'         => $request->xe_id,
+            'giang_vien_id' => $gv->id,
+            'lich_hoc_id'   => $request->lich_hoc_id,
+            'tieu_de'       => $request->tieu_de,
+            'mo_ta'         => $request->mo_ta,
+            'muc_do'        => $request->muc_do,
+            'trang_thai'    => 'cho_xu_ly',
+        ]);
+
+        // Nếu mức độ nghiêm trọng → tự động chuyển xe sang trạng thái hỏng
+        if ($request->muc_do === 'nghiem_trong') {
+            Xe::where('id', $request->xe_id)->update(['trang_thai' => 'hong']);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Báo lỗi xe thành công. Quản trị viên sẽ xử lý sớm.',
+            'data'    => $baoLoi->load('xe'),
+        ], 201);
+    }
+
+    // Giảng viên xem lịch sử báo lỗi của mình
+    public function lichSuBaoLoi(Request $request)
+    {
+        $user = $request->auth_user;
+        $gv   = GiangVien::where('user_id', $user->id)->first();
+
+        if (!$gv) return response()->json(['success' => true, 'data' => []]);
+
+        $list = BaoLoiXe::with(['xe', 'lichHoc.lopHoc'])
+            ->where('giang_vien_id', $gv->id)
+            ->orderByDesc('created_at')
+            ->get();
+
+        return response()->json(['success' => true, 'data' => $list]);
+    }
+}

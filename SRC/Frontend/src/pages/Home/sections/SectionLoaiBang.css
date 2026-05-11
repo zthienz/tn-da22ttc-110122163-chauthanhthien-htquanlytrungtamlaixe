@@ -1,0 +1,99 @@
+.section-lb {
+  padding: 60px 0;
+  background: #fff;
+}
+
+/* Grid so sánh 2 cột */
+.lb-compare-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 40px;
+}
+
+.lb-box {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #e0e0e0;
+}
+
+.lb-box-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 20px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+}
+.lb-header--blue  { background: #1565c0; }
+.lb-header--green { background: #2e7d32; }
+
+.lb-box-body {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: #f9fbff;
+}
+.lb-box--green .lb-box-body { background: #f1faf2; }
+
+/* Item hạng bằng */
+.bang-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: #fff;
+  border-radius: 8px;
+  padding: 12px 14px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+.bang-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.bang-item strong {
+  display: block;
+  font-size: 14px;
+  color: #1565c0;
+  margin-bottom: 4px;
+}
+.bang-item p {
+  font-size: 13px;
+  color: #555;
+  line-height: 1.5;
+}
+
+/* Điều kiện */
+.lb-dieu-kien {
+  background: #f1faf2;
+  border: 1px solid #a5d6a7;
+  border-radius: 10px;
+  padding: 20px 24px;
+  margin-top: 24px;
+}
+.lb-dieu-kien h4 {
+  font-size: 15px;
+  font-weight: 700;
+  color: #2e7d32;
+  margin-bottom: 14px;
+}
+.lb-dieu-kien ul {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.lb-dieu-kien li {
+  display: flex;
+  gap: 8px;
+  font-size: 13px;
+  color: #444;
+  line-height: 1.5;
+}
+.dk-dot { color: #2e7d32; font-weight: 700; flex-shrink: 0; }
+
+@media (max-width: 768px) {
+  .lb-compare-grid { grid-template-columns: 1fr; }
+  .lb-bottom-grid  { grid-template-columns: 1fr; }
+}

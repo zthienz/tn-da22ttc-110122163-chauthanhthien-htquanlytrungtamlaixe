@@ -1,0 +1,4 @@
+.thi-page { display:flex;flex-direction:column;gap:16px; }
+.thi-tabs { display:flex;gap:4px;background:#fff;border-radius:10px;padding:4px;box-shadow:0 1px 4px rgba(0,0,0,.06);width:fit-content; }
+.thi-tab { padding:8px 20px;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;background:transparent;color:#718096;transition:all .2s; }
+.thi-tab.active { background:#0d47a1;color:#fff; }

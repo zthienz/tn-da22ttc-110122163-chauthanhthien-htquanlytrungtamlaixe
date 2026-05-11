@@ -1,0 +1,193 @@
+.sidebar {
+  width: 240px;
+  background: #1e293b;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  position: fixed;
+  top: 0; left: 0;
+  z-index: 200;
+  transition: width 0.25s ease;
+  overflow: hidden;
+}
+.sidebar.collapsed { width: 64px; }
+
+/* Logo */
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  min-height: 80px;
+}
+
+/* Collapsed: chỉ hiện icon sao */
+.sidebar-logo-icon {
+  font-size: 24px;
+  line-height: 1;
+}
+
+/* Expanded: brand đầy đủ */
+.sidebar-logo-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.sidebar-logo-star {
+  font-size: 28px;
+  line-height: 1;
+  flex-shrink: 0;
+  animation: starPulse 2.5s ease-in-out infinite;
+}
+
+@keyframes starPulse {
+  0%, 100% { filter: drop-shadow(0 0 4px rgba(251,191,36,0.5)); }
+  50%       { filter: drop-shadow(0 0 10px rgba(251,191,36,0.9)); }
+}
+
+.sidebar-logo-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+  overflow: hidden;
+}
+
+.slt-top {
+  font-size: 9px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.45);
+  letter-spacing: 1.5px;
+  white-space: nowrap;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.slt-bottom {
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  white-space: nowrap;
+  background: linear-gradient(90deg, #fbbf24, #f97316, #fbbf24);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 3s linear infinite;
+}
+
+@keyframes shimmer {
+  0%   { background-position: 0% center; }
+  100% { background-position: 200% center; }
+}
+
+.slt-line {
+  display: block;
+  height: 2px;
+  width: 100%;
+  margin-top: 5px;
+  background: linear-gradient(90deg, #fbbf24, transparent);
+  border-radius: 2px;
+}
+
+.sidebar-logo-img {
+  height: 36px;
+  width: 36px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+/* User info */
+.sidebar-role {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.sidebar-avatar {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0d47a1, #1976d2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 800;
+  color: #fff;
+  flex-shrink: 0;
+  border: 2px solid rgba(255,255,255,0.15);
+}
+.sidebar-user-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 150px;
+}
+
+/* Nav */
+.sidebar-nav {
+  flex: 1;
+  padding: 10px 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.sidebar-section-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.3);
+  letter-spacing: 1px;
+  padding: 8px 14px 4px;
+}
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 14px;
+  color: rgba(255,255,255,0.65);
+  font-size: 13.5px;
+  font-weight: 500;
+  transition: all 0.2s;
+  border-left: 3px solid transparent;
+  white-space: nowrap;
+  overflow: hidden;
+  cursor: pointer;
+}
+.sidebar-item:hover {
+  background: rgba(255,255,255,0.06);
+  color: #fff;
+}
+.sidebar-item.active {
+  background: rgba(251,191,36,0.12);
+  color: #fbbf24;
+  border-left-color: #fbbf24;
+  font-weight: 700;
+}
+.sidebar-item-icon { font-size: 17px; flex-shrink: 0; width: 20px; text-align: center; }
+.sidebar-item-label { overflow: hidden; text-overflow: ellipsis; }
+
+/* Logout */
+.sidebar-logout {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px;
+  background: none;
+  border: none;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.5);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.2s;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.sidebar-logout:hover { background: rgba(239,68,68,0.1); color: #f87171; }

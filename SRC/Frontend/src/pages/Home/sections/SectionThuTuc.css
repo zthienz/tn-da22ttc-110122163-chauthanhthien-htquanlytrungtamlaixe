@@ -1,0 +1,122 @@
+.section-tt {
+  padding: 60px 0;
+  background: #fff;
+}
+
+.tt-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 40px;
+  align-items: start;
+}
+
+/* Hồ sơ box */
+.tt-box {
+  background: #f1faf2;
+  border: 1px solid #a5d6a7;
+  border-radius: 12px;
+  padding: 24px 28px;
+}
+.tt-box h4 {
+  font-size: 15px;
+  font-weight: 700;
+  color: #2e7d32;
+  margin-bottom: 18px;
+}
+.tt-box ul {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.tt-box li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13.5px;
+  color: #444;
+  line-height: 1.6;
+}
+.tt-check {
+  width: 20px;
+  height: 20px;
+  background: #2e7d32;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* Ảnh thẻ */
+.tt-anh { padding: 10px 0; }
+.tt-anh-group {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+.tt-anh-item { text-align: center; }
+.tt-anh-placeholder {
+  width: 90px;
+  height: 110px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  position: relative;
+  margin: 0 auto 6px;
+}
+.tt-anh-blue  { background: #1565c0; }
+.tt-anh-wrong { background: #e0e0e0; }
+
+.tt-x {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  width: 24px;
+  height: 24px;
+  background: #e53935;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tt-anh-label {
+  font-size: 11px;
+  text-align: center;
+  max-width: 90px;
+  margin: 0 auto;
+}
+.tt-anh-label.ok    { color: #1565c0; font-weight: 600; }
+.tt-anh-label.wrong-title {
+  font-size: 11px;
+  color: #e53935;
+  font-weight: 600;
+  max-width: 240px;
+  margin-bottom: 8px;
+}
+
+.tt-anh-divider {
+  font-size: 40px;
+  color: #ccc;
+  align-self: center;
+  padding: 0 4px;
+}
+
+.tt-anh-wrong-group { flex: 1; }
+.tt-anh-wrong-row {
+  display: flex;
+  gap: 10px;
+}
+
+@media (max-width: 768px) {
+  .tt-grid { grid-template-columns: 1fr; }
+}

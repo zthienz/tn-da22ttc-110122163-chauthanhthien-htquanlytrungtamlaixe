@@ -1,0 +1,151 @@
+.hoso-page { display: flex; flex-direction: column; gap: 20px; }
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+.page-header h2 { font-size: 22px; font-weight: 800; color: #1a202c; margin-bottom: 4px; }
+.page-header p  { font-size: 13px; color: #718096; }
+.btn-edit {
+  padding: 10px 20px;
+  background: #0d47a1;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-edit:hover { background: #1565c0; }
+
+.hoso-grid {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+/* Profile card */
+.hoso-profile-card {
+  background: linear-gradient(160deg, #0d47a1, #1976d2);
+  border-radius: 20px;
+  padding: 28px 24px;
+  text-align: center;
+  color: #fff;
+  box-shadow: 0 4px 20px rgba(13,71,161,0.3);
+}
+.hoso-avatar {
+  width: 90px; height: 90px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 4px solid rgba(255,255,255,0.4);
+  margin: 0 auto 14px;
+  background: rgba(255,255,255,0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  font-weight: 800;
+  color: #fff;
+}
+.hoso-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.hoso-profile-card h3 { font-size: 18px; font-weight: 800; margin-bottom: 4px; }
+.hoso-email { font-size: 13px; color: rgba(255,255,255,0.7); margin-bottom: 20px; }
+
+.hoso-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255,255,255,0.12);
+  border-radius: 12px;
+  padding: 12px 14px;
+  text-align: left;
+  margin-bottom: 16px;
+}
+.hoso-status-icon { font-size: 24px; flex-shrink: 0; }
+.hoso-status-label { font-size: 11px; color: rgba(255,255,255,0.7); margin-bottom: 4px; }
+
+.hoso-khoa {
+  background: rgba(255,255,255,0.12);
+  border-radius: 12px;
+  padding: 12px 14px;
+  text-align: left;
+  margin-bottom: 20px;
+}
+.hoso-khoa-label { font-size: 11px; color: rgba(255,255,255,0.7); margin-bottom: 4px; }
+.hoso-khoa-name  { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+
+.hoso-logo img {
+  height: 40px;
+  width: auto;
+  filter: brightness(0) invert(1);
+  opacity: 0.6;
+}
+
+/* Detail card */
+.hoso-detail-card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 28px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.hoso-detail-card h3 { font-size: 16px; font-weight: 700; color: #1a202c; margin-bottom: 20px; }
+
+.hoso-info-list { display: flex; flex-direction: column; gap: 0; }
+.hil-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid #f0f4f8;
+}
+.hil-item:last-child { border-bottom: none; }
+.hil-icon  { font-size: 20px; flex-shrink: 0; width: 28px; text-align: center; }
+.hil-label { font-size: 12px; color: #a0aec0; margin-bottom: 2px; }
+.hil-value { font-size: 14px; font-weight: 600; color: #1a202c; }
+
+/* Form */
+.hoso-form { display: flex; flex-direction: column; gap: 14px; }
+.hf-group  { display: flex; flex-direction: column; gap: 5px; }
+.hf-group label { font-size: 13px; font-weight: 600; color: #4a5568; }
+.hf-group input {
+  padding: 11px 14px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+  font-family: inherit;
+}
+.hf-group input:focus { border-color: #0d47a1; }
+.hoso-form-actions { display: flex; gap: 12px; margin-top: 4px; }
+.btn-save {
+  flex: 1;
+  padding: 12px;
+  background: #0d47a1;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-save:hover:not(:disabled) { background: #1565c0; }
+.btn-save:disabled { opacity: 0.7; cursor: not-allowed; }
+.btn-cancel {
+  padding: 12px 20px;
+  background: #f0f4f8;
+  color: #4a5568;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .hoso-grid { grid-template-columns: 1fr; }
+}

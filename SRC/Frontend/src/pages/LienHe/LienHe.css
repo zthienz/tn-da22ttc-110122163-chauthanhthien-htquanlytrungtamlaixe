@@ -1,0 +1,86 @@
+.lienhe-page { background: #f8f9fa; min-height: 80vh; }
+
+.lienhe-hero {
+  background: linear-gradient(135deg, #0066cc, #003d99);
+  color: #fff;
+  padding: 48px 0;
+  text-align: center;
+}
+.lienhe-hero h1 { font-size: 32px; font-weight: 800; margin-bottom: 8px; }
+.lienhe-hero p  { font-size: 16px; opacity: 0.9; }
+
+.lienhe-content { padding: 48px 20px; }
+
+.lienhe-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: 32px;
+  align-items: start;
+}
+
+/* Thông tin */
+.lienhe-info {
+  background: #fff;
+  border-radius: 14px;
+  padding: 28px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+.lienhe-info h3 { font-size: 18px; font-weight: 700; color: #333; margin-bottom: 20px; }
+
+.info-item {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 18px;
+  align-items: flex-start;
+}
+.info-icon { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
+.info-item strong { display: block; font-size: 14px; color: #333; margin-bottom: 3px; }
+.info-item p { font-size: 13.5px; color: #555; line-height: 1.5; }
+.info-item a { color: #e53935; font-weight: 600; }
+
+.lienhe-map { margin-top: 20px; }
+
+/* Form */
+.lienhe-form-box {
+  background: #fff;
+  border-radius: 14px;
+  padding: 28px 32px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+.lienhe-form-box h3 { font-size: 18px; font-weight: 700; color: #333; margin-bottom: 20px; }
+
+.lienhe-form { display: flex; flex-direction: column; gap: 16px; }
+.form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group label { font-size: 13px; font-weight: 600; color: #555; }
+.form-group input,
+.form-group textarea {
+  padding: 11px 14px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+  font-family: inherit;
+  resize: vertical;
+}
+.form-group input:focus,
+.form-group textarea:focus { border-color: #0066cc; }
+
+.btn-lienhe {
+  padding: 13px;
+  background: #0066cc;
+  color: #fff;
+  border: none;
+  border-radius: 25px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-lienhe:hover { background: #0052a3; }
+
+@media (max-width: 768px) {
+  .lienhe-grid  { grid-template-columns: 1fr; }
+  .form-row-2   { grid-template-columns: 1fr; }
+}

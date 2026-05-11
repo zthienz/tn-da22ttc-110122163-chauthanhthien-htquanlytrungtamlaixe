@@ -1,0 +1,53 @@
+.register-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+}
+
+.register-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 40px;
+  width: 100%;
+  max-width: 460px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+}
+
+.register-header { text-align: center; margin-bottom: 28px; }
+.register-header h2 { font-size: 22px; font-weight: 700; color: #1a1a2e; }
+.register-header p { color: #888; font-size: 14px; margin-top: 6px; }
+
+.register-form { display: flex; flex-direction: column; gap: 16px; }
+
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group label { font-size: 13px; font-weight: 600; color: #555; }
+.form-group input {
+  padding: 11px 16px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.form-group input:focus { border-color: #667eea; }
+
+.register-btn {
+  padding: 13px;
+  background: #667eea;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: background 0.2s;
+}
+.register-btn:hover:not(:disabled) { background: #5a6fd6; }
+.register-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+
+.login-link { text-align: center; margin-top: 20px; font-size: 14px; color: #666; }
+.login-link a { color: #667eea; font-weight: 600; }

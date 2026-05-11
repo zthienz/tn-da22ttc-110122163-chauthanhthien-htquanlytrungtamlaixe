@@ -1,0 +1,110 @@
+import { useEffect, useState } from 'react'
+import axios from 'axios'
+import { toast } from 'react-toastify'
+import { useAdmin } from '../../context/AdminContext'
+
+const KhoaHocManagement = () => {
+  const { token, backendUrl } = useAdmin()
+  const [list, setList]       = useState([])
+  const [loading, setLoading] = useState(true)
+  const [showModal, setShowModal] = useState(false)
+  const [editing, setEditing] = useState(null)
+  const [form, setForm] = useState({ ten_khoa:'', loai_bang:'B2', hoc_phi:'', so_buoi_ly_thuyet_toi_thieu:'', so_km_toi_thieu:'', si_so_toi_da:30, so_hv_mo_lop:15, mo_ta:'' })
+  const headers = { Authorization: `Bearer ${token}` }
+
+  const fetch = async () => {
+    setLoading(true)
+    const res = await axios.get(`${backendUrl}/api/admin/khoa-hoc`, { headers })
+    if (res.data.success) setList(res.data.data)
+    setLoading(false)
+  }
+  useEffect(() => { fetch() }, [])
+
+  const openAdd = () => { setEditing(null); setForm({ ten_khoa:'', loai_bang:'B2', hoc_phi:'', so_buoi_ly_thuyet_toi_thieu:'', so_km_toi_thieu:'', si_so_toi_da:30, so_hv_mo_lop:15, mo_ta:'' }); setShowModal(true) }
+  const openEdit = (k) => { setEditing(k); setForm({...k}); setShowModal(true) }
+
+  const handleSave = async e => {
+    e.preventDefault()
+    try {
+      const res = editing
+        ? await axios.put(`${backendUrl}/api/admin/khoa-hoc/${editing.id}`, form, { headers })
+        : await axios.post(`${backendUrl}/api/admin/khoa-hoc`, form, { headers })
+      if (res.data.success) { toast.success(editing ? 'Cập nhật thành công' : 'Tạo thành công'); setShowModal(false); fetch() }
+      else toast.error(res.data.message)
+    } catch (err) { toast.error(err.response?.data?.message || 'Lỗi') }
+  }
+
+  const handleDelete = async (id) => {
+    if (!confirm('Xóa khóa học này?')) return
+    const res = await axios.delete(`${backendUrl}/api/admin/khoa-hoc/${id}`, { headers })
+    if (res.data.success) { toast.success('Đã xóa'); fetch() }
+  }
+
+  return (
+    <div>
+      <div className="page-header">
+        <div><h2>📚 Khóa Học</h2><p>Quản lý các khóa đào tạo lái xe</p></div>
+        <button className="btn btn-primary" onClick={openAdd}>+ Thêm khóa học</button>
+      </div>
+      <div className="card">
+        <div className="card-body" style={{padding:0}}>
+          {loading ? <div className="loading-wrap"><div className="spinner"/></div> : (
+            <table className="data-table">
+              <thead><tr><th>#</th><th>Tên khóa</th><th>Hạng</th><th>Học phí</th><th>LT tối thiểu</th><th>Km tối thiểu</th><th>Sĩ số</th><th>Thao tác</th></tr></thead>
+              <tbody>
+                {list.map((k,i) => (
+                  <tr key={k.id}>
+                    <td>{i+1}</td>
+                    <td><strong>{k.ten_khoa}</strong></td>
+                    <td><span className="badge badge-blue">Hạng {k.loai_bang}</span></td>
+                    <td>{Number(k.hoc_phi).toLocaleString('vi-VN')} VNĐ</td>
+                    <td>{k.so_buoi_ly_thuyet_toi_thieu} buổi</td>
+                    <td>{k.so_km_toi_thieu} km</td>
+                    <td>{k.si_so_toi_da} HV</td>
+                    <td><div className="action-cell">
+                      <button className="btn btn-outline btn-sm" onClick={() => openEdit(k)}>✏️ Sửa</button>
+                      <button className="btn btn-danger btn-sm" onClick={() => handleDelete(k.id)}>🗑️</button>
+                    </div></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </div>
+      {showModal && (
+        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>{editing ? 'Sửa khóa học' : 'Thêm khóa học'}</h3>
+              <button className="modal-close" onClick={() => setShowModal(false)}>✕</button>
+            </div>
+            <form onSubmit={handleSave}>
+              <div className="modal-body">
+                <div className="form-group"><label>Tên khóa *</label><input value={form.ten_khoa} onChange={e=>setForm({...form,ten_khoa:e.target.value})} required /></div>
+                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+                  <div className="form-group"><label>Loại bằng *</label>
+                    <select value={form.loai_bang} onChange={e=>setForm({...form,loai_bang:e.target.value})}>
+                      {['A1','A2','B1','B2','C','C1','D','E'].map(b => <option key={b} value={b}>Hạng {b}</option>)}
+                    </select>
+                  </div>
+                  <div className="form-group"><label>Học phí (VNĐ) *</label><input type="number" value={form.hoc_phi} onChange={e=>setForm({...form,hoc_phi:e.target.value})} required /></div>
+                  <div className="form-group"><label>Buổi LT tối thiểu *</label><input type="number" value={form.so_buoi_ly_thuyet_toi_thieu} onChange={e=>setForm({...form,so_buoi_ly_thuyet_toi_thieu:e.target.value})} required /></div>
+                  <div className="form-group"><label>Km tối thiểu *</label><input type="number" value={form.so_km_toi_thieu} onChange={e=>setForm({...form,so_km_toi_thieu:e.target.value})} required /></div>
+                  <div className="form-group"><label>Sĩ số tối đa</label><input type="number" value={form.si_so_toi_da} onChange={e=>setForm({...form,si_so_toi_da:e.target.value})} /></div>
+                  <div className="form-group"><label>HV tối thiểu mở lớp</label><input type="number" value={form.so_hv_mo_lop} onChange={e=>setForm({...form,so_hv_mo_lop:e.target.value})} /></div>
+                </div>
+                <div className="form-group"><label>Mô tả</label><textarea rows={3} value={form.mo_ta} onChange={e=>setForm({...form,mo_ta:e.target.value})} /></div>
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-outline" onClick={() => setShowModal(false)}>Hủy</button>
+                <button type="submit" className="btn btn-primary">{editing ? 'Cập nhật' : 'Tạo mới'}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+export default KhoaHocManagement

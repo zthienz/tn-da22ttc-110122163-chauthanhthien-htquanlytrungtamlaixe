@@ -1,0 +1,120 @@
+.tiendo-page { display: flex; flex-direction: column; gap: 20px; }
+.td-loading { display: flex; justify-content: center; padding: 60px; }
+.spinner { width:36px;height:36px;border:4px solid #e2e8f0;border-top-color:#0d47a1;border-radius:50%;animation:spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Điều kiện */
+.td-condition-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.td-condition-card h3 { font-size: 16px; font-weight: 700; color: #1a202c; margin-bottom: 16px; }
+.td-condition-grid { display: flex; flex-direction: column; gap: 10px; }
+.td-condition-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+}
+.td-condition-item.ok     { background: #f0fdf4; border-color: #86efac; }
+.td-condition-item.not-ok { background: #fffbeb; border-color: #fcd34d; }
+.tdc-icon  { font-size: 20px; flex-shrink: 0; }
+.tdc-label { flex: 1; font-size: 14px; font-weight: 600; color: #1a202c; }
+.td-congrats {
+  margin-top: 16px;
+  padding: 14px 18px;
+  background: #d1fae5;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #065f46;
+  border: 1px solid #6ee7b7;
+}
+
+/* Progress */
+.td-progress-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.td-progress-card h3 { font-size: 16px; font-weight: 700; color: #1a202c; margin-bottom: 20px; }
+.td-progress-list { display: flex; flex-direction: column; gap: 24px; }
+.progress-item { }
+.pi-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.pi-label  { font-size: 14px; font-weight: 600; color: #4a5568; }
+.pi-value  { font-size: 14px; font-weight: 700; }
+.pi-bar-bg {
+  height: 12px;
+  background: #e2e8f0;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+.pi-bar-fill {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.8s ease;
+}
+.pi-footer { display: flex; justify-content: space-between; align-items: center; }
+.pi-pct    { font-size: 12px; font-weight: 700; color: #718096; }
+.pi-done   { font-size: 12px; font-weight: 700; color: #10b981; }
+.pi-remain { font-size: 12px; font-weight: 600; }
+
+/* Stats grid */
+.td-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+.td-stat-card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  border-top: 4px solid;
+}
+.td-stat-card.blue   { border-top-color: #3b82f6; }
+.td-stat-card.green  { border-top-color: #10b981; }
+.td-stat-card.purple { border-top-color: #8b5cf6; }
+.td-stat-card.orange { border-top-color: #f59e0b; }
+.tds-icon { font-size: 28px; flex-shrink: 0; }
+.td-stat-card p  { font-size: 12px; color: #718096; margin-bottom: 4px; }
+.td-stat-card h3 { font-size: 22px; font-weight: 800; color: #1a202c; }
+.td-stat-card small { font-size: 13px; font-weight: 400; color: #a0aec0; }
+
+/* Khóa học */
+.td-khoa-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.td-khoa-card h3 { font-size: 16px; font-weight: 700; color: #1a202c; margin-bottom: 16px; }
+.td-khoa-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+.td-khoa-item {
+  background: #f8fafc;
+  border-radius: 10px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.td-khoa-item span  { font-size: 12px; color: #718096; }
+.td-khoa-item strong { font-size: 14px; font-weight: 700; color: #1a202c; }
+
+@media (max-width: 900px) {
+  .td-stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .td-khoa-grid  { grid-template-columns: repeat(2, 1fr); }
+}
