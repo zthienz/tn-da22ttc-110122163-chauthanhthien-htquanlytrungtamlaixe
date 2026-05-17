@@ -55,7 +55,7 @@ const Dashboard = () => {
         <div className="dash-welcome-left">
           <div className="dash-avatar">
             {hoSo?.anh_the
-              ? <img src={`http://localhost:8000/storage/${hoSo.anh_the}`} alt="avatar" />
+              ? <img src={`/${hoSo.anh_the}`} alt="avatar" />
               : <span>{(hoSo?.ho_ten || userInfo?.ho_ten || 'H').charAt(0).toUpperCase()}</span>
             }
           </div>

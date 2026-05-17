@@ -8,14 +8,21 @@ const GiangVienManagement = () => {
   const [list, setList]       = useState([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
+  const [showDetail, setShowDetail] = useState(null)
   const [form, setForm] = useState({ ho_ten:'', email:'', password:'', so_dien_thoai:'', chuyen_mon:'ca_hai', bang_cap:'', nam_kinh_nghiem:0 })
   const headers = { Authorization: `Bearer ${token}` }
 
   const fetch = async () => {
     setLoading(true)
-    const res = await axios.get(`${backendUrl}/api/admin/giang-vien`, { headers })
-    if (res.data.success) setList(res.data.data)
-    setLoading(false)
+    try {
+      const res = await axios.get(`${backendUrl}/api/admin/giang-vien`, { headers })
+      if (res.data.success) setList(res.data.data)
+      else toast.error(res.data.message || 'Lỗi tải dữ liệu')
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Lỗi kết nối server')
+    } finally {
+      setLoading(false)
+    }
   }
   useEffect(() => { fetch() }, [])
 
@@ -76,10 +83,15 @@ const GiangVienManagement = () => {
                       </span>
                     </td>
                     <td>
-                      <button className={`btn btn-sm ${gv.is_active ? 'btn-warning' : 'btn-success'}`}
-                        onClick={() => handleToggle(gv.user_id)}>
-                        {gv.is_active ? '🔒 Khóa' : '🔓 Mở'}
-                      </button>
+                      <div className="action-cell">
+                        <button className="btn btn-info btn-sm" onClick={() => setShowDetail(gv)}>
+                          👁️ Xem
+                        </button>
+                        <button className={`btn btn-sm ${gv.is_active ? 'btn-warning' : 'btn-success'}`}
+                          onClick={() => handleToggle(gv.user_id)}>
+                          {gv.is_active ? '🔒 Khóa' : '🔓 Mở'}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -88,6 +100,53 @@ const GiangVienManagement = () => {
           )}
         </div>
       </div>
+
+      {/* Modal chi tiết giảng viên */}
+      {showDetail && (
+        <div className="modal-overlay" onClick={() => setShowDetail(null)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>👨‍🏫 Chi Tiết Giảng Viên</h3>
+              <button className="modal-close" onClick={() => setShowDetail(null)}>✕</button>
+            </div>
+            <div className="modal-body">
+              <div style={{display:'flex',alignItems:'center',gap:16,marginBottom:20,padding:'16px',background:'#f0f4ff',borderRadius:10}}>
+                <div style={{width:56,height:56,borderRadius:'50%',background:'#0d47a1',display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontWeight:800,fontSize:22,flexShrink:0}}>
+                  {showDetail.ho_ten?.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <p style={{fontWeight:700,fontSize:18}}>{showDetail.ho_ten}</p>
+                  <span className={`badge ${showDetail.is_active ? 'badge-success' : 'badge-danger'}`}>
+                    {showDetail.is_active ? '✅ Đang hoạt động' : '❌ Vô hiệu hóa'}
+                  </span>
+                </div>
+              </div>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'10px 24px'}}>
+                {[
+                  ['Email',          showDetail.email],
+                  ['Số điện thoại',  showDetail.so_dien_thoai || '—'],
+                  ['Chuyên môn',     CM_MAP[showDetail.chuyen_mon] || showDetail.chuyen_mon],
+                  ['Bằng cấp',       showDetail.bang_cap || '—'],
+                  ['Kinh nghiệm',    showDetail.nam_kinh_nghiem + ' năm'],
+                  ['Ghi chú',        showDetail.ghi_chu || '—'],
+                ].map(([k,v],i) => (
+                  <div key={i} style={{display:'flex',flexDirection:'column',gap:2}}>
+                    <span style={{color:'#718096',fontSize:12}}>{k}</span>
+                    <strong style={{fontSize:14}}>{v}</strong>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-outline" onClick={() => setShowDetail(null)}>Đóng</button>
+              <button className={`btn btn-sm ${showDetail.is_active ? 'btn-warning' : 'btn-success'}`}
+                onClick={() => { handleToggle(showDetail.user_id); setShowDetail(null) }}>
+                {showDetail.is_active ? '🔒 Khóa tài khoản' : '🔓 Mở tài khoản'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>

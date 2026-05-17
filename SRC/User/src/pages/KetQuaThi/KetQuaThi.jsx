@@ -57,7 +57,7 @@ const KetQuaThi = () => {
                     <span className={`badge ${group.lichThi?.loai_thi === 'tot_nghiep' ? 'badge-blue' : 'badge-info'}`}>
                       {loaiThiLabel[group.lichThi?.loai_thi] || 'Thi'}
                     </span>
-                    <h4>Ngày thi: {group.lichThi?.ngay_thi}</h4>
+                    <h4>Ngày thi: {group.lichThi?.ngay_thi ? new Date(group.lichThi.ngay_thi).toLocaleDateString('vi-VN') : '—'}</h4>
                     {group.lichThi?.dia_diem && <p>📍 {group.lichThi.dia_diem}</p>}
                   </div>
                   <span className={`badge ${allDat ? 'badge-success' : hasFail ? 'badge-danger' : 'badge-warning'}`}>
@@ -77,7 +77,7 @@ const KetQuaThi = () => {
                         </div>
                       </div>
                       <div className="kqi-right">
-                        {kq.diem !== null && (
+                        {(kq.diem !== null && kq.diem !== undefined) && (
                           <span className="kqi-diem">{kq.diem} điểm</span>
                         )}
                         <span className={`badge ${kq.ket_qua === 'dat' ? 'badge-success' : kq.ket_qua === 'khong_dat' ? 'badge-danger' : 'badge-warning'}`}>

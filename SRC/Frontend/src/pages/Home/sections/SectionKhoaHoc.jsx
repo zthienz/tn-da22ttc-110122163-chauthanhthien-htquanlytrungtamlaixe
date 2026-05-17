@@ -71,8 +71,8 @@ const KhoaHocCard = ({ kh }) => {
 const SectionKhoaHoc = ({ khoaHocList }) => {
   // Nếu chưa có data từ API, dùng data mẫu
   const displayList = khoaHocList.length > 0 ? khoaHocList : [
-    { id:1, ten_khoa:'Bằng Ô Tô Hạng B Số Tự Động', loai_bang:'B1', hoc_phi:18600000, thoi_gian_ngay:65 },
-    { id:2, ten_khoa:'Bằng Ô Tô Hạng B Số Sàn',     loai_bang:'B2', hoc_phi:18600000, thoi_gian_ngay:75 },
+    { id:1, ten_khoa:'Bằng Ô Tô Hạng B Số Tự Động', loai_bang:'B1', hoc_phi:15000000, thoi_gian_ngay:65 },
+    { id:2, ten_khoa:'Bằng Ô Tô Hạng B Số Sàn',     loai_bang:'B2', hoc_phi:18000000, thoi_gian_ngay:75 },
     { id:3, ten_khoa:'Bằng Ô Tô Hạng C1 Xe Tải',    loai_bang:'C1', hoc_phi:20200000, thoi_gian_ngay:78 },
   ]
 

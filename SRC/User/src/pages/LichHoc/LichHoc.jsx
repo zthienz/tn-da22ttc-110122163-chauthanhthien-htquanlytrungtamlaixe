@@ -77,8 +77,8 @@ const LichHoc = () => {
       {/* Giảng viên */}
       {giangVien && (
         <div className="gv-cards">
-          {giangVien.ly_thuyet && <GiangVienCard gv={giangVien.ly_thuyet} type="Lý thuyết" backendUrl={backendUrl} />}
-          {giangVien.thuc_hanh && <GiangVienCard gv={giangVien.thuc_hanh} type="Thực hành" backendUrl={backendUrl} />}
+          {giangVien.ly_thuyet && <GiangVienCard gv={giangVien.ly_thuyet} type="Lý thuyết" />}
+          {giangVien.thuc_hanh && <GiangVienCard gv={giangVien.thuc_hanh} type="Thực hành" />}
         </div>
       )}
 
@@ -161,11 +161,11 @@ const LichHoc = () => {
   )
 }
 
-const GiangVienCard = ({ gv, type, backendUrl }) => (
+const GiangVienCard = ({ gv, type }) => (
   <div className="gv-card">
     <div className="gv-avatar">
       {gv.anh_dai_dien
-        ? <img src={`${backendUrl}/storage/${gv.anh_dai_dien}`} alt={gv.ho_ten} />
+        ? <img src={`/${gv.anh_dai_dien}`} alt={gv.ho_ten} />
         : <span>{gv.ho_ten?.charAt(0).toUpperCase()}</span>
       }
     </div>
@@ -176,7 +176,7 @@ const GiangVienCard = ({ gv, type, backendUrl }) => (
       <p className="gv-name">{gv.ho_ten}</p>
       <p className="gv-detail">📞 {gv.so_dien_thoai || 'Chưa cập nhật'}</p>
       <p className="gv-detail">🎓 {gv.bang_cap || 'Chưa cập nhật'}</p>
-      <p className="gv-detail">⭐ {gv.nam_kinh_nghiem} năm kinh nghiệm</p>
+      <p className="gv-detail">⭐ {gv.nam_kinh_nghiem ?? 0} năm kinh nghiệm</p>
     </div>
   </div>
 )

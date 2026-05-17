@@ -16,15 +16,20 @@ const LopHocManagement = () => {
 
   const fetch = async () => {
     setLoading(true)
-    const [r1, r2, r3] = await Promise.all([
-      axios.get(`${backendUrl}/api/admin/lop-hoc`, { headers }),
-      axios.get(`${backendUrl}/api/admin/khoa-hoc`, { headers }),
-      axios.get(`${backendUrl}/api/admin/giang-vien`, { headers }),
-    ])
-    if (r1.data.success) setList(r1.data.data)
-    if (r2.data.success) setKhoaList(r2.data.data)
-    if (r3.data.success) setGvList(r3.data.data)
-    setLoading(false)
+    try {
+      const [r1, r2, r3] = await Promise.all([
+        axios.get(`${backendUrl}/api/admin/lop-hoc`, { headers }),
+        axios.get(`${backendUrl}/api/admin/khoa-hoc`, { headers }),
+        axios.get(`${backendUrl}/api/admin/giang-vien`, { headers }),
+      ])
+      if (r1.data.success) setList(r1.data.data)
+      if (r2.data.success) setKhoaList(r2.data.data)
+      if (r3.data.success) setGvList(r3.data.data)
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Lỗi kết nối server')
+    } finally {
+      setLoading(false)
+    }
   }
   useEffect(() => { fetch() }, [])
 

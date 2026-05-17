@@ -50,7 +50,15 @@
   font-weight: 800;
   color: #fff;
 }
-.hoso-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.hoso-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.avatar-fallback {
+  width: 100%; height: 100%;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  font-weight: 800;
+  color: #fff;
+}
 .hoso-profile-card h3 { font-size: 18px; font-weight: 800; margin-bottom: 4px; }
 .hoso-email { font-size: 13px; color: rgba(255,255,255,0.7); margin-bottom: 20px; }
 
@@ -77,12 +85,7 @@
 .hoso-khoa-label { font-size: 11px; color: rgba(255,255,255,0.7); margin-bottom: 4px; }
 .hoso-khoa-name  { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
 
-.hoso-logo img {
-  height: 40px;
-  width: auto;
-  filter: brightness(0) invert(1);
-  opacity: 0.6;
-}
+
 
 /* Detail card */
 .hoso-detail-card {

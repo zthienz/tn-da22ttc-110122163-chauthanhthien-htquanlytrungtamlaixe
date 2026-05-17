@@ -24,10 +24,10 @@ const KhoaHoc = () => {
   }, [])
 
   const displayList = list.length > 0 ? list : [
-    { id:1, ten_khoa:'Bằng Ô Tô Hạng B Số Tự Động', loai_bang:'B1', hoc_phi:18600000, thoi_gian_ngay:65, so_buoi_ly_thuyet_toi_thieu:18, so_km_toi_thieu:660 },
-    { id:2, ten_khoa:'Bằng Ô Tô Hạng B Số Sàn',     loai_bang:'B2', hoc_phi:18600000, thoi_gian_ngay:75, so_buoi_ly_thuyet_toi_thieu:20, so_km_toi_thieu:810 },
+    { id:1, ten_khoa:'Bằng Ô Tô Hạng B Số Tự Động', loai_bang:'B1', hoc_phi:15000000, thoi_gian_ngay:65, so_buoi_ly_thuyet_toi_thieu:18, so_km_toi_thieu:660 },
+    { id:2, ten_khoa:'Bằng Ô Tô Hạng B Số Sàn',     loai_bang:'B2', hoc_phi:18000000, thoi_gian_ngay:75, so_buoi_ly_thuyet_toi_thieu:20, so_km_toi_thieu:810 },
     { id:3, ten_khoa:'Bằng Ô Tô Hạng C1 Xe Tải',    loai_bang:'C1', hoc_phi:20200000, thoi_gian_ngay:78, so_buoi_ly_thuyet_toi_thieu:25, so_km_toi_thieu:1000 },
-    { id:4, ten_khoa:'Bằng Lái Xe Hạng A1',          loai_bang:'A1', hoc_phi:1200000,  thoi_gian_ngay:30, so_buoi_ly_thuyet_toi_thieu:8,  so_km_toi_thieu:50 },
+    { id:4, ten_khoa:'Bằng Lái Xe Hạng A1',          loai_bang:'A1', hoc_phi:2000000,  thoi_gian_ngay:30, so_buoi_ly_thuyet_toi_thieu:8,  so_km_toi_thieu:50 },
   ]
 
   return (

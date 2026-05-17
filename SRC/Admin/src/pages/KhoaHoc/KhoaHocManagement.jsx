@@ -8,15 +8,21 @@ const KhoaHocManagement = () => {
   const [list, setList]       = useState([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
+  const [showDetail, setShowDetail] = useState(null)
   const [editing, setEditing] = useState(null)
   const [form, setForm] = useState({ ten_khoa:'', loai_bang:'B2', hoc_phi:'', so_buoi_ly_thuyet_toi_thieu:'', so_km_toi_thieu:'', si_so_toi_da:30, so_hv_mo_lop:15, mo_ta:'' })
   const headers = { Authorization: `Bearer ${token}` }
 
   const fetch = async () => {
     setLoading(true)
-    const res = await axios.get(`${backendUrl}/api/admin/khoa-hoc`, { headers })
-    if (res.data.success) setList(res.data.data)
-    setLoading(false)
+    try {
+      const res = await axios.get(`${backendUrl}/api/admin/khoa-hoc`, { headers })
+      if (res.data.success) setList(res.data.data)
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Lỗi kết nối server')
+    } finally {
+      setLoading(false)
+    }
   }
   useEffect(() => { fetch() }, [])
 

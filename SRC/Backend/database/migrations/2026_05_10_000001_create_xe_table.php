@@ -14,7 +14,7 @@ return new class extends Migration {
             $table->string('dong_xe', 50)->nullable();        // Vios, Morning, ...
             $table->year('nam_san_xuat')->nullable();
             $table->enum('loai_xe', ['so_san', 'so_tu_dong'])->default('so_san');
-            $table->enum('hang_bang', ['A1', 'A2', 'B1', 'B2', 'C', 'D', 'E'])->default('B2');
+            $table->enum('hang_bang', ['A1', 'A', 'B1', 'B2', 'C1', 'C', 'D', 'E', 'CE'])->default('B2');
             $table->string('mau_xe', 30)->nullable();
             $table->integer('so_km_hien_tai')->default(0);    // Odometer hiện tại
             $table->date('ngay_dang_kiem')->nullable();       // Ngày đăng kiểm

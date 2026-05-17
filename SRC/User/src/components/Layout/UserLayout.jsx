@@ -45,7 +45,7 @@ const UserLayout = () => {
         <div className="ul-sidebar-user">
           <div className="ul-avatar">
             {anhHV
-              ? <img src={`http://localhost:8000/storage/${anhHV}`} alt={tenHV} />
+              ? <img src={`/${anhHV}`} alt={tenHV} />
               : <span className="ul-avatar-placeholder">{tenHV.charAt(0).toUpperCase()}</span>
             }
           </div>
@@ -94,12 +94,6 @@ const UserLayout = () => {
             <a href="http://localhost:5174" className="ul-back-home" target="_blank" rel="noreferrer">
               🌐 Trang chủ
             </a>
-            <div className="ul-topbar-avatar">
-              {anhHV
-                ? <img src={`http://localhost:8000/storage/${anhHV}`} alt={tenHV} />
-                : <span>{tenHV.charAt(0).toUpperCase()}</span>
-              }
-            </div>
           </div>
         </header>
 
