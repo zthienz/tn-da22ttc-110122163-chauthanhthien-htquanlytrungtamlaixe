@@ -186,25 +186,6 @@ class DatabaseSeeder extends Seeder
             ['khoa_hoc_id'=>$khoaA->id,'ten_bai_thi'=>'Thực hành sát hạch', 'loai'=>'sat_hanh', 'diem_dat'=>80,'phi_thi_lai'=>200000,'thu_tu'=>2,'created_at'=>now(),'updated_at'=>now()],
         ]);
 
-        // ── B1 3 bánh ───────────────────────────────────────
-        $khoaB1_3banh = KhoaHoc::create([
-            'ten_khoa'                    => 'Bằng lái xe hạng B1 (Xe 3 bánh)',
-            'mo_ta'                       => 'Lái xe 3 bánh chở người và hàng hóa. Bao gồm học phí, phí hồ sơ, khám sức khỏe và lệ phí thi sát hạch.',
-            'loai_bang'                   => 'B1_3BANH',
-            'hoc_phi'                     => 3800000,
-            'so_buoi_ly_thuyet_toi_thieu' => 12,
-            'so_km_toi_thieu'             => 100,
-            'si_so_toi_da'                => 30,
-            'so_hv_mo_lop'                => 15,
-            'is_active'                   => true,
-        ]);
-        BaiThi::insert([
-            ['khoa_hoc_id'=>$khoaB1_3banh->id,'ten_bai_thi'=>'Lý thuyết',          'loai'=>'tot_nghiep','diem_dat'=>21,'phi_thi_lai'=>100000,'thu_tu'=>1,'created_at'=>now(),'updated_at'=>now()],
-            ['khoa_hoc_id'=>$khoaB1_3banh->id,'ten_bai_thi'=>'Thực hành',           'loai'=>'tot_nghiep','diem_dat'=>80,'phi_thi_lai'=>150000,'thu_tu'=>2,'created_at'=>now(),'updated_at'=>now()],
-            ['khoa_hoc_id'=>$khoaB1_3banh->id,'ten_bai_thi'=>'Lý thuyết sát hạch', 'loai'=>'sat_hanh', 'diem_dat'=>21,'phi_thi_lai'=>150000,'thu_tu'=>1,'created_at'=>now(),'updated_at'=>now()],
-            ['khoa_hoc_id'=>$khoaB1_3banh->id,'ten_bai_thi'=>'Thực hành sát hạch', 'loai'=>'sat_hanh', 'diem_dat'=>80,'phi_thi_lai'=>200000,'thu_tu'=>2,'created_at'=>now(),'updated_at'=>now()],
-        ]);
-
         // ── C1 (Xe tải nhẹ) ─────────────────────────────────
         $khoaC1 = KhoaHoc::create([
             'ten_khoa'                    => 'Bằng lái xe hạng C1 (Xe tải nhẹ)',
