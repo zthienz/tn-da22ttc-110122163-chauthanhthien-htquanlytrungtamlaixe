@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import axios from 'axios'
 import { toast } from 'react-toastify'
 import { useUser } from '../../context/UserContext'
@@ -74,7 +74,7 @@ const HoSo = () => {
           <div className="hoso-avatar">
             {hoSo?.anh_the ? (
               <img
-                src={`/${hoSo.anh_the}`}
+                src={`/uploads/${hoSo.anh_the}`}
                 alt="avatar"
                 onError={e => {
                   e.target.style.display = 'none'

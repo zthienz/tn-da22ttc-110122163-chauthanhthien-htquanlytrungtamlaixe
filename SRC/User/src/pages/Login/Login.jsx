@@ -13,23 +13,18 @@ const Login = () => {
   const { login, backendUrl }   = useUser()
   const navigate                = useNavigate()
 
-  // Chuyển ngày sinh từ input date (YYYY-MM-DD) sang DDMMYYYY
-  const formatNgaySinh = (dateStr) => {
-    if (!dateStr) return ''
-    const [y, m, d] = dateStr.split('-')
-    return `${d}${m}${y}` // DDMMYYYY
-  }
-
+  // Ngày sinh nhập dạng DDMMYYYY trực tiếp — không cần convert
   const handleSubmit = async e => {
     e.preventDefault()
     if (!soCccd.trim()) { toast.error('Vui lòng nhập số CCCD'); return }
     if (!ngaySinh)      { toast.error('Vui lòng nhập ngày sinh'); return }
+    if (ngaySinh.length !== 8) { toast.error('Ngày sinh phải đúng 8 số — VD: 16052004'); return }
 
     setLoading(true)
     try {
       const res = await axios.post(`${backendUrl}/api/auth/login`, {
         so_cccd:   soCccd.trim(),
-        ngay_sinh: formatNgaySinh(ngaySinh),
+        ngay_sinh: ngaySinh.trim(),
       })
 
       if (res.data.success) {
@@ -125,23 +120,24 @@ const Login = () => {
               </label>
               <div className="lf-input-wrap">
                 <input
-                  type={showPass ? 'date' : 'password'}
+                  type={showPass ? 'text' : 'password'}
                   value={ngaySinh}
-                  onChange={e => setNgaySinh(e.target.value)}
-                  placeholder="Chọn ngày sinh"
+                  onChange={e => setNgaySinh(e.target.value.replace(/\D/g, '').slice(0, 8))}
+                  placeholder="VD: 16052004"
+                  maxLength={8}
                   required
                 />
                 <button
                   type="button"
                   className="lf-eye"
                   onClick={() => setShowPass(!showPass)}
-                  title={showPass ? 'Ẩn' : 'Hiện ngày sinh'}
+                  title={showPass ? 'Ẩn' : 'Hiện'}
                 >
                   {showPass ? '🙈' : '👁️'}
                 </button>
               </div>
               <p className="lf-hint">
-                Định dạng: DDMMYYYY — VD: sinh 16/05/2004 nhập <code>16052004</code>
+                Định dạng DDMMYYYY — VD: sinh 16/05/2004 nhập <code>16052004</code>
               </p>
             </div>
 

@@ -12,6 +12,11 @@ class KhoaHoc extends Model
         'ten_khoa', 'mo_ta', 'loai_bang', 'hoc_phi',
         'so_buoi_ly_thuyet_toi_thieu', 'so_km_toi_thieu',
         'si_so_toi_da', 'so_hv_mo_lop', 'is_active',
+        // Khóa học đào tạo theo tháng
+        'ma_khoa', 'thang', 'nam', 'hang_bang', 'ten_khoa_dao_tao', 'trang_thai_khoa',
+        // Nội dung frontend
+        'doi_tuong', 'loai_xe_mo_ta', 'thoi_han_bang', 'yeu_cau_truoc',
+        'quyen_lai_xe', 'quy_trinh_dao_tao', 'le_phi_sat_hach',
     ];
 
     protected $casts = ['is_active' => 'boolean', 'hoc_phi' => 'decimal:2'];

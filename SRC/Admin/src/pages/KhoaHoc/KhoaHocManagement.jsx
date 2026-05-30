@@ -8,7 +8,7 @@ const KhoaHocManagement = () => {
   const [list, setList]       = useState([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
-  const [showDetail, setShowDetail] = useState(null)
+  const [viewItem, setViewItem]   = useState(null)   // modal xem chi tiết
   const [editing, setEditing] = useState(null)
   const [form, setForm] = useState({ ten_khoa:'', loai_bang:'B2', hoc_phi:'', so_buoi_ly_thuyet_toi_thieu:'', so_km_toi_thieu:'', si_so_toi_da:30, so_hv_mo_lop:15, mo_ta:'' })
   const headers = { Authorization: `Bearer ${token}` }
@@ -68,6 +68,7 @@ const KhoaHocManagement = () => {
                     <td>{k.so_km_toi_thieu} km</td>
                     <td>{k.si_so_toi_da} HV</td>
                     <td><div className="action-cell">
+                      <button className="btn btn-info btn-sm" onClick={() => setViewItem(k)}>👁️ Xem</button>
                       <button className="btn btn-outline btn-sm" onClick={() => openEdit(k)}>✏️ Sửa</button>
                       <button className="btn btn-danger btn-sm" onClick={() => handleDelete(k.id)}>🗑️</button>
                     </div></td>
@@ -110,7 +111,114 @@ const KhoaHocManagement = () => {
           </div>
         </div>
       )}
+      {/* ── MODAL XEM CHI TIẾT ── */}
+      {viewItem && (
+        <div className="modal-overlay" onClick={() => setViewItem(null)}>
+          <div className="modal modal-lg" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>📋 Chi tiết khóa học</h3>
+              <button className="modal-close" onClick={() => setViewItem(null)}>✕</button>
+            </div>
+            <div className="modal-body">
+              {/* Tên & hạng bằng */}
+              <div style={{textAlign:'center', marginBottom:20}}>
+                <div style={{fontSize:36, marginBottom:6}}>📚</div>
+                <h2 style={{margin:0, fontSize:20}}>{viewItem.ten_khoa}</h2>
+                <span className="badge badge-blue" style={{marginTop:6, display:'inline-block', fontSize:14}}>
+                  Hạng {viewItem.loai_bang}
+                </span>
+                <span style={{
+                  marginLeft:8, display:'inline-block',
+                  padding:'2px 10px', borderRadius:12, fontSize:13,
+                  background: viewItem.is_active ? '#d1fae5' : '#fee2e2',
+                  color: viewItem.is_active ? '#065f46' : '#991b1b'
+                }}>
+                  {viewItem.is_active ? '✅ Đang hoạt động' : '🚫 Ngừng hoạt động'}
+                </span>
+              </div>
+
+              {/* Thông tin chính */}
+              <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:12, marginBottom:16}}>
+                <div style={detailBox}>
+                  <div style={detailLabel}>💰 Học phí</div>
+                  <div style={detailValue}>{Number(viewItem.hoc_phi).toLocaleString('vi-VN')} VNĐ</div>
+                </div>
+                <div style={detailBox}>
+                  <div style={detailLabel}>🏫 Số lớp đang có</div>
+                  <div style={detailValue}>{viewItem.lop_hoc_count ?? 0} lớp</div>
+                </div>
+                <div style={detailBox}>
+                  <div style={detailLabel}>📖 Buổi LT tối thiểu</div>
+                  <div style={detailValue}>{viewItem.so_buoi_ly_thuyet_toi_thieu} buổi</div>
+                </div>
+                <div style={detailBox}>
+                  <div style={detailLabel}>🚗 Km thực hành tối thiểu</div>
+                  <div style={detailValue}>{viewItem.so_km_toi_thieu} km</div>
+                </div>
+                <div style={detailBox}>
+                  <div style={detailLabel}>👥 Sĩ số tối đa / lớp</div>
+                  <div style={detailValue}>{viewItem.si_so_toi_da} học viên</div>
+                </div>
+                <div style={detailBox}>
+                  <div style={detailLabel}>🔑 HV tối thiểu để mở lớp</div>
+                  <div style={detailValue}>{viewItem.so_hv_mo_lop} học viên</div>
+                </div>
+              </div>
+
+              {/* Mô tả */}
+              <div style={detailBox}>
+                <div style={detailLabel}>📝 Mô tả</div>
+                <div style={{marginTop:4, color:'#374151', lineHeight:1.6, whiteSpace:'pre-wrap'}}>
+                  {viewItem.mo_ta || <span style={{color:'#9ca3af', fontStyle:'italic'}}>Chưa có mô tả</span>}
+                </div>
+              </div>
+
+              {/* Ngày tạo / cập nhật */}
+              <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:12, marginTop:12}}>
+                <div style={{...detailBox, background:'#f9fafb'}}>
+                  <div style={detailLabel}>🗓️ Ngày tạo</div>
+                  <div style={{marginTop:4, fontSize:13, color:'#6b7280'}}>
+                    {viewItem.created_at ? new Date(viewItem.created_at).toLocaleDateString('vi-VN') : '—'}
+                  </div>
+                </div>
+                <div style={{...detailBox, background:'#f9fafb'}}>
+                  <div style={detailLabel}>🔄 Cập nhật lần cuối</div>
+                  <div style={{marginTop:4, fontSize:13, color:'#6b7280'}}>
+                    {viewItem.updated_at ? new Date(viewItem.updated_at).toLocaleDateString('vi-VN') : '—'}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-outline" onClick={() => setViewItem(null)}>Đóng</button>
+              <button className="btn btn-primary" onClick={() => { setViewItem(null); openEdit(viewItem) }}>✏️ Chỉnh sửa</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
+
+// Style helpers cho detail box
+const detailBox = {
+  background: '#f8fafc',
+  border: '1px solid #e2e8f0',
+  borderRadius: 8,
+  padding: '10px 14px',
+}
+const detailLabel = {
+  fontSize: 12,
+  color: '#6b7280',
+  fontWeight: 600,
+  textTransform: 'uppercase',
+  letterSpacing: '0.05em',
+  marginBottom: 4,
+}
+const detailValue = {
+  fontSize: 16,
+  fontWeight: 700,
+  color: '#111827',
+}
+
 export default KhoaHocManagement

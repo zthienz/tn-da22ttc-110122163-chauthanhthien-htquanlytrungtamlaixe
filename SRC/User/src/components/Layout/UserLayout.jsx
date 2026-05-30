@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { Outlet, NavLink, Link } from 'react-router-dom'
 import { useUser } from '../../context/UserContext'
 import './UserLayout.css'
@@ -36,16 +36,20 @@ const UserLayout = () => {
       <aside className={`ul-sidebar ${sidebarOpen ? 'open' : ''}`}>
         {/* Logo */}
         <div className="ul-sidebar-logo">
-          <Link to="/">
-            <img src="/logo.png" alt="Sao Việt" className="ul-logo-img" />
-          </Link>
+          <div className="ul-logo-brand">
+            <div className="ul-logo-star">⭐</div>
+            <div className="ul-logo-text">
+              <span className="ul-logo-sub">TRUNG TÂM LÁI XE</span>
+              <span className="ul-logo-name">SAO VIỆT</span>
+            </div>
+          </div>
         </div>
 
         {/* Avatar học viên */}
         <div className="ul-sidebar-user">
           <div className="ul-avatar">
             {anhHV
-              ? <img src={`/${anhHV}`} alt={tenHV} />
+              ? <img src={`/uploads/${anhHV}`} alt={tenHV} />
               : <span className="ul-avatar-placeholder">{tenHV.charAt(0).toUpperCase()}</span>
             }
           </div>

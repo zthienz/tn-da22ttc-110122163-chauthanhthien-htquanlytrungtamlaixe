@@ -6,3 +6,349 @@
 .pagination { display:flex;gap:6px;justify-content:center;margin-top:8px; }
 .page-btn { padding:6px 12px;border:1px solid #e2e8f0;border-radius:6px;background:#fff;cursor:pointer;font-size:13px; }
 .page-btn.active { background:#0d47a1;color:#fff;border-color:#0d47a1; }
+
+/* ── Modal chi tiết hồ sơ ── */
+.hoso-detail-modal { max-width: 860px; max-height: 88vh; display: flex; flex-direction: column; }
+.hoso-detail-modal .modal-body { overflow-y: auto; flex: 1; }
+
+.detail-section { margin-bottom: 20px; }
+.detail-section:last-child { margin-bottom: 0; }
+.detail-section-title {
+  font-size: 13px; font-weight: 700; color: #0d47a1;
+  text-transform: uppercase; letter-spacing: 0.05em;
+  padding-bottom: 8px; border-bottom: 2px solid #e0ecff;
+  margin-bottom: 12px;
+}
+
+.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+.detail-box {
+  background: #f8fafc; border: 1px solid #e2e8f0;
+  border-radius: 8px; padding: 10px 14px;
+}
+.detail-label {
+  font-size: 11px; font-weight: 600; color: #6b7280;
+  text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;
+}
+.detail-value { font-size: 14px; font-weight: 600; color: #111827; }
+.detail-value code { font-size: 13px; background: #f1f5f9; padding: 2px 6px; border-radius: 4px; }
+
+/* ── Form thêm hồ sơ offline (layout 2 cột) ── */
+.hoso-form-layout {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 28px;
+  align-items: flex-start;
+}
+
+/* Cột ảnh */
+.hoso-anh-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.hoso-anh-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #4a5568;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  align-self: flex-start;
+}
+.hoso-anh-upload {
+  width: 160px;
+  height: 210px;
+  border: 2px dashed #cbd5e0;
+  border-radius: 10px;
+  cursor: pointer;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8fafc;
+  transition: all 0.2s;
+  position: relative;
+}
+.hoso-anh-upload:hover {
+  border-color: #0d47a1;
+  background: #eff6ff;
+}
+.hoso-anh-upload.has-image {
+  border-style: solid;
+  border-color: #0d47a1;
+  background: #000;
+}
+.hoso-anh-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.hoso-anh-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 16px;
+  text-align: center;
+}
+.hoso-anh-placeholder span { font-size: 36px; }
+.hoso-anh-placeholder p { font-size: 12px; font-weight: 600; color: #718096; }
+.hoso-anh-placeholder small { font-size: 11px; color: #a0aec0; }
+.hoso-anh-hint {
+  font-size: 11px;
+  color: #a0aec0;
+  text-align: center;
+  line-height: 1.5;
+  margin-top: 4px;
+}
+
+/* Cột thông tin */
+.hoso-info-col { display: flex; flex-direction: column; }
+.hoso-section-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #0d47a1;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #e0ecff;
+  margin-bottom: 12px;
+}
+.hoso-form-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-top: 4px;
+  font-size: 12px;
+  color: #92400e;
+  line-height: 1.6;
+}
+.hoso-form-note span { font-size: 16px; flex-shrink: 0; }
+
+@media (max-width: 700px) {
+  .hoso-form-layout { grid-template-columns: 1fr; }
+  .hoso-anh-col { flex-direction: row; align-items: flex-start; flex-wrap: wrap; }
+  .hoso-anh-upload { width: 120px; height: 158px; }
+}
+
+/* ── Modal Thu Học Phí mới ── */
+.hocphi-hv-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #f0f4ff;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+}
+.hocphi-hv-avatar {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: #0d47a1;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.hocphi-hv-name { font-size: 15px; font-weight: 700; color: #1a202c; }
+.hocphi-hv-cccd { font-size: 12px; color: #718096; margin-top: 2px; }
+
+.hocphi-amount-box {
+  background: linear-gradient(135deg, #0d47a1, #1565c0);
+  border-radius: 14px;
+  padding: 20px 24px;
+  color: #fff;
+  text-align: center;
+  margin-bottom: 4px;
+}
+.hocphi-amount-label {
+  font-size: 12px;
+  color: rgba(255,255,255,.7);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+.hocphi-khoa-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 2px;
+}
+.hocphi-amount-value {
+  font-size: 32px;
+  font-weight: 900;
+  color: #fbbf24;
+  line-height: 1.2;
+  margin: 6px 0;
+}
+.hocphi-amount-value span { font-size: 16px; font-weight: 600; color: rgba(255,255,255,.8); }
+.hocphi-hang-badge { margin-top: 6px; }
+
+.hocphi-method-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 8px;
+  margin-top: 6px;
+}
+.hocphi-method-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 8px;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  color: #718096;
+  transition: all .2s;
+  background: #fff;
+}
+.hocphi-method-btn span:first-child { font-size: 22px; }
+.hocphi-method-btn:hover { border-color: #0d47a1; color: #0d47a1; background: #eff6ff; }
+.hocphi-method-btn.active { border-color: #0d47a1; color: #0d47a1; background: #eff6ff; }
+
+.hocphi-confirm-note {
+  background: #f0fdf4;
+  border: 1px solid #86efac;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #166534;
+  margin-top: 12px;
+}
+
+/* ── Modal xem chi tiết — layout 2 cột ── */
+.hoso-detail-modal {
+  max-width: 1000px !important;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+.hoso-detail-modal .modal-body {
+  overflow-y: auto;
+  flex: 1;
+  padding: 24px 28px;
+}
+
+.hoso-detail-layout {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 28px;
+  align-items: flex-start;
+}
+
+/* ── Cột trái ── */
+.hoso-detail-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  position: sticky;
+  top: 0;
+}
+
+.hoso-detail-anh-wrap {
+  width: 160px;
+  height: 210px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 3px solid #e2e8f0;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(0,0,0,.1);
+}
+.hoso-detail-anh {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.hoso-detail-anh-fallback {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #0d47a1, #1976d2);
+  color: #fff;
+  font-size: 56px;
+  font-weight: 900;
+  align-items: center;
+  justify-content: center;
+}
+
+.hoso-detail-name {
+  font-size: 16px;
+  font-weight: 800;
+  color: #1a202c;
+  text-align: center;
+  margin-top: 4px;
+}
+.hoso-detail-cccd {
+  font-size: 12px;
+  background: #f1f5f9;
+  padding: 3px 10px;
+  border-radius: 6px;
+  color: #475569;
+}
+
+.hoso-detail-status-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.hoso-detail-quick {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.hoso-detail-quick-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 8px 10px;
+  min-width: 56px;
+}
+.hoso-detail-quick-item span { font-size: 18px; }
+.hoso-detail-quick-item p { font-size: 10px; color: #718096; font-weight: 600; text-align: center; }
+
+/* ── Cột phải ── */
+.hoso-detail-right {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+@media (max-width: 768px) {
+  .hoso-detail-layout { grid-template-columns: 1fr; }
+  .hoso-detail-left { flex-direction: row; flex-wrap: wrap; justify-content: center; position: static; }
+}
+
+/* ── Validation error inline ── */
+.field-error {
+  display: block;
+  font-size: 11px;
+  color: #dc2626;
+  margin-top: 4px;
+  font-weight: 500;
+}
+.form-group input:invalid:not(:placeholder-shown),
+.form-group input.error {
+  border-color: #dc2626;
+}

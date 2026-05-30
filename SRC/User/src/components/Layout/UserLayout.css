@@ -21,15 +21,34 @@
 
 /* Logo */
 .ul-sidebar-logo {
-  padding: 20px 20px 16px;
+  padding: 16px 14px;
   border-bottom: 1px solid rgba(255,255,255,0.12);
-  text-align: center;
+  min-height: 72px;
+  display: flex;
+  align-items: center;
 }
-.ul-logo-img {
-  height: 56px;
-  width: auto;
-  object-fit: contain;
+.ul-logo-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
 }
+.ul-logo-star {
+  font-size: 26px;
+  flex-shrink: 0;
+  animation: ulStarPulse 2.5s ease-in-out infinite;
+}
+@keyframes ulStarPulse {
+  0%,100% { filter: drop-shadow(0 0 4px rgba(251,191,36,.5)); }
+  50%      { filter: drop-shadow(0 0 12px rgba(251,191,36,1)); }
+}
+.ul-logo-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+.ul-logo-sub  { font-size: 9px; font-weight: 700; color: rgba(255,255,255,.45); letter-spacing: 1.5px; text-transform: uppercase; }
+.ul-logo-name { font-size: 17px; font-weight: 900; letter-spacing: 2px; color: #fbbf24; }
 
 /* Avatar học viên */
 .ul-sidebar-user {

@@ -13,7 +13,7 @@ class LichHoc extends Model
         'loai_buoi', 'dia_diem', 'noi_dung', 'ghi_chu',
     ];
 
-    protected $casts = ['ngay_hoc' => 'date'];
+    protected $casts = ['ngay_hoc' => 'date:Y-m-d'];
 
     public function lopHoc()   { return $this->belongsTo(LopHoc::class, 'lop_hoc_id'); }
     public function xe()       { return $this->belongsTo(Xe::class, 'xe_id'); }

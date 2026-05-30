@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import axios from 'axios'
 import { useUser } from '../../context/UserContext'
@@ -55,7 +55,7 @@ const Dashboard = () => {
         <div className="dash-welcome-left">
           <div className="dash-avatar">
             {hoSo?.anh_the
-              ? <img src={`/${hoSo.anh_the}`} alt="avatar" />
+              ? <img src={`/uploads/${hoSo.anh_the}`} alt="avatar" />
               : <span>{(hoSo?.ho_ten || userInfo?.ho_ten || 'H').charAt(0).toUpperCase()}</span>
             }
           </div>
@@ -67,9 +67,6 @@ const Dashboard = () => {
               {ts.text}
             </div>
           </div>
-        </div>
-        <div className="dash-welcome-right">
-          <img src="/logo.png" alt="Sao Việt" className="dash-logo" />
         </div>
       </div>
 

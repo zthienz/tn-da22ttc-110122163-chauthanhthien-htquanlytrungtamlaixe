@@ -4,28 +4,37 @@ import './Sidebar.css'
 
 // Menu cho ADMIN
 const adminMenu = [
-  { path: '/',           icon: '📊', label: 'Dashboard',       end: true },
+  { path: '/',           icon: '📊', label: 'Dashboard',          end: true },
   { path: '/ho-so',      icon: '📋', label: 'Hồ Sơ Học Viên' },
-  { path: '/khoa-hoc',   icon: '📚', label: 'Khóa Học' },
+  { path: '/bang-lai',   icon: '🪪', label: 'Quản Lý Bằng Lái' },
+  { path: '/khoa-hoc',   icon: '📅', label: 'Khóa Học Đào Tạo' },
   { path: '/lop-hoc',    icon: '🏫', label: 'Lớp Học' },
-  { path: '/lich-hoc',   icon: '📅', label: 'Lịch Học' },
+  { path: '/lich-hoc',   icon: '🗓️', label: 'Lịch Học' },
   { path: '/thi',        icon: '🏆', label: 'Thi & Kết Quả' },
   { path: '/giang-vien', icon: '👨‍🏫', label: 'Giảng Viên' },
+  { path: '/hoc-phi',    icon: '💰', label: 'Học Phí' },
   { path: '/xe',         icon: '🚗', label: 'Quản Lý Xe' },
 ]
 
-// Menu cho GIẢNG VIÊN
-const giangVienMenu = [
-  { path: '/',                    icon: '📊', label: 'Tổng Quan',         end: true },
-  { path: '/thong-tin-ca-nhan',   icon: '👤', label: 'Thông Tin Cá Nhân' },
-  { path: '/lop-cua-toi',         icon: '🏫', label: 'Lớp Của Tôi' },
-  { path: '/diem-danh',           icon: '✅', label: 'Điểm Danh & Km' },
-  { path: '/xe-cua-toi',          icon: '🚗', label: 'Xe Của Tôi' },
-]
+// Menu cho GIẢNG VIÊN — động theo chuyen_mon
+const buildGiangVienMenu = (chuyenMon) => {
+  const base = [
+    { path: '/',          icon: '📊', label: 'Tổng Quan',         end: true },
+    { path: '/lop-cua-toi', icon: '🏫', label: 'Lớp Của Tôi' },
+    { path: '/lich-day',  icon: '🗓️', label: 'Lịch Dạy' },
+    { path: '/diem-danh', icon: '✅', label: 'Điểm Danh' },
+  ]
+  // Chỉ giảng viên thực hành hoặc cả hai mới có trang Xe & Báo Lỗi
+  if (chuyenMon === 'thuc_hanh' || chuyenMon === 'ca_hai') {
+    base.push({ path: '/xe-cua-toi', icon: '🚗', label: 'Xe & Báo Lỗi' })
+  }
+  base.push({ path: '/thong-tin-ca-nhan', icon: '👤', label: 'Thông Tin Cá Nhân' })
+  return base
+}
 
 const Sidebar = ({ collapsed, onToggle }) => {
-  const { adminInfo, isAdmin, isGiangVien, logout } = useAdmin()
-  const menu = isAdmin ? adminMenu : giangVienMenu
+  const { adminInfo, isAdmin, isGiangVien, chuyenMon, logout } = useAdmin()
+  const menu = isAdmin ? adminMenu : buildGiangVienMenu(chuyenMon)
 
   return (
     <aside className={`sidebar ${collapsed ? 'collapsed' : ''}`}>

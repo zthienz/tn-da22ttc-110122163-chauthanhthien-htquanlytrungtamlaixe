@@ -42,3 +42,45 @@
 .dd-footer { display:flex;justify-content:flex-end;gap:10px;margin-top:20px;padding-top:16px;border-top:1px solid #f1f5f9; }
 .btn-spinner-sm { width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;margin-right:6px; }
 @keyframes spin { to { transform:rotate(360deg); } }
+
+/* Lịch hôm nay */
+.dd-lich-list { display:flex;flex-direction:column;gap:0; }
+.dd-lich-item {
+  display:flex;align-items:center;gap:16px;
+  padding:14px 20px;border-bottom:1px solid #f1f5f9;
+  cursor:pointer;transition:background .15s;
+}
+.dd-lich-item:hover { background:#f8fafc; }
+.dd-lich-item.active { background:#eff6ff;border-left:3px solid #0d47a1; }
+.dd-lich-item.ly_thuyet .dd-lich-type { color:#3b82f6; }
+.dd-lich-item.thuc_hanh .dd-lich-type { color:#22c55e; }
+.dd-lich-time { display:flex;flex-direction:column;align-items:center;gap:2px;min-width:52px;font-size:13px;font-weight:700;color:#374151; }
+.dd-lich-info { flex:1; }
+.dd-lich-lop  { font-size:14px;font-weight:700;color:#1a202c;margin:0 0 2px; }
+.dd-lich-type { font-size:12px;color:#718096;margin:0; }
+
+/* Ghi chú vắng */
+.dd-ghichu-input {
+  margin-top:6px;width:100%;padding:6px 10px;
+  border:1px solid #fca5a5;border-radius:6px;
+  font-size:12px;color:#374151;background:#fff5f5;
+  outline:none;
+}
+.dd-ghichu-input:focus { border-color:#ef4444; }
+
+/* Item right */
+.dd-item-right { display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end; }
+.dd-status { font-size:12px;font-weight:600;min-width:72px;text-align:center; }
+.dd-status.present { color:#16a34a; }
+.dd-status.absent  { color:#dc2626; }
+.dd-km-wrap { display:flex;align-items:center;gap:6px;font-size:13px;color:#374151; }
+.km-input { width:72px;padding:4px 8px;border:1px solid #e2e8f0;border-radius:6px;font-size:13px; }
+.dd-footer { display:flex;justify-content:flex-end;gap:10px;margin-top:16px;padding-top:16px;border-top:1px solid #f1f5f9; }
+
+/* Toggle */
+.dd-toggle { position:relative;display:inline-block;width:44px;height:24px;cursor:pointer; }
+.dd-toggle input { opacity:0;width:0;height:0; }
+.dd-toggle-slider { position:absolute;inset:0;background:#e2e8f0;border-radius:24px;transition:.2s; }
+.dd-toggle-slider::before { content:'';position:absolute;width:18px;height:18px;border-radius:50%;background:#fff;left:3px;top:3px;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2); }
+.dd-toggle input:checked + .dd-toggle-slider { background:#22c55e; }
+.dd-toggle input:checked + .dd-toggle-slider::before { transform:translateX(20px); }

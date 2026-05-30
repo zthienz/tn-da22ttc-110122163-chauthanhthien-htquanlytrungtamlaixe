@@ -1,0 +1,253 @@
+/* ── Hero ─────────────────────────────────────────────── */
+.khct-page { background: #f8fafc; }
+
+.khct-hero {
+  padding: 60px 0;
+  color: #fff;
+}
+.khct-hero-inner {
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  gap: 48px;
+  align-items: center;
+}
+.khct-badge {
+  display: inline-block;
+  background: rgba(255,255,255,0.25);
+  border: 1px solid rgba(255,255,255,0.4);
+  border-radius: 20px;
+  padding: 4px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 14px;
+}
+.khct-hero-text h1 {
+  font-size: 32px;
+  font-weight: 800;
+  margin-bottom: 12px;
+  line-height: 1.2;
+}
+.khct-hero-text > p {
+  font-size: 16px;
+  opacity: 0.9;
+  margin-bottom: 24px;
+}
+.khct-hero-price {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 28px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 12px;
+  padding: 14px 20px;
+  width: fit-content;
+}
+.khct-price-label { font-size: 13px; opacity: 0.85; }
+.khct-price-value { font-size: 28px; font-weight: 800; }
+.khct-hero-btns { display: flex; gap: 12px; flex-wrap: wrap; }
+.khct-btn-primary {
+  padding: 13px 28px;
+  background: #fff;
+  color: #0d47a1;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  transition: opacity 0.2s;
+  border: none;
+  cursor: pointer;
+}
+.khct-btn-primary:hover { opacity: 0.9; }
+.khct-btn-outline {
+  padding: 13px 28px;
+  background: transparent;
+  color: #fff;
+  border: 2px solid rgba(255,255,255,0.6);
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+.khct-btn-outline:hover { background: rgba(255,255,255,0.15); }
+.khct-hero-img img {
+  width: 100%;
+  height: 280px;
+  object-fit: cover;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+}
+
+/* ── Body ─────────────────────────────────────────────── */
+.khct-body { padding: 40px 0 60px; }
+
+/* Thông tin nhanh */
+.khct-quick-info {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 40px;
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.khct-qi-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.khct-qi-icon { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
+.khct-qi-label { font-size: 12px; color: #718096; margin-bottom: 3px; }
+.khct-qi-value { font-size: 14px; font-weight: 600; color: #1a202c; }
+
+/* 2 cột */
+.khct-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 40px;
+}
+
+/* Section */
+.khct-section {
+  background: #fff;
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  margin-bottom: 24px;
+}
+.khct-section h2 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a202c;
+  margin-bottom: 18px;
+}
+.khct-note {
+  font-size: 13px;
+  color: #718096;
+  margin-bottom: 14px;
+  font-style: italic;
+}
+
+/* List */
+.khct-list { display: flex; flex-direction: column; gap: 12px; }
+.khct-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 14px;
+  color: #2d3748;
+  line-height: 1.6;
+}
+.khct-check {
+  width: 22px; height: 22px;
+  background: #0d47a1;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* Fee table */
+.khct-fee-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.khct-fee-table th {
+  background: #f0f4f8;
+  padding: 10px 14px;
+  text-align: left;
+  font-weight: 700;
+  color: #4a5568;
+  font-size: 13px;
+}
+.khct-fee-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid #f0f4f8;
+  color: #2d3748;
+}
+.khct-fee-table tr:last-child td { border-bottom: none; }
+.khct-fee-table td strong { color: #0d47a1; }
+
+/* Steps */
+.khct-steps { display: flex; flex-direction: column; gap: 14px; }
+.khct-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+.khct-step-num {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.khct-step-title { font-size: 14px; font-weight: 700; color: #1a202c; margin-bottom: 2px; }
+.khct-step-desc  { font-size: 13px; color: #718096; }
+
+/* CTA */
+.khct-cta {
+  background: linear-gradient(135deg, #0d47a1, #1565c0);
+  border-radius: 16px;
+  padding: 28px;
+  color: #fff;
+  text-align: center;
+}
+.khct-cta h3 { font-size: 18px; font-weight: 800; margin-bottom: 8px; }
+.khct-cta p  { font-size: 13px; opacity: 0.85; margin-bottom: 20px; }
+.khct-cta .khct-btn-primary { color: #0d47a1; }
+.khct-cta .khct-btn-outline  { color: #fff; border-color: rgba(255,255,255,0.5); }
+
+/* More */
+.khct-more {
+  background: #fff;
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.khct-more h3 { font-size: 18px; font-weight: 700; margin-bottom: 20px; color: #1a202c; }
+.khct-more-links {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+}
+.khct-more-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  transition: all 0.2s;
+  text-align: center;
+}
+.khct-more-item:hover { border-color: #0d47a1; background: #f0f4ff; }
+.khct-more-item img { width: 100%; height: 70px; object-fit: cover; border-radius: 6px; }
+.khct-more-item span { font-size: 12px; font-weight: 600; color: #2d3748; line-height: 1.4; }
+
+/* Not found */
+.khct-notfound {
+  text-align: center;
+  padding: 80px 20px;
+}
+.khct-notfound h2 { font-size: 24px; margin-bottom: 16px; }
+.khct-notfound a  { color: #0d47a1; font-weight: 600; }
+
+/* Responsive */
+@media (max-width: 900px) {
+  .khct-hero-inner { grid-template-columns: 1fr; }
+  .khct-hero-img   { display: none; }
+  .khct-two-col    { grid-template-columns: 1fr; }
+  .khct-hero-text h1 { font-size: 24px; }
+}

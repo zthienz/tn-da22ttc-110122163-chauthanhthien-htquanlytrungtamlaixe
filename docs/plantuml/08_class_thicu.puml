@@ -1,0 +1,100 @@
+@startuml Class_ThiCu
+title Sơ đồ Lớp - Phân hệ Thi cử & Chứng chỉ
+
+skinparam classAttributeIconSize 0
+skinparam classFontSize 13
+
+class KhoaHoc {
+  +id: bigint
+  +ten_khoa: string
+  +loai_bang: enum
+  +so_buoi_ly_thuyet_toi_thieu: int
+  +so_km_toi_thieu: int
+}
+
+class BaiThi {
+  +id: bigint
+  +khoa_hoc_id: bigint <<FK>>
+  +ten_bai_thi: string
+  +loai: enum {tot_nghiep, sat_hanh}
+  +diem_dat: decimal
+  +phi_thi_lai: decimal
+  +thu_tu: int
+  +created_at: datetime
+  +updated_at: datetime
+}
+
+class LichThi {
+  +id: bigint
+  +khoa_hoc_id: bigint <<FK>>
+  +loai_thi: enum {tot_nghiep, sat_hanh}
+  +ngay_thi: date
+  +gio_thi: time
+  +dia_diem: string?
+  +don_vi_to_chuc: string?
+  +ghi_chu: text?
+  +created_at: datetime
+  +updated_at: datetime
+}
+
+class KetQuaThi {
+  +id: bigint
+  +ho_so_id: bigint <<FK>>
+  +lich_thi_id: bigint <<FK>>
+  +bai_thi_id: bigint <<FK>>
+  +diem: decimal?
+  +ket_qua: enum {dat, khong_dat, vang_mat}?
+  +lan_thi: int
+  +phi_thi_lai: decimal
+  +da_thu_phi: boolean
+  +nhan_xet: text?
+  +created_at: datetime
+  +updated_at: datetime
+}
+
+class BangTotNghiep {
+  +id: bigint
+  +ho_so_id: bigint <<FK>>
+  +so_bang: string <<unique>>
+  +ngay_cap: date
+  +trang_thai: enum {da_cap, cap_lai}
+  +ghi_chu: text?
+  +created_at: datetime
+  +updated_at: datetime
+}
+
+class BangLaiXe {
+  +id: bigint
+  +ho_so_id: bigint <<FK>>
+  +so_bang_lai: string <<unique>>
+  +ho_ten_chu_bang: string
+  +ngay_sinh_chu_bang: date
+  +so_cccd_chu_bang: string
+  +loai_bang: enum {A1,A2,B1,B2,C,D,E}
+  +ngay_cap: date
+  +ngay_het_han: date?
+  +co_quan_cap: string
+  +dia_chi_co_quan_cap: string?
+  +trang_thai: enum {cho_cap, da_cap, cap_lai, thu_hoi}
+  +ngay_cap_thuc_te: datetime?
+  +ghi_chu: text?
+  +created_at: datetime
+  +updated_at: datetime
+}
+
+class HoSoHocVien {
+  +id: bigint
+  +ho_ten: string
+  +so_cccd: string
+  +trang_thai: enum
+}
+
+KhoaHoc "1" --o "0..*" BaiThi : cấu hình bài thi >
+KhoaHoc "1" --o "0..*" LichThi : tổ chức thi >
+LichThi "1" --o "0..*" KetQuaThi : kết quả >
+BaiThi "1" --o "0..*" KetQuaThi : thuộc bài thi >
+HoSoHocVien "1" --o "0..*" KetQuaThi : của học viên >
+HoSoHocVien "1" --o "0..1" BangTotNghiep : được cấp >
+HoSoHocVien "1" --o "0..1" BangLaiXe : được cấp >
+
+@enduml

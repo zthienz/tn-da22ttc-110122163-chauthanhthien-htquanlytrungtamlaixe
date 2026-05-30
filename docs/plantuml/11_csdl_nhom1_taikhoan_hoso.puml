@@ -1,0 +1,76 @@
+@startuml CSDL_Nhom1
+title Sơ đồ CSDL - Nhóm 1: Tài khoản & Hồ sơ học viên
+
+skinparam linetype ortho
+hide circle
+skinparam classFontSize 12
+
+entity "users" as users {
+  *id : bigint <<PK>>
+  --
+  ho_ten : varchar(255)
+  email : varchar(255) <<unique>>
+  password : varchar(255)
+  role : enum(admin, giang_vien, hoc_vien)
+  so_dien_thoai : varchar(15)
+  is_active : tinyint(1)
+  otp : varchar(6)
+  otp_expires_at : timestamp
+  created_at : timestamp
+  updated_at : timestamp
+}
+
+entity "giang_vien" as giang_vien {
+  *id : bigint <<PK>>
+  --
+  *user_id : bigint <<FK - users>>
+  chuyen_mon : enum(ly_thuyet, thuc_hanh, ca_hai)
+  bang_cap : varchar(255)
+  nam_kinh_nghiem : int
+  ghi_chu : text
+  created_at : timestamp
+  updated_at : timestamp
+}
+
+entity "ho_so_hoc_vien" as ho_so {
+  *id : bigint <<PK>>
+  --
+  user_id : bigint <<FK - users>>
+  *khoa_hoc_id : bigint <<FK - khoa_hoc>>
+  ho_ten : varchar(100)
+  ngay_sinh : date
+  so_cccd : varchar(20) <<unique>>
+  dia_chi : varchar(255)
+  so_dien_thoai : varchar(15)
+  email : varchar(255)
+  anh_the : varchar(255)
+  nguon_dang_ky : enum(online, offline)
+  trang_thai_hoc_phi : enum(chua_dong, da_dong)
+  hoc_phi_da_dong : decimal(12,2)
+  ngay_dong_hoc_phi : timestamp
+  trang_thai : enum(cho_dong_hoc_phi, cho_mo_lop,\n  dang_hoc, chua_du_dieu_kien_thi,\n  du_dieu_kien_thi_tn, dang_thi_tn,\n  hoan_thanh_tn, du_dieu_kien_sat_hanh,\n  dang_thi_sat_hanh, da_cap_bang, dinh_chi)
+  ghi_chu : text
+  created_at : timestamp
+  updated_at : timestamp
+}
+
+entity "thanh_toan_hoc_phi" as tt_hoc_phi {
+  *id : bigint <<PK>>
+  --
+  *ho_so_id : bigint <<FK - ho_so_hoc_vien>>
+  so_tien : decimal(12,2)
+  phuong_thuc : enum(tien_mat, chuyen_khoan, vnpay, momo)
+  ma_giao_dich : varchar(255)
+  trang_thai : enum(cho_xu_ly, thanh_cong, that_bai)
+  nguoi_thu : varchar(255)
+  ghi_chu : text
+  ngay_thanh_toan : timestamp
+  created_at : timestamp
+  updated_at : timestamp
+}
+
+users ||--o| giang_vien : "1 user → 1 giảng viên"
+users ||--o| ho_so : "1 user → 1 hồ sơ"
+ho_so ||--o{ tt_hoc_phi : "1 hồ sơ → nhiều lần thanh toán"
+
+@enduml

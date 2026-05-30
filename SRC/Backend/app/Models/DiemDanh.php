@@ -8,10 +8,13 @@ class DiemDanh extends Model
 {
     protected $table = 'diem_danh';
 
-    protected $fillable = ['lich_hoc_id', 'hoc_vien_id', 'co_mat', 'ghi_chu'];
+    protected $fillable = ['lich_hoc_id', 'ho_so_id', 'co_mat', 'km_chay', 'ghi_chu'];
 
-    protected $casts = ['co_mat' => 'boolean'];
+    protected $casts = [
+        'co_mat'   => 'boolean',
+        'km_chay'  => 'decimal:2',
+    ];
 
-    public function lichHoc()  { return $this->belongsTo(LichHoc::class, 'lich_hoc_id'); }
-    public function hocVien()  { return $this->belongsTo(HocVien::class, 'hoc_vien_id'); }
+    public function lichHoc() { return $this->belongsTo(LichHoc::class, 'lich_hoc_id'); }
+    public function hoSo()    { return $this->belongsTo(HoSoHocVien::class, 'ho_so_id'); }
 }

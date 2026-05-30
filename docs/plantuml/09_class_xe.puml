@@ -1,0 +1,67 @@
+@startuml Class_Xe
+title Sơ đồ Lớp - Phân hệ Quản lý Xe
+
+skinparam classAttributeIconSize 0
+skinparam classFontSize 13
+
+class Xe {
+  +id: bigint
+  +bien_so: string <<unique>>
+  +hang_xe: string
+  +dong_xe: string?
+  +nam_san_xuat: year?
+  +loai_xe: enum {so_san, so_tu_dong}
+  +hang_bang: enum {A1,A,B1,B2,C1,C,D,E,CE}
+  +mau_xe: string?
+  +so_km_hien_tai: int
+  +ngay_dang_kiem: date?
+  +ngay_dang_kiem_tiep_theo: date?
+  +ngay_bao_hiem: date?
+  +trang_thai: enum {san_sang, dang_su_dung, bao_tri, hong, nghi_huu}
+  +ghi_chu: text?
+  +created_at: datetime
+  +updated_at: datetime
+}
+
+class LichHoc {
+  +id: bigint
+  +lop_hoc_id: bigint <<FK>>
+  +xe_id: bigint? <<FK>>
+  +ngay_hoc: date
+  +gio_bat_dau: time
+  +gio_ket_thuc: time
+  +loai_buoi: enum {ly_thuyet, thuc_hanh}
+  +dia_diem: string?
+  +noi_dung: text?
+  +ghi_chu: text?
+}
+
+class BaoLoiXe {
+  +id: bigint
+  +xe_id: bigint <<FK>>
+  +giang_vien_id: bigint <<FK>>
+  +lich_hoc_id: bigint? <<FK>>
+  +tieu_de: string
+  +mo_ta: text
+  +muc_do: enum {nhe, trung_binh, nghiem_trong}
+  +trang_thai: enum {cho_xu_ly, dang_xu_ly, da_xu_ly}
+  +ghi_chu_xu_ly: text?
+  +ngay_xu_ly: datetime?
+  +created_at: datetime
+  +updated_at: datetime
+}
+
+class GiangVien {
+  +id: bigint
+  +user_id: bigint <<FK>>
+  +chuyen_mon: enum
+  +bang_cap: string?
+  +nam_kinh_nghiem: int
+}
+
+Xe "1" --o "0..*" LichHoc : được phân công >
+Xe "1" --o "0..*" BaoLoiXe : bị báo lỗi >
+GiangVien "1" --o "0..*" BaoLoiXe : báo lỗi >
+LichHoc "0..1" --o "0..*" BaoLoiXe : liên quan >
+
+@enduml

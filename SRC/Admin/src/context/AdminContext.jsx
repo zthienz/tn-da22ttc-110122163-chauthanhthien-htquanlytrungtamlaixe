@@ -27,11 +27,12 @@ export const AdminProvider = ({ children }) => {
   // Kiểm tra quyền
   const isAdmin      = adminInfo?.role === 'admin'
   const isGiangVien  = adminInfo?.role === 'giang_vien'
+  const chuyenMon    = adminInfo?.chuyen_mon || null  // 'ly_thuyet' | 'thuc_hanh' | 'ca_hai'
 
   return (
     <AdminContext.Provider value={{
       token, adminInfo, backendUrl,
-      isAdmin, isGiangVien,
+      isAdmin, isGiangVien, chuyenMon,
       login, logout,
     }}>
       {children}

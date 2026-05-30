@@ -4,8 +4,6 @@ import { toast } from 'react-toastify'
 import './SectionUuDai.css'
 
 const uuDaiItems = [
-  'Tặng gói học lái xe ô tô 2.000.000đ',
-  'Hỗ trợ giảm thêm lên đến 500.000đ học phí khi đăng ký theo nhóm',
   'Tặng bộ sách, tài liệu, mẹo học thi trị giá 300.000đ',
   'Hỗ trợ ghi danh đăng ký Online nhanh gọn',
   'Điền form tư vấn để được hỗ trợ tốt nhất',
@@ -51,7 +49,7 @@ const SectionUuDai = () => {
         {/* Cột trái — Ưu đãi */}
         <div className="ud-left">
           <h3>Ưu đãi tại Trung Tâm Lái Xe Sao Việt</h3>
-          <p className="ud-sub">Tổng trị giá quà tặng lên đến 3.000.000đ</p>
+          <p className="ud-sub">Hỗ trợ đăng ký nhanh chóng, tiện lợi</p>
           <ul className="ud-list">
             {uuDaiItems.map((item, i) => (
               <li key={i}>
@@ -65,7 +63,7 @@ const SectionUuDai = () => {
         {/* Cột phải — Form */}
         <div className="ud-right">
           <div className="ud-form-wrapper">
-            <h3 className="ud-form-title">NHẬN ƯU ĐÃI 2.000.000 VNĐ</h3>
+            <h3 className="ud-form-title">ĐĂNG KÝ TƯ VẤN MIỄN PHÍ</h3>
             <form onSubmit={handleSubmit} className="ud-form">
               <input
                 type="text"

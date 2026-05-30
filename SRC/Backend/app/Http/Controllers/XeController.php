@@ -7,6 +7,7 @@ use App\Models\BaoLoiXe;
 use App\Models\GiangVien;
 use App\Models\LichHoc;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class XeController extends Controller
 {
@@ -46,9 +47,21 @@ class XeController extends Controller
             'hang_xe'    => 'required|string|max:50',
             'hang_bang'  => 'required|in:A1,A2,B1,B2,C,D,E',
             'loai_xe'    => 'required|in:so_san,so_tu_dong',
+            'anh_xe'     => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
         ]);
 
-        $xe = Xe::create($request->all());
+        $anhPath = null;
+        if ($request->hasFile('anh_xe')) {
+            $file     = $request->file('anh_xe');
+            $fileName = 'xe_' . preg_replace('/[^a-zA-Z0-9]/', '', $request->bien_so) . '_' . time() . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('uploads'), $fileName);
+            $anhPath = $fileName;
+        }
+
+        $data = $request->except('anh_xe');
+        $data['anh_xe'] = $anhPath;
+
+        $xe = Xe::create($data);
         return response()->json(['success' => true, 'message' => 'Thêm xe thành công', 'data' => $xe], 201);
     }
 
@@ -58,8 +71,21 @@ class XeController extends Controller
         $xe = Xe::findOrFail($id);
         $request->validate([
             'bien_so' => "sometimes|string|max:20|unique:xe,bien_so,{$id}",
+            'anh_xe'  => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
         ]);
-        $xe->update($request->all());
+
+        $anhPath = $xe->anh_xe;
+        if ($request->hasFile('anh_xe')) {
+            $file     = $request->file('anh_xe');
+            $fileName = 'xe_' . preg_replace('/[^a-zA-Z0-9]/', '', $xe->bien_so) . '_' . time() . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('uploads'), $fileName);
+            $anhPath = $fileName;
+        }
+
+        $data = $request->except('anh_xe');
+        $data['anh_xe'] = $anhPath;
+
+        $xe->update($data);
         return response()->json(['success' => true, 'message' => 'Cập nhật xe thành công', 'data' => $xe->fresh()]);
     }
 
@@ -183,7 +209,7 @@ class XeController extends Controller
     // GIẢNG VIÊN — Xem xe & báo lỗi
     // ═══════════════════════════════════════════════════════
 
-    // Giảng viên xem xe được cấp cho buổi học hôm nay / sắp tới
+    // Giảng viên xem xe được cấp cho buổi học trong tuần hiện tại và sắp tới
     public function xeCuaToi(Request $request)
     {
         $user = $request->auth_user;
@@ -191,14 +217,17 @@ class XeController extends Controller
 
         if (!$gv) return response()->json(['success' => true, 'data' => []]);
 
-        // Lấy các buổi thực hành sắp tới có xe được phân
+        // Lấy từ đầu tuần hiện tại (Thứ 2) để giảng viên thấy xe của cả tuần,
+        // kể cả các buổi đã qua trong tuần này
+        $dauTuan = now()->startOfWeek(\Carbon\Carbon::MONDAY)->toDateString();
+
         $lichHoc = LichHoc::with(['xe', 'lopHoc'])
             ->whereHas('lopHoc', fn($q) => $q
                 ->where('giang_vien_thuc_hanh_id', $gv->id)
                 ->orWhere('giang_vien_ly_thuyet_id', $gv->id))
             ->where('loai_buoi', 'thuc_hanh')
             ->whereNotNull('xe_id')
-            ->where('ngay_hoc', '>=', today())
+            ->where('ngay_hoc', '>=', $dauTuan)
             ->orderBy('ngay_hoc')->orderBy('gio_bat_dau')
             ->limit(20)
             ->get();
@@ -256,5 +285,69 @@ class XeController extends Controller
             ->get();
 
         return response()->json(['success' => true, 'data' => $list]);
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // ADMIN — Đồng bộ lại km xe từ dữ liệu điểm danh
+    // Dùng để fix dữ liệu cũ hoặc khi cần tính lại toàn bộ
+    // ═══════════════════════════════════════════════════════
+    public function syncKmXe()
+    {
+        // Reset toàn bộ km về 0 rồi tính lại từ bảng diem_danh
+        Xe::query()->update(['so_km_hien_tai' => 0]);
+
+        $xeKmMap = [];
+
+        // ── Trường hợp 1: xe gán trực tiếp vào buổi học (lich_hoc.xe_id) ──
+        $rows1 = DB::table('diem_danh')
+            ->join('lich_hoc', 'diem_danh.lich_hoc_id', '=', 'lich_hoc.id')
+            ->where('lich_hoc.loai_buoi', 'thuc_hanh')
+            ->whereNotNull('lich_hoc.xe_id')
+            ->where('diem_danh.co_mat', true)
+            ->whereNotNull('diem_danh.km_chay')
+            ->where('diem_danh.km_chay', '>', 0)
+            ->select(
+                'lich_hoc.xe_id',
+                'diem_danh.lich_hoc_id',
+                DB::raw('MAX(diem_danh.km_chay) as km_buoi')
+            )
+            ->groupBy('lich_hoc.xe_id', 'diem_danh.lich_hoc_id')
+            ->get();
+
+        foreach ($rows1 as $row) {
+            $xeKmMap[$row->xe_id] = ($xeKmMap[$row->xe_id] ?? 0) + $row->km_buoi;
+        }
+
+        // ── Trường hợp 2: xe gán qua bảng xe_lop_hoc (lich_hoc.xe_id = NULL) ──
+        $rows2 = DB::table('diem_danh')
+            ->join('lich_hoc', 'diem_danh.lich_hoc_id', '=', 'lich_hoc.id')
+            ->join('xe_lop_hoc', 'xe_lop_hoc.lop_hoc_id', '=', 'lich_hoc.lop_hoc_id')
+            ->where('lich_hoc.loai_buoi', 'thuc_hanh')
+            ->whereNull('lich_hoc.xe_id')   // chỉ lấy buổi chưa có xe trực tiếp
+            ->where('diem_danh.co_mat', true)
+            ->whereNotNull('diem_danh.km_chay')
+            ->where('diem_danh.km_chay', '>', 0)
+            ->select(
+                'xe_lop_hoc.xe_id',
+                'diem_danh.lich_hoc_id',
+                DB::raw('MAX(diem_danh.km_chay) as km_buoi')
+            )
+            ->groupBy('xe_lop_hoc.xe_id', 'diem_danh.lich_hoc_id')
+            ->get();
+
+        foreach ($rows2 as $row) {
+            $xeKmMap[$row->xe_id] = ($xeKmMap[$row->xe_id] ?? 0) + $row->km_buoi;
+        }
+
+        // Cộng dồn km từng buổi vào xe
+        foreach ($xeKmMap as $xeId => $tongKm) {
+            Xe::where('id', $xeId)->update(['so_km_hien_tai' => $tongKm]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => "Đã đồng bộ km cho " . count($xeKmMap) . " xe từ dữ liệu điểm danh.",
+            'data'    => collect($xeKmMap)->map(fn($km, $id) => ['xe_id' => $id, 'tong_km' => $km])->values(),
+        ]);
     }
 }

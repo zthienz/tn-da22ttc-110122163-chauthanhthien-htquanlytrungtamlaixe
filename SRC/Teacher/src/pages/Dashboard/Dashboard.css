@@ -1,0 +1,57 @@
+.tv-dashboard { display: flex; flex-direction: column; gap: 20px; }
+
+/* Lịch hôm nay */
+.tv-lich-list { display: flex; flex-direction: column; gap: 10px; }
+.tv-lich-item {
+  display: flex; align-items: center; gap: 16px;
+  padding: 14px 16px; border-radius: 10px;
+  border: 1px solid #e2e8f0; transition: all .2s;
+}
+.tv-lich-item.ly_thuyet { border-left: 4px solid #3b82f6; background: #f8fbff; }
+.tv-lich-item.thuc_hanh { border-left: 4px solid #22c55e; background: #f0fdf4; }
+.tv-lich-time {
+  display: flex; flex-direction: column; align-items: center;
+  min-width: 52px; font-size: 13px; font-weight: 700; color: #1a202c; gap: 2px;
+}
+.tv-lich-info { flex: 1; }
+.tv-lich-lop  { font-size: 14px; font-weight: 700; color: #1a202c; margin-bottom: 3px; }
+.tv-lich-type { font-size: 12px; color: #718096; }
+.tv-lich-dia  { font-size: 12px; color: #718096; margin-top: 2px; }
+
+.tv-greeting {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(135deg, #064e3b, #059669);
+  border-radius: 16px;
+  padding: 24px 28px;
+  color: #fff;
+}
+.tv-greeting h2 { font-size: 22px; font-weight: 800; margin-bottom: 4px; }
+.tv-greeting h2 span { color: #6ee7b7; }
+.tv-greeting p { font-size: 13px; color: rgba(255,255,255,.75); }
+.tv-greeting-date { font-size: 13px; color: rgba(255,255,255,.7); text-align: right; }
+
+.tv-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.tv-stat-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 18px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.06);
+  border-left: 4px solid #e2e8f0;
+}
+.tv-stat-card.green  { border-left-color: #059669; }
+.tv-stat-card.blue   { border-left-color: #0891b2; }
+.tv-stat-card.purple { border-left-color: #7c3aed; }
+.tv-stat-card.orange { border-left-color: #d97706; }
+.tv-stat-icon  { font-size: 28px; }
+.tv-stat-value { font-size: 24px; font-weight: 800; color: #1a202c; margin: 0; }
+.tv-stat-label { font-size: 12px; color: #718096; margin: 0; }
+
+@media (max-width: 768px) {
+  .tv-stats { grid-template-columns: 1fr 1fr; }
+  .tv-greeting { flex-direction: column; gap: 8px; }
+}

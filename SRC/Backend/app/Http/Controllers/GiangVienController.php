@@ -37,6 +37,7 @@ class GiangVienController extends Controller
                 'bang_cap'        => $gv->bang_cap,
                 'nam_kinh_nghiem' => $gv->nam_kinh_nghiem,
                 'ghi_chu'         => $gv->ghi_chu,
+                'anh_dai_dien'    => $gv->anh_dai_dien,
                 'lop_count'       => $lopCount,
             ],
         ]);
@@ -57,15 +58,19 @@ class GiangVienController extends Controller
             ->withCount('hocVienLop')
             ->where('giang_vien_ly_thuyet_id', $gv->id)
             ->get()
-            ->map(fn($l) => array_merge($l->toArray(), ['chuyen_mon' => 'ly_thuyet', 'hoc_vien_count' => $l->hoc_vien_lop_count]));
+            ->map(fn($l) => array_merge($l->toArray(), ['chuyen_mon' => 'ly_thuyet', 'hoc_vien_count' => $l->hoc_vien_lop_count]))
+            ->toArray();
 
         $lopTH = LopHoc::with(['khoaHoc'])
             ->withCount('hocVienLop')
             ->where('giang_vien_thuc_hanh_id', $gv->id)
             ->get()
-            ->map(fn($l) => array_merge($l->toArray(), ['chuyen_mon' => 'thuc_hanh', 'hoc_vien_count' => $l->hoc_vien_lop_count]));
+            ->map(fn($l) => array_merge($l->toArray(), ['chuyen_mon' => 'thuc_hanh', 'hoc_vien_count' => $l->hoc_vien_lop_count]))
+            ->toArray();
 
-        $all = $lopLT->merge($lopTH)->unique('id')->values();
+        // Gộp 2 mảng, loại trùng theo id
+        $merged = collect(array_merge($lopLT, $lopTH));
+        $all = $merged->unique('id')->values();
 
         return response()->json(['success' => true, 'data' => $all]);
     }
@@ -119,7 +124,17 @@ class GiangVienController extends Controller
             return response()->json(['success' => false, 'message' => 'Không có quyền'], 403);
         }
 
+        // Lọc loại buổi theo chuyên môn: GV lý thuyết chỉ thấy buổi LT, GV thực hành chỉ thấy buổi TH
+        $loaiBuoi = null;
+        if ($gv->chuyen_mon === 'ly_thuyet') {
+            $loaiBuoi = 'ly_thuyet';
+        } elseif ($gv->chuyen_mon === 'thuc_hanh') {
+            $loaiBuoi = 'thuc_hanh';
+        }
+        // ca_hai → không lọc, thấy tất cả
+
         $lichHoc = LichHoc::where('lop_hoc_id', $lopId)
+            ->when($loaiBuoi, fn($q) => $q->where('loai_buoi', $loaiBuoi))
             ->when($request->from, fn($q) => $q->where('ngay_hoc', '>=', $request->from))
             ->orderBy('ngay_hoc')->orderBy('gio_bat_dau')
             ->get();
@@ -139,12 +154,49 @@ class GiangVienController extends Controller
             ->orWhere('giang_vien_thuc_hanh_id', $gv->id)
             ->pluck('id');
 
+        // Lọc loại buổi theo chuyên môn
+        $loaiBuoi = match($gv->chuyen_mon) {
+            'ly_thuyet' => 'ly_thuyet',
+            'thuc_hanh' => 'thuc_hanh',
+            default     => null,
+        };
+
         $lich = LichHoc::with('lopHoc')
             ->whereIn('lop_hoc_id', $lopIds)
+            ->when($loaiBuoi, fn($q) => $q->where('loai_buoi', $loaiBuoi))
             ->whereDate('ngay_hoc', today())
             ->orderBy('gio_bat_dau')
             ->get();
 
         return response()->json(['success' => true, 'data' => $lich]);
+    }
+
+    // Lịch dạy theo tuần (cho thời khóa biểu)
+    public function lichTheoTuan(Request $request)
+    {
+        $user = $request->auth_user;
+        $gv   = GiangVien::where('user_id', $user->id)->first();
+
+        if (!$gv) return response()->json(['success' => true, 'data' => []]);
+
+        $lopIds = LopHoc::where('giang_vien_ly_thuyet_id', $gv->id)
+            ->orWhere('giang_vien_thuc_hanh_id', $gv->id)
+            ->pluck('id');
+
+        // Lọc loại buổi theo chuyên môn
+        $loaiBuoi = match($gv->chuyen_mon) {
+            'ly_thuyet' => 'ly_thuyet',
+            'thuc_hanh' => 'thuc_hanh',
+            default     => null,
+        };
+
+        $query = LichHoc::with(['lopHoc.khoaHoc', 'xe'])
+            ->whereIn('lop_hoc_id', $lopIds)
+            ->when($loaiBuoi, fn($q) => $q->where('loai_buoi', $loaiBuoi))
+            ->when($request->from, fn($q) => $q->where('ngay_hoc', '>=', $request->from))
+            ->when($request->to,   fn($q) => $q->where('ngay_hoc', '<=', $request->to))
+            ->orderBy('ngay_hoc')->orderBy('gio_bat_dau');
+
+        return response()->json(['success' => true, 'data' => $query->get()]);
     }
 }

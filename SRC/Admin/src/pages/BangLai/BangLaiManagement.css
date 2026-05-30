@@ -1,0 +1,132 @@
+/* ── BangLai Management ── */
+.banglai-page {
+  padding: 0;
+}
+
+/* Stats */
+.banglai-stats {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.bl-stat-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px 22px;
+  min-width: 160px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+.bl-stat-card.green { border-left: 4px solid #38a169; }
+.bl-stat-card.gray  { border-left: 4px solid #a0aec0; }
+
+.bl-stat-icon { font-size: 28px; }
+.bl-stat-value { font-size: 22px; font-weight: 800; color: #1a202c; margin: 0; }
+.bl-stat-label { font-size: 12px; color: #718096; margin: 0; }
+
+/* Form grid */
+.bl-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* Modal tabs */
+.bl-modal-tabs {
+  display: flex;
+  border-bottom: 2px solid #e2e8f0;
+  padding: 0 24px;
+  background: #f8fafc;
+}
+
+.bl-modal-tab {
+  padding: 12px 20px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: #718096;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  transition: all 0.2s;
+}
+
+.bl-modal-tab:hover { color: #0d47a1; }
+.bl-modal-tab.active {
+  color: #0d47a1;
+  border-bottom-color: #0d47a1;
+}
+
+/* Frontend notice */
+.bl-frontend-notice {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #1d4ed8;
+  margin-bottom: 16px;
+}
+
+/* Detail */
+.bl-detail-section-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0d47a1;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #e0ecff;
+  margin-bottom: 12px;
+}
+
+.bl-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.bl-detail-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+
+.bl-detail-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+
+.bl-detail-value {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111827;
+}
+
+/* Modal xl */
+.modal.modal-xl {
+  max-width: 1020px;
+  width: 96vw;
+}
+
+@media (max-width: 640px) {
+  .bl-form-grid,
+  .bl-detail-grid {
+    grid-template-columns: 1fr;
+  }
+  .banglai-stats {
+    flex-direction: column;
+  }
+}

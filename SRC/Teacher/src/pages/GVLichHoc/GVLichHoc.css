@@ -1,0 +1,95 @@
+.gvlh2-page { display: flex; flex-direction: column; gap: 16px; }
+
+/* Toolbar */
+.gvlh2-toolbar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.gvlh2-week-nav { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.gvlh2-week-label {
+  font-weight: 700; font-size: 15px; color: #1a202c;
+  padding: 0 8px; min-width: 180px; text-align: center;
+}
+
+/* Timetable wrapper */
+.gvlh2-timetable-wrap {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow-x: auto;
+  box-shadow: 0 1px 4px rgba(0,0,0,.06);
+}
+.gvlh2-timetable { min-width: 700px; }
+
+/* Header */
+.gvlh2-tt-header {
+  display: grid;
+  grid-template-columns: 52px repeat(7, 1fr);
+  border-bottom: 2px solid #e2e8f0;
+  position: sticky; top: 0;
+  background: #fff; z-index: 10;
+}
+.gvlh2-time-col {
+  border-right: 1px solid #e2e8f0;
+}
+.gvlh2-day-header {
+  padding: 10px 6px; text-align: center;
+  border-right: 1px solid #f1f5f9;
+}
+.gvlh2-day-header.today { background: #eff6ff; }
+.gvlh2-day-name {
+  display: block; font-size: 11px; font-weight: 700;
+  color: #374151; text-transform: uppercase; letter-spacing: .04em;
+}
+.gvlh2-day-num {
+  display: block; font-size: 17px; font-weight: 800;
+  color: #1a202c; margin-top: 2px;
+}
+.gvlh2-day-num.today-num {
+  background: #0d47a1; color: #fff;
+  border-radius: 50%; width: 30px; height: 30px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 14px;
+}
+
+/* Body */
+.gvlh2-tt-body {
+  display: grid;
+  grid-template-columns: 52px repeat(7, 1fr);
+}
+.gvlh2-time-label {
+  position: absolute; right: 5px;
+  font-size: 10px; color: #9ca3af;
+  font-weight: 600; white-space: nowrap; padding-top: 2px;
+}
+.gvlh2-hline {
+  position: absolute; left: 0; right: 0;
+  border-top: 1px solid #e2e8f0; pointer-events: none;
+}
+.gvlh2-day-col {
+  border-right: 1px solid #f1f5f9;
+  overflow: visible;
+}
+.gvlh2-day-col.today-col { background: #fafcff; }
+
+/* Event */
+.gvlh2-event {
+  position: absolute; left: 3px; right: 3px;
+  border-radius: 6px; padding: 3px 6px;
+  cursor: pointer; overflow: hidden; z-index: 2;
+  transition: box-shadow .15s, transform .1s;
+}
+.gvlh2-event:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,.15);
+  transform: translateX(1px); z-index: 5;
+}
+.gvlh2-ev-time { font-size: 10px; font-weight: 700; margin: 0 0 2px; }
+.gvlh2-ev-lop  { font-size: 11px; font-weight: 700; margin: 0 0 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gvlh2-ev-type { font-size: 10px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Legend */
+.gvlh2-legend {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 4px 0;
+}
+.gvlh2-legend-item {
+  padding: 4px 10px; border-radius: 6px;
+  font-size: 12px; font-weight: 600;
+  border-left-width: 3px; border-left-style: solid;
+}

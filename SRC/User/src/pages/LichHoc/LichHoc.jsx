@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import axios from 'axios'
 import { useUser } from '../../context/UserContext'
 import './LichHoc.css'
@@ -165,7 +165,7 @@ const GiangVienCard = ({ gv, type }) => (
   <div className="gv-card">
     <div className="gv-avatar">
       {gv.anh_dai_dien
-        ? <img src={`/${gv.anh_dai_dien}`} alt={gv.ho_ten} />
+        ? <img src={`/uploads/${gv.anh_dai_dien}`} alt={gv.ho_ten} />
         : <span>{gv.ho_ten?.charAt(0).toUpperCase()}</span>
       }
     </div>

@@ -7,17 +7,37 @@ use Illuminate\Http\Request;
 
 class KhoaHocController extends Controller
 {
-    // Public: Danh sách khóa học (cho trang quảng bá)
+    // Thứ tự hiển thị từ thấp đến cao
+    private const BANG_ORDER = ['A1','A','B1','B2','C1','C','D','E','CE'];
+
+    private function sortByBang($collection)
+    {
+        return $collection->sortBy(fn($k) =>
+            array_search($k->loai_bang, self::BANG_ORDER) !== false
+                ? array_search($k->loai_bang, self::BANG_ORDER)
+                : 99
+        )->values();
+    }
+
+    // Public: Danh sách loại bằng lái (cho trang quảng bá) — chỉ loại bằng thuần
     public function publicIndex()
     {
-        $khoaHoc = KhoaHoc::where('is_active', true)->latest()->get();
+        $khoaHoc = $this->sortByBang(
+            KhoaHoc::where('is_active', true)
+                ->whereNull('thang')
+                ->get()
+        );
         return response()->json(['success' => true, 'data' => $khoaHoc]);
     }
 
-    // Admin: Danh sách tất cả
+    // Admin: Danh sách tất cả loại bằng lái (không phải khóa học đào tạo theo tháng)
     public function index()
     {
-        $khoaHoc = KhoaHoc::withCount('lopHoc')->latest()->get();
+        $khoaHoc = $this->sortByBang(
+            KhoaHoc::withCount('lopHoc')
+                ->whereNull('thang')   // chỉ lấy loại bằng lái thuần, không lấy khóa học theo tháng
+                ->get()
+        );
         return response()->json(['success' => true, 'data' => $khoaHoc]);
     }
 
@@ -25,8 +45,8 @@ class KhoaHocController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'ten_khoa'  => 'required|string|max:100',
-            'loai_bang' => 'required|in:A1,A2,B1,B2,C,D,E',
+            'ten_khoa'  => 'required|string|max:150',
+            'loai_bang' => 'required|in:A1,A,B1,B2,C1,C,D,E,CE',
             'hoc_phi'   => 'required|numeric|min:0',
         ]);
 

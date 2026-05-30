@@ -1,0 +1,48 @@
+.hocphi-page {}
+
+/* Stats */
+.hocphi-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
+@media (max-width: 900px) { .hocphi-stats { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 500px) { .hocphi-stats { grid-template-columns: 1fr; } }
+
+.hocphi-stat-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.05);
+}
+.hocphi-stat-card.green { border-left: 4px solid #16a34a; }
+.hocphi-stat-card.blue  { border-left: 4px solid #2563eb; }
+.hocphi-stat-card.orange{ border-left: 4px solid #ea580c; }
+
+.hocphi-stat-icon { font-size: 28px; }
+.hocphi-stat-value { font-size: 18px; font-weight: 700; color: #1a202c; }
+.hocphi-stat-label { font-size: 12px; color: #718096; margin-top: 2px; }
+
+/* Detail card in modal */
+.hocphi-detail-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  background: #f0fdf4;
+  border-radius: 10px;
+  border: 1px solid #bbf7d0;
+}
+.hocphi-detail-avatar {
+  width: 48px; height: 48px; border-radius: 50%;
+  background: #16a34a;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-weight: 800; font-size: 20px; flex-shrink: 0;
+}
+.hocphi-detail-name { font-weight: 700; font-size: 16px; margin: 0 0 4px; }
+.hocphi-detail-cccd { font-size: 12px; color: #4b5563; }

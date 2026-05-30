@@ -1,0 +1,89 @@
+@startuml UC_TongQuan
+title Sơ đồ Use Case - Tổng quan hệ thống
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+
+actor "Học Viên" as HV
+actor "Giảng Viên" as GV
+actor "Admin" as AD
+
+rectangle "Hệ thống quản lý trung tâm đào tạo lái xe" {
+
+  package "Đăng ký & Hồ sơ" {
+    usecase "Đăng ký tư vấn online" as UC1
+    usecase "Xem thông tin khóa học" as UC2
+    usecase "Quản lý hồ sơ học viên" as UC3
+    usecase "Ghi nhận học phí" as UC4
+    usecase "Xếp lớp học viên" as UC5
+  }
+
+  package "Quản lý đào tạo" {
+    usecase "Quản lý lớp học" as UC6
+    usecase "Quản lý lịch học" as UC7
+    usecase "Điểm danh học viên" as UC8
+    usecase "Xem lịch học" as UC9
+    usecase "Xem tiến độ học" as UC10
+  }
+
+  package "Quản lý thi cử" {
+    usecase "Quản lý lịch thi" as UC11
+    usecase "Nhập kết quả thi" as UC12
+    usecase "Xem kết quả thi" as UC13
+    usecase "Cấp chứng chỉ / bằng" as UC14
+  }
+
+  package "Quản lý học phí" {
+    usecase "Xem học phí cá nhân" as UC15
+    usecase "Thống kê doanh thu" as UC16
+  }
+
+  package "Quản lý xe" {
+    usecase "Quản lý phương tiện" as UC17
+    usecase "Phân xe cho lịch học" as UC18
+    usecase "Báo lỗi xe" as UC19
+    usecase "Xử lý báo lỗi xe" as UC20
+  }
+
+  package "Quản lý tài khoản" {
+    usecase "Đăng nhập" as UC21
+    usecase "Quản lý giảng viên" as UC22
+    usecase "Xem thông tin cá nhân" as UC23
+  }
+}
+
+' Học viên
+HV --> UC1
+HV --> UC2
+HV --> UC9
+HV --> UC10
+HV --> UC13
+HV --> UC15
+HV --> UC21
+HV --> UC23
+
+' Giảng viên
+GV --> UC8
+GV --> UC9
+GV --> UC19
+GV --> UC21
+GV --> UC23
+
+' Admin
+AD --> UC3
+AD --> UC4
+AD --> UC5
+AD --> UC6
+AD --> UC7
+AD --> UC11
+AD --> UC12
+AD --> UC14
+AD --> UC16
+AD --> UC17
+AD --> UC18
+AD --> UC20
+AD --> UC22
+AD --> UC21
+
+@enduml

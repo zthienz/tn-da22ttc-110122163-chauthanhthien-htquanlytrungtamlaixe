@@ -12,11 +12,14 @@ const ThiManagement = () => {
   const [tab, setTab]           = useState('lich') // 'lich' | 'ket_qua'
   const [showModal, setShowModal]   = useState(false)
   const [showKQModal, setShowKQModal] = useState(false)
+  const [viewItem, setViewItem]     = useState(null)
   const [selectedLich, setSelectedLich] = useState(null)
   const [kqData, setKqData]     = useState([])
   const [baiThiList, setBaiThiList] = useState([])
   const [form, setForm] = useState({ khoa_hoc_id:'', loai_thi:'tot_nghiep', ngay_thi:'', gio_thi:'', dia_diem:'', don_vi_to_chuc:'' })
   const [khoaList, setKhoaList] = useState([])
+  const [search, setSearch]     = useState('')
+  const [filterLoai, setFilterLoai] = useState('')
   const headers = { Authorization: `Bearer ${token}` }
 
   const fetchAll = async () => {
@@ -35,12 +38,33 @@ const ThiManagement = () => {
   }
   useEffect(() => { fetchAll() }, [])
 
+  const [editingThi, setEditingThi] = useState(null)
+
+  const openEditThi = (lt) => {
+    setEditingThi(lt)
+    setForm({
+      khoa_hoc_id:     lt.khoa_hoc_id || '',
+      loai_thi:        lt.loai_thi || 'tot_nghiep',
+      ngay_thi:        lt.ngay_thi?.split('T')[0] || '',
+      gio_thi:         lt.gio_thi?.slice(0,5) || '',
+      dia_diem:        lt.dia_diem || '',
+      don_vi_to_chuc:  lt.don_vi_to_chuc || '',
+    })
+    setShowModal(true)
+  }
+
   const handleTaoLichThi = async e => {
     e.preventDefault()
     try {
-      const res = await axios.post(`${backendUrl}/api/admin/lich-thi`, form, { headers })
-      if (res.data.success) { toast.success('Tạo lịch thi thành công!'); setShowModal(false); fetchAll() }
-      else toast.error(res.data.message)
+      const res = editingThi
+        ? await axios.put(`${backendUrl}/api/admin/lich-thi/${editingThi.id}`, form, { headers })
+        : await axios.post(`${backendUrl}/api/admin/lich-thi`, form, { headers })
+      if (res.data.success) {
+        toast.success(editingThi ? 'Cập nhật lịch thi thành công!' : 'Tạo lịch thi thành công!')
+        setShowModal(false)
+        setEditingThi(null)
+        fetchAll()
+      } else toast.error(res.data.message)
     } catch (err) { toast.error(err.response?.data?.message || 'Lỗi') }
   }
 
@@ -72,11 +96,20 @@ const ThiManagement = () => {
 
   const LOAI_MAP = { tot_nghiep: { text:'Tốt nghiệp', cls:'badge-blue' }, sat_hanh: { text:'Sát hạch', cls:'badge-purple' } }
 
+  const filteredThi = lichThi.filter(lt => {
+    const matchSearch = !search ||
+      lt.khoa_hoc?.ten_khoa?.toLowerCase().includes(search.toLowerCase()) ||
+      lt.dia_diem?.toLowerCase().includes(search.toLowerCase()) ||
+      lt.don_vi_to_chuc?.toLowerCase().includes(search.toLowerCase())
+    const matchLoai = !filterLoai || lt.loai_thi === filterLoai
+    return matchSearch && matchLoai
+  })
+
   return (
     <div className="thi-page">
       <div className="page-header">
         <div><h2>🏆 Thi & Kết Quả</h2><p>Quản lý lịch thi tốt nghiệp và sát hạch</p></div>
-        <button className="btn btn-primary" onClick={() => { setForm({ khoa_hoc_id:'', loai_thi:'tot_nghiep', ngay_thi:'', gio_thi:'', dia_diem:'', don_vi_to_chuc:'' }); setShowModal(true) }}>
+        <button className="btn btn-primary" onClick={() => { setEditingThi(null); setForm({ khoa_hoc_id:'', loai_thi:'tot_nghiep', ngay_thi:'', gio_thi:'', dia_diem:'', don_vi_to_chuc:'' }); setShowModal(true) }}>
           + Tạo lịch thi
         </button>
       </div>
@@ -85,6 +118,17 @@ const ThiManagement = () => {
       <div className="thi-tabs">
         <button className={`thi-tab ${tab==='lich'?'active':''}`} onClick={() => setTab('lich')}>📅 Lịch Thi</button>
         <button className={`thi-tab ${tab==='ket_qua'?'active':''}`} onClick={() => setTab('ket_qua')}>📊 Kết Quả</button>
+      </div>
+
+      {/* Search bar */}
+      <div className="search-bar">
+        <input className="search-input" placeholder="🔍 Tìm theo khóa học, địa điểm, đơn vị tổ chức..."
+          value={search} onChange={e => setSearch(e.target.value)} />
+        <select className="search-input" style={{maxWidth:200}} value={filterLoai} onChange={e => setFilterLoai(e.target.value)}>
+          <option value="">Tất cả loại thi</option>
+          <option value="tot_nghiep">🎓 Tốt nghiệp</option>
+          <option value="sat_hanh">🏛️ Sát hạch (BCA)</option>
+        </select>
       </div>
 
       {loading ? <div className="loading-wrap"><div className="spinner"/></div> : (
@@ -100,9 +144,11 @@ const ThiManagement = () => {
                 </tr>
               </thead>
               <tbody>
-                {lichThi.length === 0 ? (
-                  <tr><td colSpan={8} style={{textAlign:'center',padding:'40px',color:'#a0aec0'}}>Chưa có lịch thi nào</td></tr>
-                ) : lichThi.map((lt, i) => {
+                {filteredThi.length === 0 ? (
+                  <tr><td colSpan={8} style={{textAlign:'center',padding:'40px',color:'#a0aec0'}}>
+                    {search || filterLoai ? 'Không tìm thấy kết quả phù hợp' : 'Chưa có lịch thi nào'}
+                  </td></tr>
+                ) : filteredThi.map((lt, i) => {
                   const lm = LOAI_MAP[lt.loai_thi] || { text: lt.loai_thi, cls:'badge-gray' }
                   return (
                     <tr key={lt.id}>
@@ -115,6 +161,7 @@ const ThiManagement = () => {
                       {tab === 'lich' && <td>{lt.don_vi_to_chuc || '—'}</td>}
                       <td>
                         <div className="action-cell">
+                          <button className="btn btn-info btn-sm" onClick={() => setViewItem(lt)}>👁️ Xem</button>
                           <button className="btn btn-primary btn-sm" onClick={() => openNhapKQ(lt)}>
                             📝 Nhập KQ
                           </button>
@@ -137,9 +184,9 @@ const ThiManagement = () => {
       {/* Modal tạo lịch thi */}
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="modal" onClick={e => e.stopPropagation()}>
+          <div className="modal modal-lg" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>📅 Tạo Lịch Thi</h3>
+              <h3>{editingThi ? '✏️ Sửa Lịch Thi' : '📅 Tạo Lịch Thi'}</h3>
               <button className="modal-close" onClick={() => setShowModal(false)}>✕</button>
             </div>
             <form onSubmit={handleTaoLichThi}>
@@ -169,7 +216,7 @@ const ThiManagement = () => {
               </div>
               <div className="modal-footer">
                 <button type="button" className="btn btn-outline" onClick={() => setShowModal(false)}>Hủy</button>
-                <button type="submit" className="btn btn-primary">Tạo lịch thi</button>
+                <button type="submit" className="btn btn-primary">{editingThi ? 'Cập nhật' : 'Tạo lịch thi'}</button>
               </div>
             </form>
           </div>
@@ -242,8 +289,89 @@ const ThiManagement = () => {
           </div>
         </div>
       )}
+
+      {/* ── MODAL XEM CHI TIẾT LỊCH THI ── */}
+      {viewItem && (
+        <div className="modal-overlay" onClick={() => setViewItem(null)}>
+          <div className="modal modal-lg" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>🏆 Chi Tiết Lịch Thi</h3>
+              <button className="modal-close" onClick={() => setViewItem(null)}>✕</button>
+            </div>
+            <div className="modal-body">
+              {/* Header */}
+              <div style={{textAlign:'center', marginBottom:20, padding:'14px', background:'#fdf4ff', borderRadius:10}}>
+                <div style={{fontSize:32, marginBottom:6}}>🏆</div>
+                <h2 style={{margin:0, fontSize:18}}>
+                  {viewItem.loai_thi === 'tot_nghiep' ? 'Thi Tốt Nghiệp' : 'Thi Sát Hạch (BCA)'}
+                </h2>
+                <div style={{marginTop:8, display:'flex', gap:8, justifyContent:'center'}}>
+                  {(() => {
+                    const lm = LOAI_MAP[viewItem.loai_thi] || { text: viewItem.loai_thi, cls:'badge-gray' }
+                    return <span className={`badge ${lm.cls}`}>{lm.text}</span>
+                  })()}
+                  {viewItem.khoa_hoc && <span className="badge badge-blue">Hạng {viewItem.khoa_hoc.loai_bang}</span>}
+                </div>
+              </div>
+
+              {/* Thông tin lịch thi */}
+              <div style={thiSectionTitle}>📋 Thông Tin Kỳ Thi</div>
+              <div style={thiGrid}>
+                <div style={thiBox}>
+                  <div style={thiLabel}>📅 Ngày thi</div>
+                  <div style={thiVal}>{new Date(viewItem.ngay_thi).toLocaleDateString('vi-VN', {weekday:'long', year:'numeric', month:'long', day:'numeric'})}</div>
+                </div>
+                <div style={thiBox}>
+                  <div style={thiLabel}>⏰ Giờ thi</div>
+                  <div style={thiVal}>{viewItem.gio_thi?.slice(0,5) || '—'}</div>
+                </div>
+                <div style={thiBox}>
+                  <div style={thiLabel}>📚 Khóa học</div>
+                  <div style={thiVal}>{viewItem.khoa_hoc?.ten_khoa || '—'}</div>
+                </div>
+                <div style={thiBox}>
+                  <div style={thiLabel}>📍 Địa điểm</div>
+                  <div style={thiVal}>{viewItem.dia_diem || '—'}</div>
+                </div>
+              </div>
+
+              {/* Đơn vị tổ chức (sát hạch) */}
+              {viewItem.loai_thi === 'sat_hanh' && (
+                <>
+                  <div style={{...thiSectionTitle, marginTop:16}}>🏛️ Đơn Vị Tổ Chức</div>
+                  <div style={thiBox}>
+                    <div style={thiVal}>{viewItem.don_vi_to_chuc || <span style={{color:'#9ca3af',fontStyle:'italic'}}>Chưa cập nhật</span>}</div>
+                  </div>
+                </>
+              )}
+
+              {/* Ngày tạo */}
+              <div style={{...thiGrid, marginTop:12}}>
+                <div style={{...thiBox, background:'#f9fafb'}}>
+                  <div style={thiLabel}>🗓️ Ngày tạo</div>
+                  <div style={{marginTop:4, fontSize:13, color:'#6b7280'}}>{viewItem.created_at ? new Date(viewItem.created_at).toLocaleDateString('vi-VN') : '—'}</div>
+                </div>
+                <div style={{...thiBox, background:'#f9fafb'}}>
+                  <div style={thiLabel}>🔄 Cập nhật</div>
+                  <div style={{marginTop:4, fontSize:13, color:'#6b7280'}}>{viewItem.updated_at ? new Date(viewItem.updated_at).toLocaleDateString('vi-VN') : '—'}</div>
+                </div>
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-outline" onClick={() => setViewItem(null)}>Đóng</button>
+              <button className="btn btn-primary" onClick={() => { setViewItem(null); openNhapKQ(viewItem) }}>📝 Nhập kết quả</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
+
+const thiSectionTitle = { fontSize:13, fontWeight:700, color:'#6d28d9', textTransform:'uppercase', letterSpacing:'0.05em', paddingBottom:8, borderBottom:'2px solid #ede9fe', marginBottom:12 }
+const thiGrid  = { display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }
+const thiBox   = { background:'#faf5ff', border:'1px solid #e9d5ff', borderRadius:8, padding:'10px 14px' }
+const thiLabel = { fontSize:11, fontWeight:600, color:'#7c3aed', textTransform:'uppercase', letterSpacing:'0.05em', marginBottom:4 }
+const thiVal   = { fontSize:14, fontWeight:600, color:'#111827' }
 
 export default ThiManagement

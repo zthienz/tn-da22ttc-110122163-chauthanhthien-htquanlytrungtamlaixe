@@ -31,7 +31,6 @@ const Home = () => {
               'Đào tạo A1, A, B1, B2, C1, C',
               'Thủ tục nhanh gọn',
               'Học 1 kèm 1, linh hoạt',
-              'Ưu đãi 2tr khi đăng ký',
               'Học phí trọn gói, không phát sinh',
             ].map((item, i) => (
               <li key={i}>

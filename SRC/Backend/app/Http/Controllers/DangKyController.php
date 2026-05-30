@@ -9,45 +9,52 @@ use Illuminate\Http\Request;
 class DangKyController extends Controller
 {
     /**
-     * Học viên đăng ký tư vấn từ trang quảng bá (online)
-     * → Tạo hồ sơ với trạng thái "cho_dong_hoc_phi"
+     * Học viên đăng ký học lái xe từ trang quảng bá (online)
+     * → Tạo hồ sơ đầy đủ với trạng thái "cho_dong_hoc_phi"
      * → Chưa có tài khoản, chờ admin xử lý
      */
     public function dangKyTuVan(Request $request)
     {
         $request->validate([
-            'ho_ten'      => 'required|string|max:100',
-            'dien_thoai'  => 'required|string|max:15',
-            'khoa_hoc'    => 'required|string',
-            'khu_vuc'     => 'nullable|string',
-            'email'       => 'nullable|email',
-            'ghi_chu'     => 'nullable|string',
+            'ho_ten'        => 'required|string|max:100',
+            'so_dien_thoai' => 'required|string|regex:/^0\d{9}$/',
+            'so_cccd'       => 'required|string|size:12|regex:/^\d{12}$/|unique:ho_so_hoc_vien,so_cccd',
+            'ngay_sinh'     => 'required|date',
+            'khoa_hoc_id'   => 'required|exists:khoa_hoc,id',
+            'email'         => 'nullable|string|regex:/@gmail\.com$/i',
+            'dia_chi'       => 'nullable|string|max:255',
+            'ghi_chu'       => 'nullable|string',
+            'anh_the'       => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
         ]);
 
-        // Tìm khóa học theo tên hoặc loại bằng
-        $khoa = KhoaHoc::where('ten_khoa', 'like', '%' . $request->khoa_hoc . '%')
-            ->orWhere('loai_bang', $request->khoa_hoc)
-            ->first();
+        // Xử lý upload ảnh thẻ
+        $anhThePath = null;
+        if ($request->hasFile('anh_the')) {
+            $file     = $request->file('anh_the');
+            $fileName = 'hocvien_' . preg_replace('/[^a-zA-Z0-9]/', '', $request->ho_ten) . '_' . time() . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('uploads'), $fileName);
+            $anhThePath = $fileName;
+        }
 
-        // Tạo hồ sơ tư vấn (chưa có CCCD, ngày sinh — admin sẽ bổ sung)
         $hoSo = HoSoHocVien::create([
-            'user_id'       => null,
-            'khoa_hoc_id'   => $khoa?->id ?? null,
-            'ho_ten'        => $request->ho_ten,
-            'ngay_sinh'     => '2000-01-01', // placeholder, admin sẽ cập nhật
-            'so_cccd'       => 'TV_' . time() . '_' . rand(1000, 9999), // tạm thời
-            'so_dien_thoai' => $request->dien_thoai,
-            'email'         => $request->email,
-            'dia_chi'       => $request->khu_vuc,
-            'nguon_dang_ky' => 'online',
-            'trang_thai'    => 'cho_dong_hoc_phi',
+            'user_id'            => null,
+            'khoa_hoc_id'        => $request->khoa_hoc_id,
+            'ho_ten'             => $request->ho_ten,
+            'ngay_sinh'          => $request->ngay_sinh,
+            'so_cccd'            => $request->so_cccd,
+            'so_dien_thoai'      => $request->so_dien_thoai,
+            'email'              => $request->email,
+            'dia_chi'            => $request->dia_chi,
+            'anh_the'            => $anhThePath,
+            'nguon_dang_ky'      => 'online',
+            'trang_thai'         => 'cho_dong_hoc_phi',
             'trang_thai_hoc_phi' => 'chua_dong',
-            'ghi_chu'       => "Khóa quan tâm: {$request->khoa_hoc}" . ($request->ghi_chu ? " | {$request->ghi_chu}" : ''),
+            'ghi_chu'            => $request->ghi_chu,
         ]);
 
         return response()->json([
             'success' => true,
-            'message' => 'Đăng ký tư vấn thành công! Trung tâm sẽ liên hệ với bạn trong 24h.',
+            'message' => 'Đăng ký thành công! Trung tâm sẽ liên hệ xác nhận và hướng dẫn đóng học phí trong 24h.',
             'data'    => ['id' => $hoSo->id, 'ho_ten' => $hoSo->ho_ten],
         ], 201);
     }

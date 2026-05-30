@@ -1,0 +1,71 @@
+@startuml UC_DaoTao
+title Sơ đồ Use Case - Phân hệ Đào tạo
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+
+actor "Học Viên" as HV
+actor "Giảng Viên" as GV
+actor "Admin" as AD
+
+rectangle "Phân hệ Đào tạo" {
+
+  package "Quản lý lớp học" {
+    usecase "Xem danh sách lớp" as UC1
+    usecase "Tạo lớp học mới" as UC2
+    usecase "Cập nhật lớp học" as UC3
+    usecase "Xóa lớp học" as UC4
+    usecase "Xem học viên trong lớp" as UC5
+  }
+
+  package "Quản lý lịch học" {
+    usecase "Xem lịch học" as UC6
+    usecase "Tạo buổi học" as UC7
+    usecase "Cập nhật buổi học" as UC8
+    usecase "Xóa buổi học" as UC9
+    usecase "Phân xe cho buổi học" as UC10
+  }
+
+  package "Điểm danh" {
+    usecase "Xem danh sách điểm danh" as UC11
+    usecase "Ghi nhận điểm danh" as UC12
+    usecase "Cập nhật km thực hành" as UC13
+  }
+
+  package "Tiến độ học viên" {
+    usecase "Xem tiến độ cá nhân" as UC14
+    usecase "Xem tóm tắt học tập" as UC15
+    usecase "Kiểm tra điều kiện thi" as UC16
+  }
+
+  UC12 .> UC13 : <<extend>>\n(buổi thực hành)
+  UC12 .> UC16 : <<include>>
+}
+
+' Học viên
+HV --> UC6
+HV --> UC14
+HV --> UC15
+
+' Giảng viên
+GV --> UC5
+GV --> UC6
+GV --> UC11
+GV --> UC12
+
+' Admin
+AD --> UC1
+AD --> UC2
+AD --> UC3
+AD --> UC4
+AD --> UC5
+AD --> UC6
+AD --> UC7
+AD --> UC8
+AD --> UC9
+AD --> UC10
+AD --> UC11
+AD --> UC12
+
+@enduml

@@ -1,0 +1,25 @@
+.teacher-wrapper {
+  display: flex;
+  min-height: 100vh;
+}
+
+.teacher-main {
+  flex: 1;
+  margin-left: 240px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  transition: margin-left 0.25s ease;
+}
+
+.sidebar-collapsed .teacher-main { margin-left: 64px; }
+
+.teacher-content {
+  flex: 1;
+  padding: 28px;
+  overflow-y: auto;
+}
+
+@media (max-width: 768px) {
+  .teacher-main { margin-left: 0 !important; }
+}

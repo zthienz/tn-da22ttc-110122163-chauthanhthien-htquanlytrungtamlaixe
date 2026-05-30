@@ -1,0 +1,132 @@
+/* ── Avatar nhỏ trong bảng ── */
+.gv-avatar-sm {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: linear-gradient(135deg, #0d47a1, #1976d2);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-weight: 800; font-size: 14px;
+  flex-shrink: 0; overflow: hidden;
+}
+.gv-avatar-img { width: 100%; height: 100%; object-fit: cover; }
+
+/* ── Modal chi tiết ── */
+.gv-detail-modal { max-width: 780px; }
+.gv-detail-body  { padding: 24px 28px; }
+
+.gv-detail-layout {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 28px;
+  align-items: flex-start;
+}
+
+/* Cột trái */
+.gv-detail-left {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 8px;
+}
+
+.gv-detail-anh-wrap {
+  width: 150px; height: 180px;
+  border-radius: 12px; overflow: hidden;
+  border: 3px solid #e2e8f0;
+  background: #f1f5f9;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 16px rgba(0,0,0,.1);
+}
+.gv-detail-anh {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+}
+.gv-detail-anh-fallback {
+  width: 100%; height: 100%;
+  background: linear-gradient(135deg, #0d47a1, #1976d2);
+  color: #fff; font-size: 52px; font-weight: 900;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.gv-detail-name {
+  font-size: 15px; font-weight: 800; color: #1a202c;
+  text-align: center; margin: 4px 0 0;
+}
+
+.gv-detail-exp {
+  display: flex; flex-direction: column; align-items: center;
+  background: #f0f4ff; border: 1px solid #c7d7f9;
+  border-radius: 10px; padding: 10px 16px; margin-top: 8px;
+  width: 100%;
+}
+.gv-detail-exp-num   { font-size: 28px; font-weight: 900; color: #0d47a1; line-height: 1; }
+.gv-detail-exp-label { font-size: 11px; color: #718096; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+
+/* Cột phải */
+.gv-detail-right { display: flex; flex-direction: column; }
+
+.gv-section-title {
+  font-size: 12px; font-weight: 700; color: #0d47a1;
+  text-transform: uppercase; letter-spacing: .05em;
+  padding-bottom: 8px; border-bottom: 2px solid #e0ecff;
+  margin-bottom: 12px;
+}
+
+.gv-detail-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+  margin-bottom: 4px;
+}
+
+.gv-detail-box {
+  background: #f8fafc; border: 1px solid #e2e8f0;
+  border-radius: 8px; padding: 10px 14px;
+}
+.gv-detail-label {
+  font-size: 11px; font-weight: 600; color: #6b7280;
+  text-transform: uppercase; letter-spacing: .05em; margin-bottom: 4px;
+}
+.gv-detail-value { font-size: 14px; font-weight: 600; color: #111827; }
+
+/* ── Form thêm / sửa ── */
+.gv-form-layout {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 28px;
+  align-items: flex-start;
+}
+
+.gv-anh-col {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 6px;
+}
+.gv-anh-label {
+  font-size: 12px; font-weight: 700; color: #4a5568;
+  text-transform: uppercase; letter-spacing: .05em;
+  align-self: flex-start;
+}
+.gv-anh-upload {
+  width: 150px; height: 180px;
+  border: 2px dashed #cbd5e0; border-radius: 10px;
+  cursor: pointer; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+  background: #f8fafc; transition: all .2s;
+}
+.gv-anh-upload:hover { border-color: #0d47a1; background: #eff6ff; }
+.gv-anh-upload.has-image { border-style: solid; border-color: #0d47a1; background: #000; }
+.gv-anh-preview { width: 100%; height: 100%; object-fit: cover; }
+.gv-anh-placeholder {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 6px; padding: 16px; text-align: center;
+}
+.gv-anh-placeholder span { font-size: 32px; }
+.gv-anh-placeholder p    { font-size: 12px; font-weight: 600; color: #718096; }
+.gv-anh-placeholder small { font-size: 11px; color: #a0aec0; }
+.gv-anh-hint {
+  font-size: 11px; color: #a0aec0;
+  text-align: center; line-height: 1.5; margin-top: 4px;
+}
+
+.gv-info-col { display: flex; flex-direction: column; }
+
+.form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+@media (max-width: 700px) {
+  .gv-detail-layout, .gv-form-layout { grid-template-columns: 1fr; }
+  .gv-detail-left { flex-direction: row; flex-wrap: wrap; justify-content: center; }
+  .gv-detail-grid, .form-row-2 { grid-template-columns: 1fr; }
+}

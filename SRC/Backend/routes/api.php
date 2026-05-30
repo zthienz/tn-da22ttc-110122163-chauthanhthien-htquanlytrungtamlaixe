@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HocVienController;
 use App\Http\Controllers\KhoaHocController;
+use App\Http\Controllers\KhoaHocDaoTaoController;
 use App\Http\Controllers\LopHocController;
 use App\Http\Controllers\LichHocController;
 use App\Http\Controllers\ThiController;
@@ -59,11 +60,18 @@ Route::middleware(['auth.jwt', 'role:admin|giang_vien'])->prefix('admin')->group
 
     // Dashboard
     Route::get('/dashboard',                [AdminController::class, 'dashboard']);
+    Route::get('/hoat-dong-gan-day',        [AdminController::class, 'hoatDongGanDay']);
+    Route::get('/chart-doanh-thu',          [AdminController::class, 'chartDoanhThu']);
+    Route::get('/chart-hoc-vien',           [AdminController::class, 'chartHocVien']);
 
     // ── Hồ sơ học viên ──────────────────────────────────────────────────────
     Route::get('/ho-so',                    [AdminController::class, 'hoSoList']);
     Route::get('/ho-so/{id}',               [AdminController::class, 'hoSoDetail']);
     Route::post('/ho-so',                   [AdminController::class, 'taoHoSoOffline']);
+    Route::post('/ho-so/{id}/anh-the',      [AdminController::class, 'uploadAnhThe']);
+    Route::put('/ho-so/{id}',               [AdminController::class, 'capNhatHoSo']);
+    Route::post('/ho-so/{id}/update',       [AdminController::class, 'capNhatHoSo']);  // FormData fallback
+    Route::delete('/ho-so/{id}',            [AdminController::class, 'xoaHoSo']);
     Route::patch('/ho-so/{id}/trang-thai',  [AdminController::class, 'capNhatTrangThai']);
 
     // Ghi nhận học phí
@@ -75,14 +83,27 @@ Route::middleware(['auth.jwt', 'role:admin|giang_vien'])->prefix('admin')->group
     // Xếp lớp + tạo tài khoản cùng lúc
     Route::post('/ho-so/{id}/xep-lop',              [AdminController::class, 'xepLopVaTaoTaiKhoan']);
 
-    // Reset mật khẩu về mặc định (CCCD + ngày sinh)
-    Route::post('/ho-so/{id}/reset-mat-khau',       [AdminController::class, 'resetMatKhauHocVien']);
-
-    // ── Khóa học ────────────────────────────────────────────────────────────
+    // ── Khóa học (loại bằng lái - dùng cho trang BangLai) ──────────────────
     Route::get('/khoa-hoc',                 [KhoaHocController::class, 'index']);
     Route::post('/khoa-hoc',                [KhoaHocController::class, 'store']);
     Route::put('/khoa-hoc/{id}',            [KhoaHocController::class, 'update']);
     Route::delete('/khoa-hoc/{id}',         [KhoaHocController::class, 'destroy']);
+
+    // ── Khóa học đào tạo (theo tháng/năm) ───────────────────────────────────
+    Route::get('/khoa-hoc-dao-tao',                             [KhoaHocDaoTaoController::class, 'index']);
+    Route::post('/khoa-hoc-dao-tao',                            [KhoaHocDaoTaoController::class, 'store']);
+    Route::get('/khoa-hoc-dao-tao/{id}',                        [KhoaHocDaoTaoController::class, 'show']);
+    Route::put('/khoa-hoc-dao-tao/{id}',                        [KhoaHocDaoTaoController::class, 'update']);
+    Route::delete('/khoa-hoc-dao-tao/{id}',                     [KhoaHocDaoTaoController::class, 'destroy']);
+    // Lớp học trong khóa đào tạo
+    Route::post('/khoa-hoc-dao-tao/{khoaId}/lop',               [KhoaHocDaoTaoController::class, 'storeLop']);
+    Route::put('/lop-hoc-dao-tao/{lopId}',                      [KhoaHocDaoTaoController::class, 'updateLop']);
+    Route::delete('/lop-hoc-dao-tao/{lopId}',                   [KhoaHocDaoTaoController::class, 'destroyLop']);
+    // Phân học viên & xe
+    Route::post('/lop-hoc-dao-tao/{lopId}/phan-hoc-vien',       [KhoaHocDaoTaoController::class, 'phanHocVien']);
+    Route::post('/lop-hoc-dao-tao/{lopId}/phan-xe',             [KhoaHocDaoTaoController::class, 'phanXe']);
+    // Học viên chờ mở lớp (lọc theo hạng bằng)
+    Route::get('/hoc-vien-cho-mo-lop',                          [KhoaHocDaoTaoController::class, 'hocVienChoMoLop']);
 
     // ── Lớp học ─────────────────────────────────────────────────────────────
     Route::get('/lop-hoc',                  [LopHocController::class, 'index']);
@@ -113,11 +134,14 @@ Route::middleware(['auth.jwt', 'role:admin|giang_vien'])->prefix('admin')->group
     // ── Giảng viên ──────────────────────────────────────────────────────────
     Route::get('/giang-vien',               [AdminController::class, 'giangVienList']);
     Route::post('/giang-vien',              [AdminController::class, 'taoGiangVien']);
+    Route::put('/giang-vien/{id}',          [AdminController::class, 'capNhatGiangVien']);
+    Route::delete('/giang-vien/{id}',       [AdminController::class, 'xoaGiangVien']);
     Route::patch('/users/{id}/toggle',      [AdminController::class, 'toggleUser']);
 
     // ── Xe ──────────────────────────────────────────────────────────────────
     Route::get('/xe',                       [XeController::class, 'index']);
     Route::get('/xe/san-sang',              [XeController::class, 'xeSanSang']);
+    Route::post('/xe/sync-km',              [XeController::class, 'syncKmXe']);
     Route::get('/xe/{id}',                  [XeController::class, 'show']);
     Route::post('/xe',                      [XeController::class, 'store']);
     Route::put('/xe/{id}',                  [XeController::class, 'update']);
@@ -138,6 +162,7 @@ Route::middleware(['auth.jwt', 'role:giang_vien'])->prefix('giang-vien')->group(
     Route::get('/thong-tin',                [GiangVienController::class, 'thongTin']);
     Route::get('/lop-cua-toi',              [GiangVienController::class, 'lopCuaToi']);
     Route::get('/lich-hom-nay',             [GiangVienController::class, 'lichHomNay']);
+    Route::get('/lich-theo-tuan',           [GiangVienController::class, 'lichTheoTuan']);
     Route::get('/lop/{lopId}/hoc-vien',     [GiangVienController::class, 'hocVienTrongLop']);
     Route::get('/lop/{lopId}/lich-hoc',     [GiangVienController::class, 'lichHocCuaLop']);
 

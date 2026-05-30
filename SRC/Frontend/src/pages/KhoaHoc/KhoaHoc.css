@@ -55,8 +55,7 @@
   text-align: center;
   border-bottom: 1px solid #f0f0f0;
 }
-.price-old  { display: block; font-size: 18px; color: #999; text-decoration: line-through; margin-bottom: 4px; }
-.price-new  { display: block; font-size: 30px; font-weight: 800; color: #e53935; margin-bottom: 4px; }
+.price-main { display: block; font-size: 30px; font-weight: 800; color: #e53935; margin-bottom: 4px; }
 .price-note { font-size: 12px; color: #777; }
 
 .kh-detail-info {

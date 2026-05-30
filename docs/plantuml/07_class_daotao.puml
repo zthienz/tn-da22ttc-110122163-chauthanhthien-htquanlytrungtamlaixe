@@ -1,0 +1,96 @@
+@startuml Class_DaoTao
+title Sơ đồ Lớp - Phân hệ Đào tạo
+
+skinparam classAttributeIconSize 0
+skinparam classFontSize 13
+
+class KhoaHoc {
+  +id: bigint
+  +ten_khoa: string
+  +mo_ta: text?
+  +loai_bang: enum {A1,A,B1,B2,C1,C,D,E,CE}
+  +hoc_phi: decimal
+  +so_buoi_ly_thuyet_toi_thieu: int
+  +so_km_toi_thieu: int
+  +si_so_toi_da: int
+  +so_hv_mo_lop: int
+  +is_active: boolean
+  +created_at: datetime
+  +updated_at: datetime
+}
+
+class LopHoc {
+  +id: bigint
+  +khoa_hoc_id: bigint <<FK>>
+  +ten_lop: string
+  +giang_vien_ly_thuyet_id: bigint? <<FK>>
+  +giang_vien_thuc_hanh_id: bigint? <<FK>>
+  +ngay_khai_giang: date?
+  +ngay_ket_thuc: date?
+  +si_so_toi_da: int
+  +trang_thai: enum {chuan_bi, dang_hoc, da_ket_thuc}
+  +ghi_chu: text?
+  +created_at: datetime
+  +updated_at: datetime
+}
+
+class HocVienLop {
+  +id: bigint
+  +ho_so_id: bigint <<FK>>
+  +lop_hoc_id: bigint <<FK>>
+  +ngay_xep_lop: date
+  +so_buoi_ly_thuyet_da_hoc: int
+  +so_buoi_thuc_hanh_da_hoc: int
+  +so_km_da_chay: decimal
+  +du_buoi_ly_thuyet: boolean
+  +du_km_thuc_hanh: boolean
+  +du_dieu_kien_thi_tn: boolean
+  +created_at: datetime
+  +updated_at: datetime
+  --
+  +kiemTraDieuKien(): void
+}
+
+class LichHoc {
+  +id: bigint
+  +lop_hoc_id: bigint <<FK>>
+  +xe_id: bigint? <<FK>>
+  +ngay_hoc: date
+  +gio_bat_dau: time
+  +gio_ket_thuc: time
+  +loai_buoi: enum {ly_thuyet, thuc_hanh}
+  +dia_diem: string?
+  +noi_dung: text?
+  +ghi_chu: text?
+  +created_at: datetime
+  +updated_at: datetime
+}
+
+class DiemDanh {
+  +id: bigint
+  +lich_hoc_id: bigint <<FK>>
+  +ho_so_id: bigint <<FK>>
+  +co_mat: boolean
+  +km_chay: decimal?
+  +ghi_chu: text?
+  +created_at: datetime
+  +updated_at: datetime
+}
+
+class GiangVien {
+  +id: bigint
+  +user_id: bigint <<FK>>
+  +chuyen_mon: enum {ly_thuyet, thuc_hanh, ca_hai}
+  +bang_cap: string?
+  +nam_kinh_nghiem: int
+  +ghi_chu: text?
+}
+
+KhoaHoc "1" --o "0..*" LopHoc : chứa >
+GiangVien "0..1" --o "0..*" LopHoc : dạy lý thuyết >
+GiangVien "0..1" --o "0..*" LopHoc : dạy thực hành >
+LopHoc "1" --o "0..*" HocVienLop : xếp lớp >
+LopHoc "1" --o "0..*" LichHoc : có lịch >
+LichHoc "1" --o "0..*" DiemDanh : điểm danh >
+
+@enduml

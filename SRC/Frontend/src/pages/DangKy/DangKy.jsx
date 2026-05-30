@@ -1,33 +1,92 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import axios from 'axios'
 import { toast } from 'react-toastify'
 import './DangKy.css'
 
-const khoaOptions = [
-  'Học lái xe hạng A, A1',
-  'Học lái xe hạng B2 Số Sàn',
-  'Học lái xe hạng B1 Số Tự Động',
-  'Học lái xe hạng C1',
-]
+const API = 'http://localhost:8000/api'
 
 const DangKy = () => {
+  const [searchParams] = useSearchParams()
+  const [khoaList, setKhoaList] = useState([])
   const [form, setForm] = useState({
-    ho_ten: '', dien_thoai: '', email: '', khu_vuc: '', khoa_hoc: '', ghi_chu: '',
+    ho_ten: '', so_dien_thoai: '', so_cccd: '', ngay_sinh: '',
+    email: '', dia_chi: '', khoa_hoc_id: '', ghi_chu: '',
   })
-  const [loading, setLoading] = useState(false)
-  const [done, setDone] = useState(false)
+  const [anhFile, setAnhFile]     = useState(null)
+  const [anhPreview, setAnhPreview] = useState(null)
+  const [loading, setLoading]     = useState(false)
+  const [done, setDone]           = useState(false)
+  const [errors, setErrors]       = useState({})
+  const fileRef = useRef()
 
-  const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value })
+  // Tải danh sách loại bằng lái
+  useEffect(() => {
+    axios.get(`${API}/khoa-hoc`)
+      .then(res => {
+        if (res.data.success) setKhoaList(res.data.data)
+      })
+      .catch(() => {})
+  }, [])
+
+  // Nếu có query ?hang=b2 thì tự chọn khóa học
+  useEffect(() => {
+    const hang = searchParams.get('hang')?.toUpperCase()
+    if (hang && khoaList.length > 0) {
+      const found = khoaList.find(k => k.loai_bang === hang)
+      if (found) setForm(f => ({ ...f, khoa_hoc_id: String(found.id) }))
+    }
+  }, [searchParams, khoaList])
+
+  const handleChange = e => {
+    const { name, value } = e.target
+    setForm(f => ({ ...f, [name]: value }))
+    setErrors(er => ({ ...er, [name]: '' }))
+  }
+
+  const handleAnhChange = file => {
+    if (!file) return
+    setAnhFile(file)
+    const reader = new FileReader()
+    reader.onload = e => setAnhPreview(e.target.result)
+    reader.readAsDataURL(file)
+  }
+
+  const validate = () => {
+    const errs = {}
+    if (!form.ho_ten.trim())        errs.ho_ten = 'Vui lòng nhập họ tên'
+    if (!/^0\d{9}$/.test(form.so_dien_thoai)) errs.so_dien_thoai = 'SĐT phải 10 số, bắt đầu bằng 0'
+    if (!/^\d{12}$/.test(form.so_cccd))       errs.so_cccd = 'CCCD phải đủ 12 chữ số'
+    if (!form.ngay_sinh)            errs.ngay_sinh = 'Vui lòng chọn ngày sinh'
+    if (!form.khoa_hoc_id)          errs.khoa_hoc_id = 'Vui lòng chọn loại bằng lái'
+    if (form.email && !/^[a-zA-Z0-9._%+\-]+@gmail\.com$/.test(form.email))
+      errs.email = 'Email phải có định dạng @gmail.com'
+    return errs
+  }
 
   const handleSubmit = async e => {
     e.preventDefault()
+    const errs = validate()
+    if (Object.keys(errs).length > 0) { setErrors(errs); return }
+
     setLoading(true)
     try {
-      await axios.post('http://localhost:8000/api/dang-ky-tu-van', form)
+      const fd = new FormData()
+      Object.entries(form).forEach(([k, v]) => { if (v) fd.append(k, v) })
+      if (anhFile) fd.append('anh_the', anhFile)
+
+      await axios.post(`${API}/dang-ky-tu-van`, fd, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
       setDone(true)
-      toast.success('Đăng ký thành công! Chúng tôi sẽ liên hệ bạn trong 24h.')
-    } catch {
-      toast.error('Có lỗi xảy ra, vui lòng thử lại.')
+      toast.success('Đăng ký thành công!')
+    } catch (err) {
+      const msg = err.response?.data?.message || ''
+      if (msg.toLowerCase().includes('cccd') || msg.toLowerCase().includes('so_cccd')) {
+        setErrors({ so_cccd: 'Số CCCD này đã được đăng ký trước đó' })
+      } else {
+        toast.error(msg || 'Có lỗi xảy ra, vui lòng thử lại.')
+      }
     } finally {
       setLoading(false)
     }
@@ -37,8 +96,8 @@ const DangKy = () => {
     <div className="dangky-page">
       <div className="dangky-hero">
         <div className="container">
-          <h1>Đăng Ký Tư Vấn</h1>
-          <p>Điền thông tin để nhận tư vấn miễn phí và ưu đãi lên đến 2.000.000đ</p>
+          <h1>Đăng Ký Học Lái Xe</h1>
+          <p>Điền đầy đủ thông tin để hoàn tất đăng ký — Trung tâm sẽ liên hệ xác nhận trong 24h</p>
         </div>
       </div>
 
@@ -47,22 +106,24 @@ const DangKy = () => {
           <div className="dangky-success">
             <div className="success-icon">✓</div>
             <h2>Đăng ký thành công!</h2>
-            <p>Cảm ơn bạn đã quan tâm đến Trung Tâm Lái Xe Sao Việt.<br />
-              Chúng tôi sẽ liên hệ với bạn trong thời gian sớm nhất.</p>
-            <button onClick={() => setDone(false)} className="btn-back">Đăng ký thêm</button>
+            <p>Cảm ơn bạn đã đăng ký học lái xe tại Trung Tâm Sao Việt.<br />
+              Chúng tôi sẽ liên hệ xác nhận và hướng dẫn đóng học phí trong <strong>24h</strong>.</p>
+            <button onClick={() => { setDone(false); setForm({ ho_ten:'', so_dien_thoai:'', so_cccd:'', ngay_sinh:'', email:'', dia_chi:'', khoa_hoc_id:'', ghi_chu:'' }); setAnhFile(null); setAnhPreview(null) }}
+              className="btn-back">Đăng ký thêm</button>
           </div>
         ) : (
           <div className="dangky-grid">
-            {/* Ưu đãi */}
+
+            {/* Cột trái: thông tin */}
             <div className="dangky-uudai">
-              <h3>Ưu đãi khi đăng ký</h3>
+              <h3>📋 Thông Tin Đăng Ký</h3>
               <ul>
                 {[
-                  '🎁 Tặng gói học lái xe ô tô 2.000.000đ',
-                  '💰 Giảm thêm 500.000đ khi đăng ký theo nhóm',
                   '📚 Tặng bộ sách, tài liệu thi trị giá 300.000đ',
                   '⚡ Hỗ trợ ghi danh Online nhanh gọn',
                   '🎯 Tư vấn 1-1 với chuyên viên',
+                  '🏫 Khai giảng liên tục hàng tháng',
+                  '✅ Học phí trọn gói, không phát sinh',
                 ].map((item, i) => (
                   <li key={i}><span className="ud-check">✓</span><span>{item}</span></li>
                 ))}
@@ -73,53 +134,120 @@ const DangKy = () => {
               </div>
             </div>
 
-            {/* Form */}
+            {/* Cột phải: form */}
             <div className="dangky-form-box">
               <h3>Điền thông tin đăng ký</h3>
               <form onSubmit={handleSubmit} className="dangky-form">
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Họ và tên <span className="req">*</span></label>
-                    <input name="ho_ten" value={form.ho_ten} onChange={handleChange}
-                      placeholder="Nguyễn Văn A" required />
+
+                {/* Layout 2 cột: ảnh + thông tin */}
+                <div className="dangky-form-layout">
+
+                  {/* Ảnh 3x4 */}
+                  <div className="dangky-anh-col">
+                    <label className="dangky-anh-label">📷 Ảnh thẻ 3×4 <span className="req">*</span></label>
+                    <div className={`dangky-anh-upload ${anhPreview ? 'has-image' : ''}`}
+                      onClick={() => fileRef.current?.click()}>
+                      {anhPreview
+                        ? <img src={anhPreview} alt="Ảnh thẻ" className="dangky-anh-preview" />
+                        : <div className="dangky-anh-placeholder">
+                            <span>📷</span>
+                            <p>Nhấn để chọn ảnh</p>
+                            <small>JPG, PNG — tối đa 5MB</small>
+                          </div>}
+                    </div>
+                    <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp"
+                      style={{ display: 'none' }}
+                      onChange={e => handleAnhChange(e.target.files[0])} />
+                    {anhPreview && (
+                      <button type="button" className="btn-xoa-anh"
+                        onClick={() => { setAnhFile(null); setAnhPreview(null) }}>
+                        🗑️ Xóa ảnh
+                      </button>
+                    )}
+                    <p className="dangky-anh-hint">Ảnh nền trắng, rõ mặt, không đội mũ</p>
                   </div>
-                  <div className="form-group">
-                    <label>Số điện thoại <span className="req">*</span></label>
-                    <input name="dien_thoai" value={form.dien_thoai} onChange={handleChange}
-                      placeholder="0912 345 678" required />
+
+                  {/* Thông tin cá nhân */}
+                  <div className="dangky-info-col">
+                    <div className="form-row">
+                      <div className="form-group">
+                        <label>Họ và tên <span className="req">*</span></label>
+                        <input name="ho_ten" value={form.ho_ten} onChange={handleChange}
+                          placeholder="Nguyễn Văn A" />
+                        {errors.ho_ten && <span className="field-err">{errors.ho_ten}</span>}
+                      </div>
+                      <div className="form-group">
+                        <label>Số điện thoại <span className="req">*</span></label>
+                        <input name="so_dien_thoai" value={form.so_dien_thoai} onChange={handleChange}
+                          placeholder="0912 345 678" maxLength={10} inputMode="numeric" />
+                        {errors.so_dien_thoai && <span className="field-err">{errors.so_dien_thoai}</span>}
+                      </div>
+                    </div>
+                    <div className="form-row">
+                      <div className="form-group">
+                        <label>Số CCCD <span className="req">*</span></label>
+                        <input name="so_cccd" value={form.so_cccd} onChange={handleChange}
+                          placeholder="012345678901" maxLength={12} inputMode="numeric" />
+                        {errors.so_cccd && <span className="field-err">{errors.so_cccd}</span>}
+                      </div>
+                      <div className="form-group">
+                        <label>Ngày sinh <span className="req">*</span></label>
+                        <input name="ngay_sinh" type="date" value={form.ngay_sinh} onChange={handleChange} />
+                        {errors.ngay_sinh && <span className="field-err">{errors.ngay_sinh}</span>}
+                      </div>
+                    </div>
+                    <div className="form-row">
+                      <div className="form-group">
+                        <label>Email</label>
+                        <input name="email" type="email" value={form.email} onChange={handleChange}
+                          placeholder="email@gmail.com" />
+                        {errors.email && <span className="field-err">{errors.email}</span>}
+                      </div>
+                      <div className="form-group">
+                        <label>Địa chỉ</label>
+                        <input name="dia_chi" value={form.dia_chi} onChange={handleChange}
+                          placeholder="Quận / Huyện, Tỉnh / TP" />
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Email</label>
-                    <input name="email" type="email" value={form.email} onChange={handleChange}
-                      placeholder="email@example.com" />
-                  </div>
-                  <div className="form-group">
-                    <label>Khu vực</label>
-                    <input name="khu_vuc" value={form.khu_vuc} onChange={handleChange}
-                      placeholder="Quận / Huyện" />
-                  </div>
-                </div>
+
+                {/* Chọn loại bằng lái */}
                 <div className="form-group">
-                  <label>Khóa học quan tâm <span className="req">*</span></label>
+                  <label>Loại bằng lái đăng ký <span className="req">*</span></label>
                   <div className="radio-grid">
-                    {khoaOptions.map((opt, i) => (
-                      <label key={i} className="radio-item">
-                        <input type="radio" name="khoa_hoc" value={opt}
-                          checked={form.khoa_hoc === opt} onChange={handleChange} required />
-                        <span>{opt}</span>
-                      </label>
-                    ))}
+                    {khoaList.length > 0
+                      ? khoaList.map(kh => (
+                          <label key={kh.id} className={`radio-item ${form.khoa_hoc_id === String(kh.id) ? 'selected' : ''}`}>
+                            <input type="radio" name="khoa_hoc_id" value={String(kh.id)}
+                              checked={form.khoa_hoc_id === String(kh.id)} onChange={handleChange} />
+                            <span>
+                              <strong>Hạng {kh.loai_bang}</strong>
+                              <small>{Number(kh.hoc_phi).toLocaleString('vi-VN')} đ</small>
+                            </span>
+                          </label>
+                        ))
+                      : ['A1','A','B1','B2','C1','C'].map(h => (
+                          <label key={h} className="radio-item">
+                            <input type="radio" name="khoa_hoc_id" value={h}
+                              checked={form.khoa_hoc_id === h} onChange={handleChange} />
+                            <span>Hạng {h}</span>
+                          </label>
+                        ))
+                    }
                   </div>
+                  {errors.khoa_hoc_id && <span className="field-err">{errors.khoa_hoc_id}</span>}
                 </div>
+
+                {/* Ghi chú */}
                 <div className="form-group">
                   <label>Ghi chú thêm</label>
                   <textarea name="ghi_chu" value={form.ghi_chu} onChange={handleChange}
-                    placeholder="Thời gian rảnh, câu hỏi..." rows={3} />
+                    placeholder="Thời gian rảnh, câu hỏi, yêu cầu đặc biệt..." rows={3} />
                 </div>
+
                 <button type="submit" className="btn-submit" disabled={loading}>
-                  {loading ? 'Đang gửi...' : 'Đăng Ký Ngay'}
+                  {loading ? 'Đang gửi...' : '📝 Đăng Ký Học Lái Xe'}
                 </button>
               </form>
             </div>

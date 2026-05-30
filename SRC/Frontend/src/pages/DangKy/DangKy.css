@@ -148,3 +148,70 @@
   .form-row    { grid-template-columns: 1fr; }
   .radio-grid  { grid-template-columns: 1fr; }
 }
+
+/* ── Layout 2 cột: ảnh + thông tin ── */
+.dangky-form-layout {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+/* Cột ảnh */
+.dangky-anh-col {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 6px;
+}
+.dangky-anh-label {
+  font-size: 12px; font-weight: 700; color: #555;
+  text-transform: uppercase; letter-spacing: .04em;
+  align-self: flex-start;
+}
+.dangky-anh-upload {
+  width: 130px; height: 170px;
+  border: 2px dashed #ccc; border-radius: 10px;
+  cursor: pointer; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+  background: #f8f9fa; transition: all .2s;
+}
+.dangky-anh-upload:hover { border-color: #0066cc; background: #eff6ff; }
+.dangky-anh-upload.has-image { border-style: solid; border-color: #0066cc; background: #000; }
+.dangky-anh-preview { width: 100%; height: 100%; object-fit: cover; }
+.dangky-anh-placeholder {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 6px; padding: 12px; text-align: center;
+}
+.dangky-anh-placeholder span { font-size: 28px; }
+.dangky-anh-placeholder p    { font-size: 11px; font-weight: 600; color: #718096; }
+.dangky-anh-placeholder small { font-size: 10px; color: #a0aec0; }
+.dangky-anh-hint { font-size: 10px; color: #a0aec0; text-align: center; line-height: 1.5; }
+.btn-xoa-anh {
+  width: 100%; padding: 5px 0; font-size: 12px;
+  background: none; border: 1px solid #ddd; border-radius: 6px;
+  cursor: pointer; color: #e53935;
+}
+.btn-xoa-anh:hover { background: #fff5f5; }
+
+/* Cột thông tin */
+.dangky-info-col { display: flex; flex-direction: column; gap: 12px; }
+
+/* Radio item cải tiến */
+.radio-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid #e2e8f0; border-radius: 8px;
+  cursor: pointer; transition: all .15s; background: #fff;
+}
+.radio-item:hover { border-color: #0066cc; background: #eff6ff; }
+.radio-item.selected { border-color: #0066cc; background: #eff6ff; }
+.radio-item span { display: flex; flex-direction: column; gap: 1px; }
+.radio-item strong { font-size: 13px; color: #1a202c; }
+.radio-item small  { font-size: 11px; color: #e53935; font-weight: 600; }
+
+/* Validation error */
+.field-err { font-size: 11px; color: #e53935; margin-top: 3px; font-weight: 500; }
+
+@media (max-width: 600px) {
+  .dangky-form-layout { grid-template-columns: 1fr; }
+  .dangky-anh-col { flex-direction: row; flex-wrap: wrap; }
+}

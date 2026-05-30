@@ -12,7 +12,7 @@ class Xe extends Model
         'bien_so', 'hang_xe', 'dong_xe', 'nam_san_xuat',
         'loai_xe', 'hang_bang', 'mau_xe', 'so_km_hien_tai',
         'ngay_dang_kiem', 'ngay_dang_kiem_tiep_theo',
-        'ngay_bao_hiem', 'trang_thai', 'ghi_chu',
+        'ngay_bao_hiem', 'trang_thai', 'ghi_chu', 'anh_xe',
     ];
 
     protected $casts = [

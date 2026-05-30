@@ -12,7 +12,8 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // CORS cho tất cả API routes
+        // CORS cho tất cả routes (bao gồm static files)
+        $middleware->prepend(\Illuminate\Http\Middleware\HandleCors::class);
         $middleware->api(prepend: [
             \Illuminate\Http\Middleware\HandleCors::class,
         ]);

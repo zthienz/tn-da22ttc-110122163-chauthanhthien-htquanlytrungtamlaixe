@@ -46,21 +46,23 @@ const Navbar = () => {
               </span>
               {khoaOpen && (
                 <ul className="dropdown">
-                  <li><Link to="/khoa-hoc/b1">Học lái xe ô tô hạng B (Số tự động)</Link></li>
-                  <li><Link to="/khoa-hoc/b2">Học lái xe ô tô hạng B (Số sàn)</Link></li>
-                  <li><Link to="/khoa-hoc/c1">Học lái xe ô tô tải hạng C1</Link></li>
-                  <li><Link to="/khoa-hoc/a1">Học bằng lái xe hạng A1, A2</Link></li>
+                  <li><Link to="/khoa-hoc/a1" onClick={() => setKhoaOpen(false)}>Hạng A1 — Xe máy dưới 125cc</Link></li>
+                  <li><Link to="/khoa-hoc/a"  onClick={() => setKhoaOpen(false)}>Hạng A — Xe máy trên 125cc</Link></li>
+                  <li><Link to="/khoa-hoc/b1" onClick={() => setKhoaOpen(false)}>Hạng B1 — Ô tô số tự động</Link></li>
+                  <li><Link to="/khoa-hoc/b2" onClick={() => setKhoaOpen(false)}>Hạng B2 — Ô tô số sàn</Link></li>
+                  <li><Link to="/khoa-hoc/c1" onClick={() => setKhoaOpen(false)}>Hạng C1 — Xe tải nhẹ</Link></li>
+                  <li><Link to="/khoa-hoc/c"  onClick={() => setKhoaOpen(false)}>Hạng C — Xe tải nặng</Link></li>
+                  <li className="dropdown-group-label">Nâng hạng bằng lái</li>
+                  <li><Link to="/khoa-hoc/d"  onClick={() => setKhoaOpen(false)}>Hạng D — Xe khách 9-30 chỗ</Link></li>
+                  <li><Link to="/khoa-hoc/e"  onClick={() => setKhoaOpen(false)}>Hạng E — Xe khách trên 30 chỗ</Link></li>
+                  <li><Link to="/khoa-hoc/ce" onClick={() => setKhoaOpen(false)}>Hạng CE — Xe đầu kéo</Link></li>
+                  <li className="dropdown-divider"><Link to="/khoa-hoc" onClick={() => setKhoaOpen(false)}>Xem tất cả khóa học →</Link></li>
                 </ul>
               )}
             </li>
             <li>
               <NavLink to="/tin-tuc" className={({ isActive }) => isActive ? 'active' : ''}>
                 Tin Tức
-              </NavLink>
-            </li>
-            <li>
-              <NavLink to="/lich-thi" className={({ isActive }) => isActive ? 'active' : ''}>
-                Lịch thi
               </NavLink>
             </li>
             <li>

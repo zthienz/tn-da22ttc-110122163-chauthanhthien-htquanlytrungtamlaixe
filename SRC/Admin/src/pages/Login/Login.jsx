@@ -37,7 +37,6 @@ const Login = () => {
     <div className="al-page">
       {/* Cột trái */}
       <div className="al-left">
-        <img src="/logo.png" alt="Sao Việt" className="al-logo" />
         <h1>Trung Tâm Dạy Lái Xe<br /><span>Sao Việt</span></h1>
         <p>Hệ thống quản trị dành cho Quản Trị Viên và Giảng Viên</p>
         <div className="al-roles">
@@ -62,7 +61,7 @@ const Login = () => {
       <div className="al-right">
         <div className="al-card">
           <div className="al-card-header">
-            <img src="/logo.png" alt="logo" className="al-card-logo" />
+            <img src="/logo-trungtamsaoviet.png" alt="logo" className="al-card-logo" />
             <h2>Đăng Nhập Quản Trị</h2>
             <p>Nhập thông tin tài khoản của bạn</p>
           </div>

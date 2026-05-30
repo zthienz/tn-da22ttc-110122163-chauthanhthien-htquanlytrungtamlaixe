@@ -8,11 +8,13 @@ import Login from './pages/Login/Login'
 // Admin pages
 import Dashboard from './pages/Dashboard/Dashboard'
 import HoSoManagement from './pages/HoSo/HoSoManagement'
-import KhoaHocManagement from './pages/KhoaHoc/KhoaHocManagement'
+import BangLaiManagement from './pages/BangLai/BangLaiManagement'
+import KhoaHocDaoTaoManagement from './pages/KhoaHocDaoTao/KhoaHocDaoTaoManagement'
 import LopHocManagement from './pages/LopHoc/LopHocManagement'
 import LichHocManagement from './pages/LichHoc/LichHocManagement'
 import ThiManagement from './pages/Thi/ThiManagement'
 import GiangVienManagement from './pages/GiangVien/GiangVienManagement'
+import HocPhiManagement from './pages/HocPhi/HocPhiManagement'
 import XeManagement from './pages/Xe/XeManagement'
 
 // Giảng viên pages
@@ -20,6 +22,7 @@ import GVThongTin from './pages/GiangVien/GVThongTin'
 import GVLopHoc from './pages/GiangVien/GVLopHoc'
 import GVDiemDanh from './pages/GiangVien/GVDiemDanh'
 import GVXe from './pages/GiangVien/GVXe'
+import GVLichDay from './pages/GiangVien/GVLichDay'
 
 const ProtectedRoute = ({ children, adminOnly = false }) => {
   const { token, isAdmin } = useAdmin()
@@ -43,17 +46,20 @@ const AppRoutes = () => {
         <Route index element={<Dashboard />} />
 
         {/* ── ADMIN ONLY ── */}
-        <Route path="ho-so"      element={<ProtectedRoute adminOnly><HoSoManagement /></ProtectedRoute>} />
-        <Route path="khoa-hoc"   element={<ProtectedRoute adminOnly><KhoaHocManagement /></ProtectedRoute>} />
-        <Route path="lop-hoc"    element={<ProtectedRoute adminOnly><LopHocManagement /></ProtectedRoute>} />
+        <Route path="ho-so"           element={<ProtectedRoute adminOnly><HoSoManagement /></ProtectedRoute>} />
+        <Route path="bang-lai"        element={<ProtectedRoute adminOnly><BangLaiManagement /></ProtectedRoute>} />
+        <Route path="khoa-hoc"        element={<ProtectedRoute adminOnly><KhoaHocDaoTaoManagement /></ProtectedRoute>} />
+        <Route path="lop-hoc"         element={<ProtectedRoute adminOnly><LopHocManagement /></ProtectedRoute>} />
         <Route path="lich-hoc"   element={<ProtectedRoute adminOnly><LichHocManagement /></ProtectedRoute>} />
         <Route path="thi"        element={<ProtectedRoute adminOnly><ThiManagement /></ProtectedRoute>} />
         <Route path="giang-vien" element={<ProtectedRoute adminOnly><GiangVienManagement /></ProtectedRoute>} />
+        <Route path="hoc-phi"    element={<ProtectedRoute adminOnly><HocPhiManagement /></ProtectedRoute>} />
         <Route path="xe"         element={<ProtectedRoute adminOnly><XeManagement /></ProtectedRoute>} />
 
         {/* ── GIẢNG VIÊN ONLY ── */}
         <Route path="thong-tin-ca-nhan" element={<GVThongTin />} />
         <Route path="lop-cua-toi"       element={<GVLopHoc />} />
+        <Route path="lich-day"          element={<GVLichDay />} />
         <Route path="diem-danh"         element={<GVDiemDanh />} />
         <Route path="xe-cua-toi"        element={<GVXe />} />
       </Route>

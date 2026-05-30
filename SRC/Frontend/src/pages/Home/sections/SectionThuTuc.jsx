@@ -30,28 +30,11 @@ const SectionThuTuc = () => (
 
         {/* Ảnh thẻ chuẩn */}
         <div className="tt-anh">
-          <div className="tt-anh-group">
-            <div className="tt-anh-item tt-anh-ok">
-              <div className="tt-anh-placeholder tt-anh-blue">
-                <span>👤</span>
-              </div>
-              <p className="tt-anh-label ok">Hình chuẩn xanh dương đậm</p>
-            </div>
-            <div className="tt-anh-divider">|</div>
-            <div className="tt-anh-wrong-group">
-              <p className="tt-anh-label wrong-title">Hình sai: phông nền - tóc che lông mày - tóc che tai - mang mắt kính</p>
-              <div className="tt-anh-wrong-row">
-                {[1,2,3].map(i => (
-                  <div key={i} className="tt-anh-item">
-                    <div className="tt-anh-placeholder tt-anh-wrong">
-                      <span>👤</span>
-                      <div className="tt-x">✕</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+          <img
+            src="/anhmau3x4.jpg"
+            alt="Ảnh mẫu 3x4 chuẩn"
+            className="tt-anh-mau"
+          />
         </div>
       </div>
     </div>

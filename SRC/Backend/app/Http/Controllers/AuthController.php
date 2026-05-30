@@ -142,6 +142,12 @@ class AuthController extends Controller
     // ─── Helper ─────────────────────────────────────────────────────────────
     private function formatUser(User $user): array
     {
+        $chuyenMon = null;
+        if ($user->role === 'giang_vien') {
+            $gv = \App\Models\GiangVien::where('user_id', $user->id)->first();
+            $chuyenMon = $gv?->chuyen_mon;
+        }
+
         return [
             'id'            => $user->id,
             'ho_ten'        => $user->ho_ten,
@@ -149,6 +155,7 @@ class AuthController extends Controller
             'role'          => $user->role,
             'so_dien_thoai' => $user->so_dien_thoai,
             'is_active'     => $user->is_active,
+            'chuyen_mon'    => $chuyenMon,
         ];
     }
 }

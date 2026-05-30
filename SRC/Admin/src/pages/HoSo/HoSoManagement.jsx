@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import axios from 'axios'
 import { toast } from 'react-toastify'
 import { useAdmin } from '../../context/AdminContext'
@@ -23,10 +23,13 @@ const HoSoManagement = () => {
   const [filterTT, setFilterTT] = useState('')
   const [page, setPage]         = useState(1)
   const [totalPages, setTotalPages] = useState(1)
-  const [showModal, setShowModal]   = useState(false)
+  const [showModal, setShowModal]         = useState(false)  // thêm / sửa
   const [showHocPhiModal, setShowHocPhiModal] = useState(false)
   const [showXepLopModal, setShowXepLopModal] = useState(false)
+  const [viewItem, setViewItem]     = useState(null)
+  const [viewLoading, setViewLoading] = useState(false)
   const [selected, setSelected] = useState(null)
+  const [editingHoSo, setEditingHoSo] = useState(null)  // null = thêm mới, object = sửa
   const [lopList, setLopList]   = useState([])
 
   const headers = { Authorization: `Bearer ${token}` }
@@ -53,11 +56,24 @@ const HoSoManagement = () => {
     } catch {}
   }
 
+  // Mở modal xem chi tiết — gọi API lấy đầy đủ thông tin
+  const openView = async (hs) => {
+    setViewLoading(true)
+    setViewItem({})   // mở modal ngay, hiện spinner
+    try {
+      const res = await axios.get(`${backendUrl}/api/admin/ho-so/${hs.id}`, { headers })
+      if (res.data.success) setViewItem(res.data.data)
+    } catch { toast.error('Không tải được chi tiết hồ sơ') }
+    finally { setViewLoading(false) }
+  }
+
   useEffect(() => { fetchList() }, [search, filterTT, page])
 
   // Form tạo hồ sơ offline
   const [form, setForm] = useState({ ho_ten:'', ngay_sinh:'', so_cccd:'', khoa_hoc_id:'', so_dien_thoai:'', dia_chi:'', email:'' })
   const [khoaList, setKhoaList] = useState([])
+  const [anhPreview, setAnhPreview] = useState(null)
+  const [anhFile, setAnhFile]       = useState(null)
 
   useEffect(() => {
     axios.get(`${backendUrl}/api/admin/khoa-hoc`, { headers })
@@ -65,31 +81,145 @@ const HoSoManagement = () => {
       .catch(() => {})
   }, [])
 
+  const handleAnhChange = (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    setAnhFile(file)
+    const reader = new FileReader()
+    reader.onload = (ev) => setAnhPreview(ev.target.result)
+    reader.readAsDataURL(file)
+  }
+
+  const validateForm = (f) => {
+    if (f.so_cccd && !/^\d{12}$/.test(f.so_cccd)) {
+      toast.error('Số CCCD phải đủ 12 chữ số nguyên'); return false
+    }
+    if (f.so_dien_thoai && !/^0\d{9}$/.test(f.so_dien_thoai)) {
+      toast.error('Số điện thoại phải gồm 10 chữ số và bắt đầu bằng 0'); return false
+    }
+    if (f.email && !/^[a-zA-Z0-9._%+\-]+@gmail\.com$/.test(f.email)) {
+      toast.error('Email phải có định dạng @gmail.com'); return false
+    }
+    return true
+  }
+
   const handleTaoHoSo = async e => {
     e.preventDefault()
+    if (!validateForm(form)) return
     try {
-      const res = await axios.post(`${backendUrl}/api/admin/ho-so`, form, { headers })
+      // Dùng FormData để gửi kèm file ảnh
+      const fd = new FormData()
+      Object.entries(form).forEach(([k, v]) => { if (v) fd.append(k, v) })
+      if (anhFile) fd.append('anh_the', anhFile)
+
+      const res = await axios.post(`${backendUrl}/api/admin/ho-so`, fd, {
+        headers: { ...headers, 'Content-Type': 'multipart/form-data' }
+      })
       if (res.data.success) {
         toast.success('Tạo hồ sơ thành công!')
         setShowModal(false)
         setForm({ ho_ten:'', ngay_sinh:'', so_cccd:'', khoa_hoc_id:'', so_dien_thoai:'', dia_chi:'', email:'' })
+        setAnhFile(null)
+        setAnhPreview(null)
         fetchList()
       } else toast.error(res.data.message)
     } catch (err) { toast.error(err.response?.data?.message || 'Lỗi tạo hồ sơ') }
   }
 
-  // Ghi nhận học phí
-  const [hocPhiForm, setHocPhiForm] = useState({ so_tien:'', phuong_thuc:'tien_mat', ma_giao_dich:'' })
+  // Ghi nhận học phí — số tiền tự động lấy từ khóa học
+  const [hocPhiForm, setHocPhiForm] = useState({ phuong_thuc:'tien_mat', ma_giao_dich:'' })
+
+  const openThuHP = (hs) => {
+    setSelected(hs)
+    setHocPhiForm({ phuong_thuc:'tien_mat', ma_giao_dich:'' })
+    setShowHocPhiModal(true)
+  }
+
   const handleGhiHocPhi = async e => {
     e.preventDefault()
+    const soTien = selected.khoa_hoc?.hoc_phi || 0
     try {
-      const res = await axios.post(`${backendUrl}/api/admin/ho-so/${selected.id}/hoc-phi`, hocPhiForm, { headers })
+      const res = await axios.post(`${backendUrl}/api/admin/ho-so/${selected.id}/hoc-phi`, {
+        so_tien: soTien,
+        phuong_thuc: hocPhiForm.phuong_thuc,
+        ma_giao_dich: hocPhiForm.ma_giao_dich,
+      }, { headers })
       if (res.data.success) {
-        toast.success('Ghi nhận học phí thành công!')
+        toast.success('Xác nhận học phí thành công!')
         setShowHocPhiModal(false)
         fetchList()
       } else toast.error(res.data.message)
     } catch (err) { toast.error(err.response?.data?.message || 'Lỗi') }
+  }
+
+  // Mở modal sửa hồ sơ
+  const openEdit = (hs) => {
+    setEditingHoSo(hs)
+    setForm({
+      ho_ten:        hs.ho_ten || '',
+      ngay_sinh:     hs.ngay_sinh?.split('T')[0] || '',
+      so_cccd:       hs.so_cccd || '',
+      khoa_hoc_id:   hs.khoa_hoc_id || '',
+      so_dien_thoai: hs.so_dien_thoai || '',
+      dia_chi:       hs.dia_chi || '',
+      email:         hs.email || '',
+    })
+    setAnhPreview(hs.anh_the ? `/uploads/${hs.anh_the}` : null)
+    setAnhFile(null)
+    setShowModal(true)
+  }
+
+  const handleSuaHoSo = async e => {
+    e.preventDefault()
+    if (!validateForm(form)) return
+    try {
+      const fd = new FormData()
+      Object.entries(form).forEach(([k, v]) => { if (v) fd.append(k, v) })
+      if (anhFile) fd.append('anh_the', anhFile)
+
+      const res = await axios.post(
+        `${backendUrl}/api/admin/ho-so/${editingHoSo.id}/update`,
+        fd,
+        { headers: { ...headers, 'Content-Type': 'multipart/form-data' } }
+      )
+      if (res.data.success) {
+        toast.success('Cập nhật hồ sơ thành công!')
+        setShowModal(false)
+        setEditingHoSo(null)
+        setAnhFile(null)
+        setAnhPreview(null)
+        fetchList()
+      } else toast.error(res.data.message)
+    } catch (err) { toast.error(err.response?.data?.message || 'Lỗi cập nhật') }
+  }
+
+  // Xóa hồ sơ
+  const handleXoa = async (hs) => {
+    if (!confirm(`Xóa hồ sơ của "${hs.ho_ten}"?\nHành động này không thể hoàn tác.`)) return
+    try {
+      const res = await axios.delete(`${backendUrl}/api/admin/ho-so/${hs.id}`, { headers })
+      if (res.data.success) {
+        toast.success('Đã xóa hồ sơ học viên')
+        fetchList()
+      } else toast.error(res.data.message)
+    } catch (err) { toast.error(err.response?.data?.message || 'Lỗi xóa hồ sơ') }
+  }
+
+  // Tạo tài khoản thủ công cho học viên chưa có tài khoản
+  const handleTaoTaiKhoan = async (hs) => {
+    if (!confirm(`Tạo tài khoản cho "${hs.ho_ten}"?\n• Tài khoản: ${hs.so_cccd}\n• Mật khẩu: Ngày sinh (DDMMYYYY)`)) return
+    try {
+      const res = await axios.post(`${backendUrl}/api/admin/ho-so/${hs.id}/tao-tai-khoan`, {}, { headers })
+      if (res.data.success) {
+        toast.success(`✅ Tạo tài khoản thành công!\nTài khoản: ${res.data.tai_khoan?.so_cccd} | Mật khẩu: ${res.data.tai_khoan?.mat_khau}`)
+        fetchList()
+        // Refresh viewItem nếu đang xem
+        if (viewItem?.id === hs.id) {
+          const r = await axios.get(`${backendUrl}/api/admin/ho-so/${hs.id}`, { headers })
+          if (r.data.success) setViewItem(r.data.data)
+        }
+      } else toast.error(res.data.message)
+    } catch (err) { toast.error(err.response?.data?.message || 'Lỗi tạo tài khoản') }
   }
 
   // Xếp lớp + tạo tài khoản
@@ -116,7 +246,12 @@ const HoSoManagement = () => {
           <h2>📋 Hồ Sơ Học Viên</h2>
           <p>Quản lý toàn bộ hồ sơ đăng ký học lái xe</p>
         </div>
-        <button className="btn btn-primary" onClick={() => setShowModal(true)}>
+        <button className="btn btn-primary" onClick={() => {
+          setEditingHoSo(null)
+          setForm({ ho_ten:'', ngay_sinh:'', so_cccd:'', khoa_hoc_id:'', so_dien_thoai:'', dia_chi:'', email:'' })
+          setAnhPreview(null); setAnhFile(null)
+          setShowModal(true)
+        }}>
           + Thêm hồ sơ offline
         </button>
       </div>
@@ -172,9 +307,11 @@ const HoSoManagement = () => {
                         </td>
                         <td>
                           <div className="action-cell">
+                            <button className="btn btn-info btn-sm" onClick={() => openView(hs)}>
+                              👁️ Xem
+                            </button>
                             {hs.trang_thai_hoc_phi !== 'da_dong' && (
-                              <button className="btn btn-success btn-sm"
-                                onClick={() => { setSelected(hs); setShowHocPhiModal(true) }}>
+                              <button className="btn btn-success btn-sm" onClick={() => openThuHP(hs)}>
                                 💰 Thu HP
                               </button>
                             )}
@@ -184,14 +321,9 @@ const HoSoManagement = () => {
                                 🏫 Xếp lớp
                               </button>
                             )}
-                            {hs.user_id && (
-                              <button className="btn btn-warning btn-sm"
-                                onClick={async () => {
-                                  if (!confirm('Reset mật khẩu về ngày sinh?')) return
-                                  const res = await axios.post(`${backendUrl}/api/admin/ho-so/${hs.id}/reset-mat-khau`, {}, { headers })
-                                  if (res.data.success) toast.success(`Mật khẩu mới: ${res.data.mat_khau}`)
-                                }}>
-                                🔑 Reset MK
+                            {!['dang_hoc','da_cap_bang'].includes(hs.trang_thai) && (
+                              <button className="btn btn-danger btn-sm" onClick={() => handleXoa(hs)}>
+                                🗑️
                               </button>
                             )}
                           </div>
@@ -215,74 +347,232 @@ const HoSoManagement = () => {
         </div>
       )}
 
-      {/* Modal tạo hồ sơ offline */}
+      {/* Modal thêm / sửa hồ sơ */}
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="modal" onClick={e => e.stopPropagation()}>
+          <div className="modal modal-xl" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>📋 Thêm Hồ Sơ Offline</h3>
+              <h3>{editingHoSo ? '✏️ Sửa Hồ Sơ — ' + editingHoSo.ho_ten : '📋 Thêm Hồ Sơ Offline'}</h3>
               <button className="modal-close" onClick={() => setShowModal(false)}>✕</button>
             </div>
-            <form onSubmit={handleTaoHoSo}>
+            <form onSubmit={editingHoSo ? handleSuaHoSo : handleTaoHoSo}>
               <div className="modal-body">
-                <div className="form-row-2">
-                  <div className="form-group"><label>Họ và tên *</label><input value={form.ho_ten} onChange={e=>setForm({...form,ho_ten:e.target.value})} required /></div>
-                  <div className="form-group"><label>Số CCCD *</label><input value={form.so_cccd} onChange={e=>setForm({...form,so_cccd:e.target.value})} required /></div>
+                <div className="hoso-form-layout">
+
+                  {/* ── Cột trái: Ảnh thẻ ── */}
+                  <div className="hoso-anh-col">
+                    <p className="hoso-anh-label">📷 Ảnh thẻ 3×4</p>
+                    <div
+                      className={`hoso-anh-upload ${anhPreview ? 'has-image' : ''}`}
+                      onClick={() => document.getElementById('anh-the-input').click()}
+                    >
+                      {anhPreview ? (
+                        <img src={anhPreview} alt="Ảnh thẻ" className="hoso-anh-preview" />
+                      ) : (
+                        <div className="hoso-anh-placeholder">
+                          <span>📷</span>
+                          <p>Nhấn để chọn ảnh</p>
+                          <small>JPG, PNG — tối đa 5MB</small>
+                        </div>
+                      )}
+                    </div>
+                    <input
+                      id="anh-the-input"
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      style={{ display: 'none' }}
+                      onChange={handleAnhChange}
+                    />
+                    {anhPreview && (
+                      <button
+                        type="button"
+                        className="btn btn-outline btn-sm"
+                        style={{ marginTop: 8, width: '100%' }}
+                        onClick={() => { setAnhPreview(null); setAnhFile(null) }}
+                      >
+                        🗑️ Xóa ảnh
+                      </button>
+                    )}
+                    <p className="hoso-anh-hint">
+                      Ảnh sẽ dùng làm ảnh đại diện học viên trong hệ thống
+                    </p>
+                  </div>
+
+                  {/* ── Cột phải: Thông tin ── */}
+                  <div className="hoso-info-col">
+                    <div className="hoso-section-title">👤 Thông Tin Cá Nhân</div>
+                    <div className="form-row-2">
+                      <div className="form-group">
+                        <label>Họ và tên *</label>
+                        <input value={form.ho_ten} onChange={e=>setForm({...form,ho_ten:e.target.value})} placeholder="Nguyễn Văn A" required />
+                      </div>
+                      <div className="form-group">
+                        <label>Số CCCD *</label>
+                        <input
+                          value={form.so_cccd}
+                          onChange={e => {
+                            const v = e.target.value.replace(/\D/g, '').slice(0, 12)
+                            setForm({...form, so_cccd: v})
+                          }}
+                          placeholder="012345678901"
+                          required
+                          maxLength={12}
+                          pattern="\d{12}"
+                          title="CCCD phải đủ 12 chữ số"
+                          inputMode="numeric"
+                        />
+                        {form.so_cccd && form.so_cccd.length !== 12 && (
+                          <span className="field-error">CCCD phải đủ 12 chữ số ({form.so_cccd.length}/12)</span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="form-row-2">
+                      <div className="form-group">
+                        <label>Ngày sinh *</label>
+                        <input type="date" value={form.ngay_sinh} onChange={e=>setForm({...form,ngay_sinh:e.target.value})} required />
+                      </div>
+                      <div className="form-group">
+                        <label>Số điện thoại</label>
+                        <input
+                          value={form.so_dien_thoai}
+                          onChange={e => {
+                            const v = e.target.value.replace(/\D/g, '').slice(0, 10)
+                            setForm({...form, so_dien_thoai: v})
+                          }}
+                          placeholder="0901234567"
+                          maxLength={10}
+                          pattern="0\d{9}"
+                          title="Số điện thoại phải gồm 10 chữ số và bắt đầu bằng 0"
+                          inputMode="numeric"
+                        />
+                        {form.so_dien_thoai && !/^0\d{9}$/.test(form.so_dien_thoai) && (
+                          <span className="field-error">SĐT phải 10 số, bắt đầu bằng 0</span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="form-group">
+                      <label>Email</label>
+                      <input
+                        type="email"
+                        value={form.email}
+                        onChange={e=>setForm({...form,email:e.target.value})}
+                        placeholder="hocvien@gmail.com"
+                        pattern="[a-zA-Z0-9._%+\-]+@gmail\.com"
+                        title="Email phải có định dạng @gmail.com"
+                      />
+                      {form.email && !/^[a-zA-Z0-9._%+\-]+@gmail\.com$/.test(form.email) && (
+                        <span className="field-error">Email phải có định dạng @gmail.com</span>
+                      )}
+                    </div>
+                    <div className="form-group">
+                      <label>Địa chỉ</label>
+                      <input value={form.dia_chi} onChange={e=>setForm({...form,dia_chi:e.target.value})} placeholder="123 Đường ABC, Quận 1, TP.HCM" />
+                    </div>
+
+                    <div className="hoso-section-title" style={{marginTop:8}}>📚 Đăng Ký Khóa Học</div>
+                    <div className="form-group">
+                      <label>Khóa học *</label>
+                      <select value={form.khoa_hoc_id} onChange={e=>setForm({...form,khoa_hoc_id:e.target.value})} required>
+                        <option value="">-- Chọn khóa học --</option>
+                        {khoaList.map(k => (
+                          <option key={k.id} value={k.id}>{k.ten_khoa} (Hạng {k.loai_bang})</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="hoso-form-note">
+                      <span>ℹ️</span>
+                      <p>Sau khi tạo hồ sơ, học viên sẽ ở trạng thái <strong>Chờ đóng học phí</strong>. Tài khoản đăng nhập sẽ được tạo tự động khi xếp lớp.</p>
+                    </div>
+                  </div>
                 </div>
-                <div className="form-row-2">
-                  <div className="form-group"><label>Ngày sinh *</label><input type="date" value={form.ngay_sinh} onChange={e=>setForm({...form,ngay_sinh:e.target.value})} required /></div>
-                  <div className="form-group"><label>Số điện thoại</label><input value={form.so_dien_thoai} onChange={e=>setForm({...form,so_dien_thoai:e.target.value})} /></div>
-                </div>
-                <div className="form-group"><label>Khóa học *</label>
-                  <select value={form.khoa_hoc_id} onChange={e=>setForm({...form,khoa_hoc_id:e.target.value})} required>
-                    <option value="">-- Chọn khóa học --</option>
-                    {khoaList.map(k => <option key={k.id} value={k.id}>{k.ten_khoa} (Hạng {k.loai_bang})</option>)}
-                  </select>
-                </div>
-                <div className="form-group"><label>Địa chỉ</label><input value={form.dia_chi} onChange={e=>setForm({...form,dia_chi:e.target.value})} /></div>
-                <div className="form-group"><label>Email</label><input type="email" value={form.email} onChange={e=>setForm({...form,email:e.target.value})} /></div>
               </div>
               <div className="modal-footer">
                 <button type="button" className="btn btn-outline" onClick={() => setShowModal(false)}>Hủy</button>
-                <button type="submit" className="btn btn-primary">Tạo hồ sơ</button>
+                <button type="submit" className="btn btn-primary">
+                  {editingHoSo ? '💾 Lưu thay đổi' : '➕ Tạo hồ sơ'}
+                </button>
               </div>
             </form>
           </div>
         </div>
       )}
 
-      {/* Modal thu học phí */}
+      {/* Modal xác nhận học phí */}
       {showHocPhiModal && selected && (
         <div className="modal-overlay" onClick={() => setShowHocPhiModal(false)}>
-          <div className="modal" onClick={e => e.stopPropagation()}>
+          <div className="modal modal-lg" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>💰 Ghi Nhận Học Phí — {selected.ho_ten}</h3>
+              <h3>💰 Xác Nhận Thu Học Phí</h3>
               <button className="modal-close" onClick={() => setShowHocPhiModal(false)}>✕</button>
             </div>
             <form onSubmit={handleGhiHocPhi}>
               <div className="modal-body">
-                <div className="hocphi-info">
-                  <p>Khóa học: <strong>{selected.khoa_hoc?.ten_khoa}</strong></p>
-                  <p>Học phí: <strong>{Number(selected.khoa_hoc?.hoc_phi||0).toLocaleString('vi-VN')} VNĐ</strong></p>
+                {/* Thông tin học viên */}
+                <div className="hocphi-hv-card">
+                  <div className="hocphi-hv-avatar">
+                    {selected.ho_ten?.charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <p className="hocphi-hv-name">{selected.ho_ten}</p>
+                    <p className="hocphi-hv-cccd">CCCD: {selected.so_cccd}</p>
+                  </div>
                 </div>
-                <div className="form-group"><label>Số tiền thu *</label>
-                  <input type="number" value={hocPhiForm.so_tien} onChange={e=>setHocPhiForm({...hocPhiForm,so_tien:e.target.value})} required placeholder="VD: 7500000" />
+
+                {/* Thông tin học phí */}
+                <div className="hocphi-amount-box">
+                  <div className="hocphi-amount-label">Khóa học đăng ký</div>
+                  <div className="hocphi-khoa-name">{selected.khoa_hoc?.ten_khoa}</div>
+                  <div className="hocphi-amount-label" style={{marginTop:12}}>Số tiền cần thu</div>
+                  <div className="hocphi-amount-value">
+                    {Number(selected.khoa_hoc?.hoc_phi || 0).toLocaleString('vi-VN')}
+                    <span> VNĐ</span>
+                  </div>
+                  <div className="hocphi-hang-badge">
+                    <span className="badge badge-blue">Hạng {selected.khoa_hoc?.loai_bang}</span>
+                  </div>
                 </div>
-                <div className="form-group"><label>Phương thức *</label>
-                  <select value={hocPhiForm.phuong_thuc} onChange={e=>setHocPhiForm({...hocPhiForm,phuong_thuc:e.target.value})}>
-                    <option value="tien_mat">Tiền mặt</option>
-                    <option value="chuyen_khoan">Chuyển khoản</option>
-                    <option value="vnpay">VNPay</option>
-                    <option value="momo">MoMo</option>
-                  </select>
+
+                {/* Phương thức */}
+                <div className="form-group" style={{marginTop:16}}>
+                  <label>Phương thức thanh toán *</label>
+                  <div className="hocphi-method-grid">
+                    {[
+                      { value:'tien_mat',    icon:'💵', label:'Tiền mặt' },
+                      { value:'chuyen_khoan',icon:'🏦', label:'Chuyển khoản' },
+                      { value:'vnpay',       icon:'💳', label:'VNPay' },
+                      { value:'momo',        icon:'📱', label:'MoMo' },
+                    ].map(m => (
+                      <label key={m.value} className={`hocphi-method-btn ${hocPhiForm.phuong_thuc === m.value ? 'active' : ''}`}>
+                        <input type="radio" name="phuong_thuc" value={m.value}
+                          checked={hocPhiForm.phuong_thuc === m.value}
+                          onChange={e => setHocPhiForm({...hocPhiForm, phuong_thuc: e.target.value})}
+                          style={{display:'none'}} />
+                        <span>{m.icon}</span>
+                        <span>{m.label}</span>
+                      </label>
+                    ))}
+                  </div>
                 </div>
-                <div className="form-group"><label>Mã giao dịch</label>
-                  <input value={hocPhiForm.ma_giao_dich} onChange={e=>setHocPhiForm({...hocPhiForm,ma_giao_dich:e.target.value})} placeholder="Tùy chọn" />
+
+                {hocPhiForm.phuong_thuc !== 'tien_mat' && (
+                  <div className="form-group">
+                    <label>Mã giao dịch</label>
+                    <input value={hocPhiForm.ma_giao_dich}
+                      onChange={e => setHocPhiForm({...hocPhiForm, ma_giao_dich: e.target.value})}
+                      placeholder="Nhập mã giao dịch (nếu có)" />
+                  </div>
+                )}
+
+                <div className="hocphi-confirm-note">
+                  ✅ Sau khi xác nhận, học viên sẽ chuyển sang trạng thái <strong>Chờ mở lớp</strong>
                 </div>
               </div>
               <div className="modal-footer">
                 <button type="button" className="btn btn-outline" onClick={() => setShowHocPhiModal(false)}>Hủy</button>
-                <button type="submit" className="btn btn-success">✅ Xác nhận thu tiền</button>
+                <button type="submit" className="btn btn-success">
+                  ✅ Xác nhận đã thu {Number(selected.khoa_hoc?.hoc_phi||0).toLocaleString('vi-VN')} VNĐ
+                </button>
               </div>
             </form>
           </div>
@@ -320,6 +610,227 @@ const HoSoManagement = () => {
                 <button type="submit" className="btn btn-primary">🏫 Xếp lớp & Tạo tài khoản</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL XEM CHI TIẾT HỒ SƠ ── */}
+      {viewItem !== null && (
+        <div className="modal-overlay" onClick={() => setViewItem(null)}>
+          <div className="modal modal-xl hoso-detail-modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>📋 Chi Tiết Hồ Sơ Học Viên</h3>
+              <button className="modal-close" onClick={() => setViewItem(null)}>✕</button>
+            </div>
+            <div className="modal-body">
+              {viewLoading ? (
+                <div className="loading-wrap"><div className="spinner" /></div>
+              ) : (
+                <div className="hoso-detail-layout">
+
+                  {/* ── CỘT TRÁI: Ảnh + trạng thái ── */}
+                  <div className="hoso-detail-left">
+                    {/* Ảnh thẻ */}
+                    <div className="hoso-detail-anh-wrap">
+                      {viewItem.anh_the ? (
+                        <img
+                          src={`/uploads/${viewItem.anh_the}`}
+                          alt={viewItem.ho_ten}
+                          className="hoso-detail-anh"
+                          onError={e => { e.target.onerror=null; e.target.style.display='none'; e.target.nextSibling.style.display='flex' }}
+                        />
+                      ) : null}
+                      <div className="hoso-detail-anh-fallback" style={{display: viewItem.anh_the ? 'none' : 'flex'}}>
+                        {viewItem.ho_ten?.charAt(0).toUpperCase()}
+                      </div>
+                    </div>
+
+                    {/* Tên + hạng bằng */}
+                    <h3 className="hoso-detail-name">{viewItem.ho_ten}</h3>
+                    <code className="hoso-detail-cccd">{viewItem.so_cccd}</code>
+                    {viewItem.khoa_hoc?.loai_bang && (
+                      <span className="badge badge-blue" style={{marginTop:8,fontSize:13}}>
+                        Hạng {viewItem.khoa_hoc.loai_bang}
+                      </span>
+                    )}
+
+                    {/* Trạng thái */}
+                    <div className="hoso-detail-status-wrap">
+                      {(() => {
+                        const ts = TRANG_THAI_MAP[viewItem.trang_thai] || { text: viewItem.trang_thai, cls:'badge-gray' }
+                        return <span className={`badge ${ts.cls}`} style={{fontSize:13}}>{ts.text}</span>
+                      })()}
+                      <span className={`badge ${viewItem.trang_thai_hoc_phi === 'da_dong' ? 'badge-success' : 'badge-danger'}`} style={{fontSize:13}}>
+                        {viewItem.trang_thai_hoc_phi === 'da_dong' ? '✅ Đã đóng HP' : '❌ Chưa đóng HP'}
+                      </span>
+                    </div>
+
+                    {/* Thống kê nhanh */}
+                    <div className="hoso-detail-quick">
+                      <div className="hoso-detail-quick-item">
+                        <span>{viewItem.nguon_dang_ky === 'online' ? '🌐' : '🏢'}</span>
+                        <p>{viewItem.nguon_dang_ky === 'online' ? 'Online' : 'Offline'}</p>
+                      </div>
+                      <div className="hoso-detail-quick-item">
+                        <span>{viewItem.user_id ? '✅' : '⏳'}</span>
+                        <p>{viewItem.user_id ? 'Có TK' : 'Chưa TK'}</p>
+                      </div>
+                      <div className="hoso-detail-quick-item">
+                        <span>📅</span>
+                        <p>{viewItem.created_at ? new Date(viewItem.created_at).toLocaleDateString('vi-VN') : '—'}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* ── CỘT PHẢI: Thông tin chi tiết ── */}
+                  <div className="hoso-detail-right">
+
+                    {/* Thông tin cá nhân */}
+                    <div className="detail-section">
+                      <div className="detail-section-title">👤 Thông Tin Cá Nhân</div>
+                      <div className="detail-grid">
+                        <div className="detail-box">
+                          <div className="detail-label">Họ và tên</div>
+                          <div className="detail-value">{viewItem.ho_ten}</div>
+                        </div>
+                        <div className="detail-box">
+                          <div className="detail-label">Số CCCD</div>
+                          <div className="detail-value"><code>{viewItem.so_cccd}</code></div>
+                        </div>
+                        <div className="detail-box">
+                          <div className="detail-label">Ngày sinh</div>
+                          <div className="detail-value">
+                            {viewItem.ngay_sinh ? new Date(viewItem.ngay_sinh).toLocaleDateString('vi-VN') : '—'}
+                          </div>
+                        </div>
+                        <div className="detail-box">
+                          <div className="detail-label">Số điện thoại</div>
+                          <div className="detail-value">{viewItem.so_dien_thoai || '—'}</div>
+                        </div>
+                        <div className="detail-box" style={{gridColumn:'1/-1'}}>
+                          <div className="detail-label">Địa chỉ</div>
+                          <div className="detail-value">{viewItem.dia_chi || '—'}</div>
+                        </div>
+                        {viewItem.email && (
+                          <div className="detail-box" style={{gridColumn:'1/-1'}}>
+                            <div className="detail-label">Email</div>
+                            <div className="detail-value">{viewItem.email}</div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Khóa học */}
+                    <div className="detail-section">
+                      <div className="detail-section-title">📚 Khóa Học</div>
+                      <div className="detail-grid">
+                        <div className="detail-box" style={{gridColumn:'1/-1'}}>
+                          <div className="detail-label">Tên khóa học</div>
+                          <div className="detail-value">{viewItem.khoa_hoc?.ten_khoa || '—'}</div>
+                        </div>
+                        <div className="detail-box">
+                          <div className="detail-label">Học phí khóa học</div>
+                          <div className="detail-value">{Number(viewItem.khoa_hoc?.hoc_phi||0).toLocaleString('vi-VN')} VNĐ</div>
+                        </div>
+                        <div className="detail-box">
+                          <div className="detail-label">Đã đóng</div>
+                          <div className="detail-value">{Number(viewItem.hoc_phi_da_dong||0).toLocaleString('vi-VN')} VNĐ</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Lịch sử thanh toán */}
+                    {viewItem.thanh_toan?.length > 0 && (
+                      <div className="detail-section">
+                        <div className="detail-section-title">💰 Lịch Sử Thanh Toán</div>
+                        <table className="data-table" style={{marginTop:8}}>
+                          <thead>
+                            <tr><th>#</th><th>Số tiền</th><th>Phương thức</th><th>Mã GD</th><th>Ngày thu</th></tr>
+                          </thead>
+                          <tbody>
+                            {viewItem.thanh_toan.map((tt, i) => (
+                              <tr key={tt.id}>
+                                <td>{i+1}</td>
+                                <td><strong>{Number(tt.so_tien).toLocaleString('vi-VN')} VNĐ</strong></td>
+                                <td style={{textTransform:'capitalize'}}>{tt.phuong_thuc?.replace('_',' ')}</td>
+                                <td><code style={{fontSize:11}}>{tt.ma_giao_dich || '—'}</code></td>
+                                <td>{tt.created_at ? new Date(tt.created_at).toLocaleDateString('vi-VN') : '—'}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+
+                    {/* Lớp học */}
+                    {viewItem.hoc_vien_lop?.length > 0 && (
+                      <div className="detail-section">
+                        <div className="detail-section-title">🏫 Lớp Học</div>
+                        {viewItem.hoc_vien_lop.map((hvl, i) => (
+                          <div key={i} className="detail-grid" style={{marginTop: i > 0 ? 10 : 8}}>
+                            <div className="detail-box">
+                              <div className="detail-label">Tên lớp</div>
+                              <div className="detail-value">{hvl.lop_hoc?.ten_lop || '—'}</div>
+                            </div>
+                            <div className="detail-box">
+                              <div className="detail-label">GV Lý thuyết</div>
+                              <div className="detail-value">{hvl.lop_hoc?.giang_vien_ly_thuyet?.user?.ho_ten || '—'}</div>
+                            </div>
+                            <div className="detail-box">
+                              <div className="detail-label">GV Thực hành</div>
+                              <div className="detail-value">{hvl.lop_hoc?.giang_vien_thuc_hanh?.user?.ho_ten || '—'}</div>
+                            </div>
+                            <div className="detail-box">
+                              <div className="detail-label">Trạng thái lớp</div>
+                              <div className="detail-value">
+                                <span className="badge badge-blue">{hvl.lop_hoc?.trang_thai || '—'}</span>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Kết quả thi */}
+                    {viewItem.ket_qua_thi?.length > 0 && (
+                      <div className="detail-section">
+                        <div className="detail-section-title">🎯 Kết Quả Thi</div>
+                        <table className="data-table" style={{marginTop:8}}>
+                          <thead>
+                            <tr><th>#</th><th>Bài thi</th><th>Điểm</th><th>Kết quả</th><th>Ngày thi</th></tr>
+                          </thead>
+                          <tbody>
+                            {viewItem.ket_qua_thi.map((kq, i) => (
+                              <tr key={kq.id}>
+                                <td>{i+1}</td>
+                                <td>{kq.bai_thi?.ten_bai_thi || kq.lich_thi?.ten_ky_thi || '—'}</td>
+                                <td><strong>{kq.diem ?? '—'}</strong></td>
+                                <td>
+                                  <span className={`badge ${kq.ket_qua === 'dat' ? 'badge-success' : 'badge-danger'}`}>
+                                    {kq.ket_qua === 'dat' ? '✅ Đạt' : '❌ Không đạt'}
+                                  </span>
+                                </td>
+                                <td>{kq.created_at ? new Date(kq.created_at).toLocaleDateString('vi-VN') : '—'}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-outline" onClick={() => setViewItem(null)}>Đóng</button>
+              <button className="btn btn-warning" onClick={() => { setViewItem(null); openEdit(viewItem) }}>✏️ Chỉnh sửa</button>
+              {!viewItem.user_id && viewItem.trang_thai_hoc_phi === 'da_dong' && (
+                <button className="btn btn-success" onClick={() => handleTaoTaiKhoan(viewItem)}>
+                  🔑 Tạo tài khoản
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}

@@ -22,4 +22,5 @@ class LopHoc extends Model
     public function giangVienThucHanh(){ return $this->belongsTo(GiangVien::class, 'giang_vien_thuc_hanh_id'); }
     public function hocVienLop()       { return $this->hasMany(HocVienLop::class); }
     public function lichHoc()          { return $this->hasMany(LichHoc::class); }
+    public function xeLop()            { return $this->hasMany(\App\Models\XeLopHoc::class); }
 }

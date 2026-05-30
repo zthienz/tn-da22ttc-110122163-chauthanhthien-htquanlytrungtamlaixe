@@ -1,0 +1,108 @@
+@startuml CSDL_Nhom3
+title Sơ đồ CSDL - Nhóm 3: Thi cử & Cấp bằng
+
+skinparam linetype ortho
+hide circle
+skinparam classFontSize 12
+
+entity "khoa_hoc" as khoa_hoc {
+  *id : bigint <<PK>>
+  --
+  ten_khoa : varchar(255)
+  loai_bang : enum(A1,A,B1,B2,C1,C,D,E,CE)
+  so_buoi_ly_thuyet_toi_thieu : int
+  so_km_toi_thieu : int
+}
+
+entity "bai_thi" as bai_thi {
+  *id : bigint <<PK>>
+  --
+  *khoa_hoc_id : bigint <<FK - khoa_hoc>>
+  ten_bai_thi : varchar(255)
+  loai : enum(tot_nghiep, sat_hanh)
+  diem_dat : decimal(5,2)
+  phi_thi_lai : decimal(10,2)
+  thu_tu : int
+  created_at : timestamp
+  updated_at : timestamp
+}
+
+entity "lich_thi" as lich_thi {
+  *id : bigint <<PK>>
+  --
+  *khoa_hoc_id : bigint <<FK - khoa_hoc>>
+  loai_thi : enum(tot_nghiep, sat_hanh)
+  ngay_thi : date
+  gio_thi : time
+  dia_diem : varchar(255)
+  don_vi_to_chuc : varchar(255)
+  ghi_chu : text
+  created_at : timestamp
+  updated_at : timestamp
+}
+
+entity "ket_qua_thi" as kq_thi {
+  *id : bigint <<PK>>
+  --
+  *ho_so_id : bigint <<FK - ho_so_hoc_vien>>
+  *lich_thi_id : bigint <<FK - lich_thi>>
+  *bai_thi_id : bigint <<FK - bai_thi>>
+  diem : decimal(5,2)
+  ket_qua : enum(dat, khong_dat, vang_mat)
+  lan_thi : int
+  phi_thi_lai : decimal(10,2)
+  da_thu_phi : tinyint(1)
+  nhan_xet : text
+  created_at : timestamp
+  updated_at : timestamp
+}
+
+entity "bang_tot_nghiep" as bang_tn {
+  *id : bigint <<PK>>
+  --
+  *ho_so_id : bigint <<FK - ho_so_hoc_vien>>
+  so_bang : varchar(255) <<unique>>
+  ngay_cap : date
+  trang_thai : enum(da_cap, cap_lai)
+  ghi_chu : text
+  created_at : timestamp
+  updated_at : timestamp
+}
+
+entity "bang_lai_xe" as bang_lai {
+  *id : bigint <<PK>>
+  --
+  *ho_so_id : bigint <<FK - ho_so_hoc_vien>>
+  so_bang_lai : varchar(255) <<unique>>
+  ho_ten_chu_bang : varchar(255)
+  ngay_sinh_chu_bang : date
+  so_cccd_chu_bang : varchar(20)
+  loai_bang : enum(A1,A2,B1,B2,C,D,E)
+  ngay_cap : date
+  ngay_het_han : date
+  co_quan_cap : varchar(255)
+  dia_chi_co_quan_cap : varchar(255)
+  trang_thai : enum(cho_cap, da_cap, cap_lai, thu_hoi)
+  ngay_cap_thuc_te : timestamp
+  ghi_chu : text
+  created_at : timestamp
+  updated_at : timestamp
+}
+
+entity "ho_so_hoc_vien" as ho_so {
+  *id : bigint <<PK>>
+  --
+  ho_ten : varchar(100)
+  so_cccd : varchar(20)
+  trang_thai : enum(...)
+}
+
+khoa_hoc ||--o{ bai_thi : "cấu hình bài thi"
+khoa_hoc ||--o{ lich_thi : "tổ chức thi"
+lich_thi ||--o{ kq_thi : "kết quả"
+bai_thi ||--o{ kq_thi : "thuộc bài thi"
+ho_so ||--o{ kq_thi : "của học viên"
+ho_so ||--o| bang_tn : "được cấp bằng TN"
+ho_so ||--o| bang_lai : "được cấp bằng lái"
+
+@enduml

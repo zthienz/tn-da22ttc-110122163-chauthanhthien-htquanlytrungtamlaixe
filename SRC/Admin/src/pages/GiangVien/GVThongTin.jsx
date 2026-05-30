@@ -1,7 +1,9 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import axios from 'axios'
 import { useAdmin } from '../../context/AdminContext'
 import './GVThongTin.css'
+
+const CM_MAP = { ly_thuyet:'📖 Lý thuyết', thuc_hanh:'🚗 Thực hành', ca_hai:'📖🚗 Cả hai' }
 
 const GVThongTin = () => {
   const { token, adminInfo, backendUrl } = useAdmin()
@@ -16,9 +18,11 @@ const GVThongTin = () => {
       .finally(() => setLoading(false))
   }, [])
 
-  const CM_MAP = { ly_thuyet:'📖 Lý thuyết', thuc_hanh:'🚗 Thực hành', ca_hai:'📖🚗 Cả hai' }
-
   if (loading) return <div className="loading-wrap"><div className="spinner"/></div>
+
+  const anhUrl = giangVien?.anh_dai_dien
+    ? `/uploads/${giangVien.anh_dai_dien}`
+    : null
 
   return (
     <div className="gv-thongtin">
@@ -27,14 +31,20 @@ const GVThongTin = () => {
       </div>
 
       <div className="gvtt-grid">
-        {/* Card trái */}
+        {/* Card trái — ảnh + tên */}
         <div className="gvtt-profile-card">
-          <div className="gvtt-avatar">
-            {adminInfo?.ho_ten?.charAt(0).toUpperCase() || 'G'}
+          <div className="gvtt-anh-wrap">
+            {anhUrl ? (
+              <img src={anhUrl} alt={adminInfo?.ho_ten} className="gvtt-anh"
+                onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex' }} />
+            ) : null}
+            <div className="gvtt-anh-fallback" style={{display: anhUrl ? 'none' : 'flex'}}>
+              {adminInfo?.ho_ten?.charAt(0).toUpperCase() || 'G'}
+            </div>
           </div>
-          <h3>{adminInfo?.ho_ten}</h3>
+          <h3 className="gvtt-name">{adminInfo?.ho_ten}</h3>
           <p className="gvtt-email">{adminInfo?.email}</p>
-          <span className="badge badge-info" style={{marginTop:8}}>
+          <span className={`badge ${giangVien?.chuyen_mon === 'thuc_hanh' ? 'badge-success' : 'badge-info'}`} style={{marginTop:8,fontSize:13}}>
             {CM_MAP[giangVien?.chuyen_mon] || '—'}
           </span>
           <div className="gvtt-stats">
@@ -49,7 +59,7 @@ const GVThongTin = () => {
           </div>
         </div>
 
-        {/* Card phải */}
+        {/* Card phải — chi tiết */}
         <div className="card">
           <div className="card-header"><h3>📋 Chi Tiết Thông Tin</h3></div>
           <div className="card-body">
