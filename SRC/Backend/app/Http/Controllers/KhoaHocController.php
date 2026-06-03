@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\KhoaHoc;
+use App\Models\LopHoc;
+use App\Models\HoSoHocVien;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class KhoaHocController extends Controller
 {
@@ -62,10 +65,38 @@ class KhoaHocController extends Controller
         return response()->json(['success' => true, 'message' => 'Cập nhật thành công', 'data' => $khoaHoc]);
     }
 
-    // Admin: Xóa
+    // Admin: Xóa bằng lái → cascade xóa tất cả khóa đào tạo + lớp học liên quan
+    // Học viên trong các lớp bị xóa sẽ chuyển về trạng thái chờ xếp lớp
     public function destroy($id)
     {
-        KhoaHoc::findOrFail($id)->delete();
-        return response()->json(['success' => true, 'message' => 'Đã xóa khóa học']);
+        $bangLai = KhoaHoc::findOrFail($id);
+
+        DB::transaction(function () use ($bangLai) {
+            // Lấy tất cả khóa đào tạo cùng loại bằng này
+            $khoaDaoTao = KhoaHoc::where('loai_bang', $bangLai->loai_bang)
+                ->whereNotNull('ma_khoa') // chỉ khóa đào tạo (có mã)
+                ->with('lopHoc')
+                ->get();
+
+            foreach ($khoaDaoTao as $khoa) {
+                foreach ($khoa->lopHoc as $lop) {
+                    // Chuyển học viên về chờ xếp lớp
+                    HoSoHocVien::whereHas('hocVienLop', fn($q) => $q->where('lop_hoc_id', $lop->id))
+                        ->update(['trang_thai' => 'cho_mo_lop']);
+
+                    $lop->hocVienLop()->delete();
+                    $lop->delete();
+                }
+                $khoa->delete();
+            }
+
+            // Xóa bằng lái
+            $bangLai->delete();
+        });
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Đã xóa bằng lái và tất cả khóa học, lớp học liên quan. Học viên đã được chuyển về trạng thái chờ xếp lớp.',
+        ]);
     }
 }

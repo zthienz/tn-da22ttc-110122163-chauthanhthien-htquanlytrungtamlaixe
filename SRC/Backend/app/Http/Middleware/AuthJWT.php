@@ -6,6 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
+use App\Models\HoSoHocVien;
 
 class AuthJWT
 {
@@ -19,6 +20,18 @@ class AuthJWT
 
         if (!$user) {
             return response()->json(['success' => false, 'message' => 'Không tìm thấy người dùng'], 401);
+        }
+
+        // Học viên: kiểm tra hồ sơ còn tồn tại không (admin có thể đã xóa)
+        if ($user->role === 'hoc_vien') {
+            $hoSoTonTai = HoSoHocVien::where('user_id', $user->id)->exists();
+            if (!$hoSoTonTai) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Hồ sơ học viên không còn tồn tại. Vui lòng liên hệ trung tâm.',
+                    'code'    => 'HO_SO_DELETED',
+                ], 403);
+            }
         }
 
         // Kiểm tra role nếu có yêu cầu

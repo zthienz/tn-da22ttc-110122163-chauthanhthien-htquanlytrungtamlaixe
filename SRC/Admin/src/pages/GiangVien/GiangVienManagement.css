@@ -9,8 +9,8 @@
 .gv-avatar-img { width: 100%; height: 100%; object-fit: cover; }
 
 /* ── Modal chi tiết ── */
-.gv-detail-modal { max-width: 780px; }
-.gv-detail-body  { padding: 24px 28px; }
+.gv-detail-modal { max-width: 1000px; }
+.gv-detail-body  { padding: 28px 32px; }
 
 .gv-detail-layout {
   display: grid;
@@ -130,3 +130,21 @@
   .gv-detail-left { flex-direction: row; flex-wrap: wrap; justify-content: center; }
   .gv-detail-grid, .form-row-2 { grid-template-columns: 1fr; }
 }
+
+/* ── Dropdown trạng thái giảng viên ── */
+.gv-tt-select {
+  padding: 4px 8px;
+  border-radius: 8px;
+  border: 1px solid;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  outline: none;
+  transition: opacity .15s;
+  min-width: 130px;
+}
+.gv-tt-select:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.gv-tt-san_sang  { background: #f0fdf4; border-color: #86efac; color: #15803d; }
+.gv-tt-nghi_phep { background: #fffbeb; border-color: #fde68a; color: #92400e; }
+.gv-tt-dinh_chi  { background: #fff1f2; border-color: #fca5a5; color: #dc2626; }

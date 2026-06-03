@@ -8,7 +8,6 @@ const TRANG_THAI_MAP = {
   cho_dong_hoc_phi:      { text:'Chờ đóng HP',    cls:'badge-warning' },
   cho_mo_lop:            { text:'Chờ mở lớp',      cls:'badge-info' },
   dang_hoc:              { text:'Đang học',         cls:'badge-success' },
-  chua_du_dieu_kien_thi: { text:'Chưa đủ ĐK thi',  cls:'badge-danger' },
   du_dieu_kien_thi_tn:   { text:'Đủ ĐK thi TN',    cls:'badge-blue' },
   hoan_thanh_tn:         { text:'Hoàn thành TN',    cls:'badge-success' },
   da_cap_bang:           { text:'Đã cấp bằng',      cls:'badge-success' },

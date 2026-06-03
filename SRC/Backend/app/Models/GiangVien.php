@@ -9,7 +9,7 @@ class GiangVien extends Model
     protected $table = 'giang_vien';
 
     protected $fillable = [
-        'user_id', 'chuyen_mon', 'bang_cap', 'nam_kinh_nghiem', 'ghi_chu', 'anh_dai_dien',
+        'user_id', 'chuyen_mon', 'bang_cap', 'nam_kinh_nghiem', 'ghi_chu', 'anh_dai_dien', 'trang_thai',
     ];
 
     public function user()   { return $this->belongsTo(User::class); }

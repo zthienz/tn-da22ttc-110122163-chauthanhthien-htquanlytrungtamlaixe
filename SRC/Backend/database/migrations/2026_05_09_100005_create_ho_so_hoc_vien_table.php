@@ -38,7 +38,6 @@ return new class extends Migration {
                 'cho_dong_hoc_phi',         // hàng chờ, chưa đóng tiền
                 'cho_mo_lop',               // đã đóng tiền, chờ đủ số lượng mở lớp
                 'dang_hoc',                 // đang học trong lớp
-                'chua_du_dieu_kien_thi',    // học xong nhưng chưa đủ điều kiện thi TN
                 'du_dieu_kien_thi_tn',      // đủ điều kiện thi tốt nghiệp
                 'dang_thi_tn',              // đang trong quá trình thi tốt nghiệp
                 'hoan_thanh_tn',            // đậu tốt nghiệp, chờ sát hạch

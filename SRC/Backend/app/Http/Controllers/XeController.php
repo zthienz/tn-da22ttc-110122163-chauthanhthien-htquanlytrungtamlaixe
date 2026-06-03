@@ -54,8 +54,8 @@ class XeController extends Controller
         if ($request->hasFile('anh_xe')) {
             $file     = $request->file('anh_xe');
             $fileName = 'xe_' . preg_replace('/[^a-zA-Z0-9]/', '', $request->bien_so) . '_' . time() . '.' . $file->getClientOriginalExtension();
-            $file->move(public_path('uploads'), $fileName);
-            $anhPath = $fileName;
+            $file->move(public_path('uploads/xe'), $fileName);
+            $anhPath = 'xe/' . $fileName;
         }
 
         $data = $request->except('anh_xe');
@@ -78,8 +78,8 @@ class XeController extends Controller
         if ($request->hasFile('anh_xe')) {
             $file     = $request->file('anh_xe');
             $fileName = 'xe_' . preg_replace('/[^a-zA-Z0-9]/', '', $xe->bien_so) . '_' . time() . '.' . $file->getClientOriginalExtension();
-            $file->move(public_path('uploads'), $fileName);
-            $anhPath = $fileName;
+            $file->move(public_path('uploads/xe'), $fileName);
+            $anhPath = 'xe/' . $fileName;
         }
 
         $data = $request->except('anh_xe');
@@ -104,7 +104,7 @@ class XeController extends Controller
     public function capNhatTrangThai(Request $request, $id)
     {
         $request->validate([
-            'trang_thai' => 'required|in:san_sang,dang_su_dung,bao_tri,hong,nghi_huu',
+            'trang_thai' => 'required|in:san_sang,dang_su_dung,bao_tri,hong',
         ]);
         $xe = Xe::findOrFail($id);
         $xe->update(['trang_thai' => $request->trang_thai]);

@@ -10,6 +10,12 @@ const CM_MAP = {
   ca_hai:    { text: '📖🚗 Cả hai',  cls: 'badge-purple' },
 }
 
+const TT_GV_MAP = {
+  san_sang:  { label: '✅ Sẵn sàng',   cls: 'badge-success' },
+  nghi_phep: { label: '🏖️ Nghỉ phép', cls: 'badge-warning' },
+  dinh_chi:  { label: '🚫 Đình chỉ',  cls: 'badge-danger' },
+}
+
 const emptyForm = {
   ho_ten: '', email: '', password: '', so_dien_thoai: '',
   chuyen_mon: 'ca_hai', bang_cap: '', nam_kinh_nghiem: 0, ghi_chu: ''
@@ -143,6 +149,22 @@ const GiangVienManagement = () => {
     } catch (err) { toast.error(err.response?.data?.message || 'Lỗi') }
   }
 
+  // ── Đổi trạng thái giảng viên (san_sang / nghi_phep / dinh_chi) ──
+  const handleTrangThaiGV = async (gvId, tt) => {
+    try {
+      const res = await axios.patch(
+        `${backendUrl}/api/admin/giang-vien/${gvId}/trang-thai`,
+        { trang_thai: tt },
+        { headers }
+      )
+      if (res.data.success) {
+        toast.success('Cập nhật trạng thái thành công')
+        setList(prev => prev.map(gv => gv.id === gvId ? { ...gv, trang_thai: tt } : gv))
+        if (showDetail?.id === gvId) setShowDetail(prev => ({ ...prev, trang_thai: tt }))
+      } else toast.error(res.data.message)
+    } catch (err) { toast.error(err.response?.data?.message || 'Lỗi') }
+  }
+
   const filtered = list.filter(gv => {
     const matchSearch = !search ||
       gv.ho_ten?.toLowerCase().includes(search.toLowerCase()) ||
@@ -215,7 +237,8 @@ const GiangVienManagement = () => {
                   <tr><td colSpan={8} style={{ textAlign: 'center', padding: '40px', color: '#a0aec0' }}>
                     {search || filterCM ? 'Không tìm thấy kết quả phù hợp' : 'Chưa có giảng viên nào'}
                   </td></tr>
-                ) : filtered.map((gv, i) => (
+                ) : filtered.map((gv, i) => {
+                  return (
                   <tr key={gv.id}>
                     <td>{i + 1}</td>
                     <td>
@@ -233,9 +256,20 @@ const GiangVienManagement = () => {
                     <td><span className={`badge ${CM_MAP[gv.chuyen_mon]?.cls || 'badge-gray'}`}>{CM_MAP[gv.chuyen_mon]?.text || gv.chuyen_mon}</span></td>
                     <td>{gv.nam_kinh_nghiem} năm</td>
                     <td>
-                      <span className={`badge ${gv.is_active ? 'badge-success' : 'badge-danger'}`}>
-                        {gv.is_active ? '✅ Hoạt động' : '❌ Vô hiệu'}
-                      </span>
+                      {/* Tài khoản bị khóa → badge đỏ, không cho đổi trạng thái công việc */}
+                      {!gv.is_active ? (
+                        <span className="badge badge-danger">🔒 Bị khóa</span>
+                      ) : (
+                        <select
+                          className={`gv-tt-select gv-tt-${gv.trang_thai || 'san_sang'}`}
+                          value={gv.trang_thai || 'san_sang'}
+                          onChange={e => handleTrangThaiGV(gv.id, e.target.value)}
+                        >
+                          {Object.entries(TT_GV_MAP).map(([k, v]) => (
+                            <option key={k} value={k}>{v.label}</option>
+                          ))}
+                        </select>
+                      )}
                     </td>
                     <td>
                       <div className="action-cell">
@@ -248,7 +282,8 @@ const GiangVienManagement = () => {
                       </div>
                     </td>
                   </tr>
-                ))}
+                  )
+                })}
               </tbody>
             </table>
           )}
@@ -280,9 +315,14 @@ const GiangVienManagement = () => {
                     </div>
                   </div>
                   <h3 className="gv-detail-name">{showDetail.ho_ten}</h3>
-                  <span className={`badge ${showDetail.is_active ? 'badge-success' : 'badge-danger'}`} style={{ fontSize: 13 }}>
-                    {showDetail.is_active ? '✅ Đang hoạt động' : '❌ Vô hiệu hóa'}
-                  </span>
+                  {/* Trạng thái: bị khóa → badge đỏ duy nhất, không bị khóa → badge trạng thái công việc */}
+                  {!showDetail.is_active ? (
+                    <span className="badge badge-danger" style={{ fontSize: 13 }}>🔒 Bị khóa</span>
+                  ) : (
+                    <span className={`badge ${TT_GV_MAP[showDetail.trang_thai || 'san_sang']?.cls}`} style={{ fontSize: 13 }}>
+                      {TT_GV_MAP[showDetail.trang_thai || 'san_sang']?.label}
+                    </span>
+                  )}
                   <div style={{ marginTop: 10 }}>
                     <span className={`badge ${CM_MAP[showDetail.chuyen_mon]?.cls || 'badge-gray'}`} style={{ fontSize: 13 }}>
                       {CM_MAP[showDetail.chuyen_mon]?.text || showDetail.chuyen_mon}
@@ -331,6 +371,19 @@ const GiangVienManagement = () => {
             <div className="modal-footer">
               <button className="btn btn-outline" onClick={() => setShowDetail(null)}>Đóng</button>
               <button className="btn btn-warning" onClick={() => { setShowDetail(null); openEditGV(showDetail) }}>✏️ Sửa</button>
+              {/* Dropdown đổi trạng thái chỉ hiện khi tài khoản đang hoạt động */}
+              {showDetail.is_active && (
+                <select
+                  className={`gv-tt-select gv-tt-${showDetail.trang_thai || 'san_sang'}`}
+                  value={showDetail.trang_thai || 'san_sang'}
+                  onChange={e => handleTrangThaiGV(showDetail.id, e.target.value)}
+                  style={{ padding: '7px 12px', borderRadius: 8, cursor: 'pointer' }}
+                >
+                  {Object.entries(TT_GV_MAP).map(([k, v]) => (
+                    <option key={k} value={k}>{v.label}</option>
+                  ))}
+                </select>
+              )}
               <button className={`btn ${showDetail.is_active ? 'btn-secondary' : 'btn-success'}`}
                 onClick={() => handleToggle(showDetail.user_id, true)}>
                 {showDetail.is_active ? '🔒 Khóa tài khoản' : '🔓 Mở tài khoản'}

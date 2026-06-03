@@ -41,7 +41,6 @@ const Dashboard = () => {
     cho_dong_hoc_phi:      { text: 'Chờ đóng học phí',    color: '#f59e0b', bg: '#fef3c7' },
     cho_mo_lop:            { text: 'Chờ mở lớp',           color: '#3b82f6', bg: '#dbeafe' },
     dang_hoc:              { text: 'Đang học',              color: '#10b981', bg: '#d1fae5' },
-    chua_du_dieu_kien_thi: { text: 'Chưa đủ điều kiện thi',color: '#ef4444', bg: '#fee2e2' },
     du_dieu_kien_thi_tn:   { text: 'Đủ điều kiện thi TN',  color: '#6366f1', bg: '#ede9fe' },
     hoan_thanh_tn:         { text: 'Hoàn thành tốt nghiệp',color: '#10b981', bg: '#d1fae5' },
     da_cap_bang:           { text: 'Đã cấp bằng lái',      color: '#10b981', bg: '#d1fae5' },

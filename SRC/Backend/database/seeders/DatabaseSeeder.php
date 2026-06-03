@@ -56,9 +56,10 @@ class DatabaseSeeder extends Seeder
         $khoaC  = KhoaHoc::create(['ten_khoa'=>'Bằng lái xe hạng C (Xe tải nặng)','mo_ta'=>'Lái xe tải trên 3,5 tấn','loai_bang'=>'C','hoc_phi'=>26000000,'so_buoi_ly_thuyet_toi_thieu'=>30,'so_km_toi_thieu'=>1200,'si_so_toi_da'=>20,'so_hv_mo_lop'=>10,'is_active'=>true]);
         $khoaD  = KhoaHoc::create(['ten_khoa'=>'Nâng hạng bằng lái xe hạng D','mo_ta'=>'Lái xe khách từ 9 đến 30 chỗ','loai_bang'=>'D','hoc_phi'=>10000000,'so_buoi_ly_thuyet_toi_thieu'=>20,'so_km_toi_thieu'=>800,'si_so_toi_da'=>20,'so_hv_mo_lop'=>10,'is_active'=>true]);
         $khoaE  = KhoaHoc::create(['ten_khoa'=>'Nâng hạng bằng lái xe hạng E','mo_ta'=>'Lái xe khách trên 30 chỗ','loai_bang'=>'E','hoc_phi'=>11000000,'so_buoi_ly_thuyet_toi_thieu'=>20,'so_km_toi_thieu'=>800,'si_so_toi_da'=>20,'so_hv_mo_lop'=>10,'is_active'=>true]);
+        $khoaCE = KhoaHoc::create(['ten_khoa'=>'Nâng hạng bằng lái xe hạng CE','mo_ta'=>'Lái xe đầu kéo (sơ mi rơ moóc)','loai_bang'=>'CE','hoc_phi'=>12000000,'so_buoi_ly_thuyet_toi_thieu'=>20,'so_km_toi_thieu'=>800,'si_so_toi_da'=>20,'so_hv_mo_lop'=>10,'is_active'=>true]);
 
         // Bài thi cho từng khóa
-        $this->seedBaiThi($khoaA1->id, $khoaA->id, $khoaB1->id, $khoaB2->id, $khoaC1->id, $khoaC->id, $khoaD->id, $khoaE->id);
+        $this->seedBaiThi($khoaA1->id, $khoaA->id, $khoaB1->id, $khoaB2->id, $khoaC1->id, $khoaC->id, $khoaD->id, $khoaE->id, $khoaCE->id);
 
         // ════════════════════════════════════════════════════
         // 4. XE THỰC HÀNH (8 xe)
@@ -344,40 +345,111 @@ class DatabaseSeeder extends Seeder
         ]);
     }
 
-    /** Seed bài thi cho tất cả khóa học */
-    private function seedBaiThi(int $a1Id, int $aId, int $b1Id, int $b2Id, int $c1Id, int $cId, int $dId, int $eId): void
+    /** Seed bài thi cho tất cả khóa học theo quy định thực tế */
+    private function seedBaiThi(int $a1Id, int $aId, int $b1Id, int $b2Id, int $c1Id, int $cId, int $dId, int $eId, int $ceId): void
     {
-        // A1, A — 4 bài thi
-        foreach ([$a1Id, $aId] as $id) {
-            BaiThi::insert([
-                ['khoa_hoc_id'=>$id,'ten_bai_thi'=>'Lý thuyết',          'loai'=>'tot_nghiep','diem_dat'=>21,'phi_thi_lai'=>100000,'thu_tu'=>1,'created_at'=>now(),'updated_at'=>now()],
-                ['khoa_hoc_id'=>$id,'ten_bai_thi'=>'Thực hành',           'loai'=>'tot_nghiep','diem_dat'=>80,'phi_thi_lai'=>150000,'thu_tu'=>2,'created_at'=>now(),'updated_at'=>now()],
-                ['khoa_hoc_id'=>$id,'ten_bai_thi'=>'Lý thuyết sát hạch', 'loai'=>'sat_hanh', 'diem_dat'=>21,'phi_thi_lai'=>150000,'thu_tu'=>1,'created_at'=>now(),'updated_at'=>now()],
-                ['khoa_hoc_id'=>$id,'ten_bai_thi'=>'Thực hành sát hạch', 'loai'=>'sat_hanh', 'diem_dat'=>80,'phi_thi_lai'=>200000,'thu_tu'=>2,'created_at'=>now(),'updated_at'=>now()],
-            ]);
-        }
-        // B1, B2 — 4 bài thi
+        // ── A1: Xe máy dưới 125cc ────────────────────────────────────────────
+        // Lý thuyết: 25 câu, đúng ≥ 21 → đậu (thang 25)
+        // Sa hình:   100 điểm, đạt ≥ 80 → đậu
+        BaiThi::insert([
+            ['khoa_hoc_id'=>$a1Id,'ten_bai_thi'=>'Lý thuyết','loai'=>'tot_nghiep','diem_dat'=>21,'phi_thi_lai'=>100000,'thu_tu'=>1,'created_at'=>now(),'updated_at'=>now()],
+            ['khoa_hoc_id'=>$a1Id,'ten_bai_thi'=>'Sa hình',  'loai'=>'tot_nghiep','diem_dat'=>80,'phi_thi_lai'=>150000,'thu_tu'=>2,'created_at'=>now(),'updated_at'=>now()],
+            ['khoa_hoc_id'=>$a1Id,'ten_bai_thi'=>'Lý thuyết','loai'=>'sat_hanh', 'diem_dat'=>21,'phi_thi_lai'=>150000,'thu_tu'=>1,'created_at'=>now(),'updated_at'=>now()],
+            ['khoa_hoc_id'=>$a1Id,'ten_bai_thi'=>'Sa hình',  'loai'=>'sat_hanh', 'diem_dat'=>80,'phi_thi_lai'=>200000,'thu_tu'=>2,'created_at'=>now(),'updated_at'=>now()],
+        ]);
+
+        // ── A: Xe máy trên 125cc ─────────────────────────────────────────────
+        // Lý thuyết: 25 câu, đúng ≥ 23 → đậu
+        // Sa hình:   100 điểm, đạt ≥ 80 → đậu
+        BaiThi::insert([
+            ['khoa_hoc_id'=>$aId,'ten_bai_thi'=>'Lý thuyết','loai'=>'tot_nghiep','diem_dat'=>23,'phi_thi_lai'=>100000,'thu_tu'=>1,'created_at'=>now(),'updated_at'=>now()],
+            ['khoa_hoc_id'=>$aId,'ten_bai_thi'=>'Sa hình',  'loai'=>'tot_nghiep','diem_dat'=>80,'phi_thi_lai'=>150000,'thu_tu'=>2,'created_at'=>now(),'updated_at'=>now()],
+            ['khoa_hoc_id'=>$aId,'ten_bai_thi'=>'Lý thuyết','loai'=>'sat_hanh', 'diem_dat'=>23,'phi_thi_lai'=>150000,'thu_tu'=>1,'created_at'=>now(),'updated_at'=>now()],
+            ['khoa_hoc_id'=>$aId,'ten_bai_thi'=>'Sa hình',  'loai'=>'sat_hanh', 'diem_dat'=>80,'phi_thi_lai'=>200000,'thu_tu'=>2,'created_at'=>now(),'updated_at'=>now()],
+        ]);
+
+        // ── B1 & B2: Ô tô (số tự động / số sàn) ─────────────────────────────
+        // Lý thuyết: 30 câu, đúng ≥ 27 → đậu
+        // Mô phỏng:  50 điểm (10 tình huống), đạt ≥ 35 → đậu
+        // Sa hình:   100 điểm, đạt ≥ 80 → đậu
+        // Đường trường: 100 điểm, đạt ≥ 80 → đậu
         foreach ([$b1Id, $b2Id] as $id) {
             BaiThi::insert([
-                ['khoa_hoc_id'=>$id,'ten_bai_thi'=>'Lý thuyết',              'loai'=>'tot_nghiep','diem_dat'=>21,'phi_thi_lai'=>150000,'thu_tu'=>1,'created_at'=>now(),'updated_at'=>now()],
-                ['khoa_hoc_id'=>$id,'ten_bai_thi'=>'Sa hình',                 'loai'=>'tot_nghiep','diem_dat'=>80,'phi_thi_lai'=>200000,'thu_tu'=>2,'created_at'=>now(),'updated_at'=>now()],
-                ['khoa_hoc_id'=>$id,'ten_bai_thi'=>'Đường trường',            'loai'=>'tot_nghiep','diem_dat'=>80,'phi_thi_lai'=>200000,'thu_tu'=>3,'created_at'=>now(),'updated_at'=>now()],
-                ['khoa_hoc_id'=>$id,'ten_bai_thi'=>'Lý thuyết sát hạch',     'loai'=>'sat_hanh', 'diem_dat'=>21,'phi_thi_lai'=>200000,'thu_tu'=>1,'created_at'=>now(),'updated_at'=>now()],
-                ['khoa_hoc_id'=>$id,'ten_bai_thi'=>'Sa hình sát hạch',        'loai'=>'sat_hanh', 'diem_dat'=>80,'phi_thi_lai'=>300000,'thu_tu'=>2,'created_at'=>now(),'updated_at'=>now()],
-                ['khoa_hoc_id'=>$id,'ten_bai_thi'=>'Đường trường sát hạch',   'loai'=>'sat_hanh', 'diem_dat'=>80,'phi_thi_lai'=>300000,'thu_tu'=>3,'created_at'=>now(),'updated_at'=>now()],
+                ['khoa_hoc_id'=>$id,'ten_bai_thi'=>'Lý thuyết',   'loai'=>'tot_nghiep','diem_dat'=>27,'phi_thi_lai'=>150000,'thu_tu'=>1,'created_at'=>now(),'updated_at'=>now()],
+                ['khoa_hoc_id'=>$id,'ten_bai_thi'=>'Mô phỏng',    'loai'=>'tot_nghiep','diem_dat'=>35,'phi_thi_lai'=>150000,'thu_tu'=>2,'created_at'=>now(),'updated_at'=>now()],
+                ['khoa_hoc_id'=>$id,'ten_bai_thi'=>'Sa hình',      'loai'=>'tot_nghiep','diem_dat'=>80,'phi_thi_lai'=>200000,'thu_tu'=>3,'created_at'=>now(),'updated_at'=>now()],
+                ['khoa_hoc_id'=>$id,'ten_bai_thi'=>'Đường trường', 'loai'=>'tot_nghiep','diem_dat'=>80,'phi_thi_lai'=>200000,'thu_tu'=>4,'created_at'=>now(),'updated_at'=>now()],
+                ['khoa_hoc_id'=>$id,'ten_bai_thi'=>'Lý thuyết',   'loai'=>'sat_hanh', 'diem_dat'=>27,'phi_thi_lai'=>200000,'thu_tu'=>1,'created_at'=>now(),'updated_at'=>now()],
+                ['khoa_hoc_id'=>$id,'ten_bai_thi'=>'Mô phỏng',    'loai'=>'sat_hanh', 'diem_dat'=>35,'phi_thi_lai'=>200000,'thu_tu'=>2,'created_at'=>now(),'updated_at'=>now()],
+                ['khoa_hoc_id'=>$id,'ten_bai_thi'=>'Sa hình',      'loai'=>'sat_hanh', 'diem_dat'=>80,'phi_thi_lai'=>300000,'thu_tu'=>3,'created_at'=>now(),'updated_at'=>now()],
+                ['khoa_hoc_id'=>$id,'ten_bai_thi'=>'Đường trường', 'loai'=>'sat_hanh', 'diem_dat'=>80,'phi_thi_lai'=>300000,'thu_tu'=>4,'created_at'=>now(),'updated_at'=>now()],
             ]);
         }
-        // C1, C, D, E — 7 bài thi
-        foreach ([$c1Id, $cId, $dId, $eId] as $id) {
+
+        // ── C1: Xe tải nhẹ (dưới 3,5 tấn) ───────────────────────────────────
+        // Lý thuyết: 35 câu, đúng ≥ 32 → đậu
+        // Mô phỏng:  50 điểm, đạt ≥ 35 → đậu
+        // Sa hình:   100 điểm, đạt ≥ 80 → đậu
+        // Đường trường: 100 điểm, đạt ≥ 80 → đậu
+        BaiThi::insert([
+            ['khoa_hoc_id'=>$c1Id,'ten_bai_thi'=>'Lý thuyết',   'loai'=>'tot_nghiep','diem_dat'=>32,'phi_thi_lai'=>150000,'thu_tu'=>1,'created_at'=>now(),'updated_at'=>now()],
+            ['khoa_hoc_id'=>$c1Id,'ten_bai_thi'=>'Mô phỏng',    'loai'=>'tot_nghiep','diem_dat'=>35,'phi_thi_lai'=>200000,'thu_tu'=>2,'created_at'=>now(),'updated_at'=>now()],
+            ['khoa_hoc_id'=>$c1Id,'ten_bai_thi'=>'Sa hình',      'loai'=>'tot_nghiep','diem_dat'=>80,'phi_thi_lai'=>250000,'thu_tu'=>3,'created_at'=>now(),'updated_at'=>now()],
+            ['khoa_hoc_id'=>$c1Id,'ten_bai_thi'=>'Đường trường', 'loai'=>'tot_nghiep','diem_dat'=>80,'phi_thi_lai'=>250000,'thu_tu'=>4,'created_at'=>now(),'updated_at'=>now()],
+            ['khoa_hoc_id'=>$c1Id,'ten_bai_thi'=>'Lý thuyết',   'loai'=>'sat_hanh', 'diem_dat'=>32,'phi_thi_lai'=>200000,'thu_tu'=>1,'created_at'=>now(),'updated_at'=>now()],
+            ['khoa_hoc_id'=>$c1Id,'ten_bai_thi'=>'Mô phỏng',    'loai'=>'sat_hanh', 'diem_dat'=>35,'phi_thi_lai'=>200000,'thu_tu'=>2,'created_at'=>now(),'updated_at'=>now()],
+            ['khoa_hoc_id'=>$c1Id,'ten_bai_thi'=>'Sa hình',      'loai'=>'sat_hanh', 'diem_dat'=>80,'phi_thi_lai'=>350000,'thu_tu'=>3,'created_at'=>now(),'updated_at'=>now()],
+            ['khoa_hoc_id'=>$c1Id,'ten_bai_thi'=>'Đường trường', 'loai'=>'sat_hanh', 'diem_dat'=>80,'phi_thi_lai'=>350000,'thu_tu'=>4,'created_at'=>now(),'updated_at'=>now()],
+        ]);
+
+        // ── C: Xe tải nặng (trên 3,5 tấn) ───────────────────────────────────
+        // Lý thuyết: 40 câu, đúng ≥ 36 → đậu
+        // Mô phỏng:  50 điểm, đạt ≥ 35 → đậu
+        // Sa hình:   100 điểm, đạt ≥ 80 → đậu
+        // Đường trường: 100 điểm, đạt ≥ 80 → đậu
+        BaiThi::insert([
+            ['khoa_hoc_id'=>$cId,'ten_bai_thi'=>'Lý thuyết',   'loai'=>'tot_nghiep','diem_dat'=>36,'phi_thi_lai'=>150000,'thu_tu'=>1,'created_at'=>now(),'updated_at'=>now()],
+            ['khoa_hoc_id'=>$cId,'ten_bai_thi'=>'Mô phỏng',    'loai'=>'tot_nghiep','diem_dat'=>35,'phi_thi_lai'=>200000,'thu_tu'=>2,'created_at'=>now(),'updated_at'=>now()],
+            ['khoa_hoc_id'=>$cId,'ten_bai_thi'=>'Sa hình',      'loai'=>'tot_nghiep','diem_dat'=>80,'phi_thi_lai'=>250000,'thu_tu'=>3,'created_at'=>now(),'updated_at'=>now()],
+            ['khoa_hoc_id'=>$cId,'ten_bai_thi'=>'Đường trường', 'loai'=>'tot_nghiep','diem_dat'=>80,'phi_thi_lai'=>250000,'thu_tu'=>4,'created_at'=>now(),'updated_at'=>now()],
+            ['khoa_hoc_id'=>$cId,'ten_bai_thi'=>'Lý thuyết',   'loai'=>'sat_hanh', 'diem_dat'=>36,'phi_thi_lai'=>200000,'thu_tu'=>1,'created_at'=>now(),'updated_at'=>now()],
+            ['khoa_hoc_id'=>$cId,'ten_bai_thi'=>'Mô phỏng',    'loai'=>'sat_hanh', 'diem_dat'=>35,'phi_thi_lai'=>200000,'thu_tu'=>2,'created_at'=>now(),'updated_at'=>now()],
+            ['khoa_hoc_id'=>$cId,'ten_bai_thi'=>'Sa hình',      'loai'=>'sat_hanh', 'diem_dat'=>80,'phi_thi_lai'=>350000,'thu_tu'=>3,'created_at'=>now(),'updated_at'=>now()],
+            ['khoa_hoc_id'=>$cId,'ten_bai_thi'=>'Đường trường', 'loai'=>'sat_hanh', 'diem_dat'=>80,'phi_thi_lai'=>350000,'thu_tu'=>4,'created_at'=>now(),'updated_at'=>now()],
+        ]);
+
+        // ── D & E: Xe khách (9-30 chỗ / trên 30 chỗ) ────────────────────────
+        // Lý thuyết: 45 câu, đúng ≥ 42 → đậu
+        // Mô phỏng:  50 điểm, đạt ≥ 35 → đậu
+        // Sa hình:   100 điểm, đạt ≥ 80 → đậu
+        // Đường trường: 100 điểm, đạt ≥ 80 → đậu
+        foreach ([$dId, $eId] as $id) {
             BaiThi::insert([
-                ['khoa_hoc_id'=>$id,'ten_bai_thi'=>'Lý thuyết',              'loai'=>'tot_nghiep','diem_dat'=>21,'phi_thi_lai'=>150000,'thu_tu'=>1,'created_at'=>now(),'updated_at'=>now()],
-                ['khoa_hoc_id'=>$id,'ten_bai_thi'=>'Sa hình',                 'loai'=>'tot_nghiep','diem_dat'=>80,'phi_thi_lai'=>250000,'thu_tu'=>2,'created_at'=>now(),'updated_at'=>now()],
-                ['khoa_hoc_id'=>$id,'ten_bai_thi'=>'Đường trường',            'loai'=>'tot_nghiep','diem_dat'=>80,'phi_thi_lai'=>250000,'thu_tu'=>3,'created_at'=>now(),'updated_at'=>now()],
-                ['khoa_hoc_id'=>$id,'ten_bai_thi'=>'Lý thuyết sát hạch',     'loai'=>'sat_hanh', 'diem_dat'=>21,'phi_thi_lai'=>200000,'thu_tu'=>1,'created_at'=>now(),'updated_at'=>now()],
-                ['khoa_hoc_id'=>$id,'ten_bai_thi'=>'Mô phỏng sát hạch',      'loai'=>'sat_hanh', 'diem_dat'=>80,'phi_thi_lai'=>200000,'thu_tu'=>2,'created_at'=>now(),'updated_at'=>now()],
-                ['khoa_hoc_id'=>$id,'ten_bai_thi'=>'Sa hình sát hạch',        'loai'=>'sat_hanh', 'diem_dat'=>80,'phi_thi_lai'=>350000,'thu_tu'=>3,'created_at'=>now(),'updated_at'=>now()],
-                ['khoa_hoc_id'=>$id,'ten_bai_thi'=>'Đường trường sát hạch',   'loai'=>'sat_hanh', 'diem_dat'=>80,'phi_thi_lai'=>80000, 'thu_tu'=>4,'created_at'=>now(),'updated_at'=>now()],
+                ['khoa_hoc_id'=>$id,'ten_bai_thi'=>'Lý thuyết',   'loai'=>'tot_nghiep','diem_dat'=>42,'phi_thi_lai'=>150000,'thu_tu'=>1,'created_at'=>now(),'updated_at'=>now()],
+                ['khoa_hoc_id'=>$id,'ten_bai_thi'=>'Mô phỏng',    'loai'=>'tot_nghiep','diem_dat'=>35,'phi_thi_lai'=>200000,'thu_tu'=>2,'created_at'=>now(),'updated_at'=>now()],
+                ['khoa_hoc_id'=>$id,'ten_bai_thi'=>'Sa hình',      'loai'=>'tot_nghiep','diem_dat'=>80,'phi_thi_lai'=>250000,'thu_tu'=>3,'created_at'=>now(),'updated_at'=>now()],
+                ['khoa_hoc_id'=>$id,'ten_bai_thi'=>'Đường trường', 'loai'=>'tot_nghiep','diem_dat'=>80,'phi_thi_lai'=>250000,'thu_tu'=>4,'created_at'=>now(),'updated_at'=>now()],
+                ['khoa_hoc_id'=>$id,'ten_bai_thi'=>'Lý thuyết',   'loai'=>'sat_hanh', 'diem_dat'=>42,'phi_thi_lai'=>200000,'thu_tu'=>1,'created_at'=>now(),'updated_at'=>now()],
+                ['khoa_hoc_id'=>$id,'ten_bai_thi'=>'Mô phỏng',    'loai'=>'sat_hanh', 'diem_dat'=>35,'phi_thi_lai'=>200000,'thu_tu'=>2,'created_at'=>now(),'updated_at'=>now()],
+                ['khoa_hoc_id'=>$id,'ten_bai_thi'=>'Sa hình',      'loai'=>'sat_hanh', 'diem_dat'=>80,'phi_thi_lai'=>350000,'thu_tu'=>3,'created_at'=>now(),'updated_at'=>now()],
+                ['khoa_hoc_id'=>$id,'ten_bai_thi'=>'Đường trường', 'loai'=>'sat_hanh', 'diem_dat'=>80,'phi_thi_lai'=>350000,'thu_tu'=>4,'created_at'=>now(),'updated_at'=>now()],
             ]);
         }
+
+        // ── CE: Xe đầu kéo (sơ mi rơ moóc) ──────────────────────────────────
+        // Lý thuyết: 45 câu, đúng ≥ 42 → đậu (giống D, E)
+        // Mô phỏng:  50 điểm, đạt ≥ 35 → đậu (giống D, E)
+        // Sa hình:   100 điểm, đạt ≥ 80 → đậu
+        // Đường trường: 100 điểm, đạt ≥ 80 → đậu
+        BaiThi::insert([
+            ['khoa_hoc_id'=>$ceId,'ten_bai_thi'=>'Lý thuyết',   'loai'=>'tot_nghiep','diem_dat'=>42,'phi_thi_lai'=>150000,'thu_tu'=>1,'created_at'=>now(),'updated_at'=>now()],
+            ['khoa_hoc_id'=>$ceId,'ten_bai_thi'=>'Mô phỏng',    'loai'=>'tot_nghiep','diem_dat'=>35,'phi_thi_lai'=>200000,'thu_tu'=>2,'created_at'=>now(),'updated_at'=>now()],
+            ['khoa_hoc_id'=>$ceId,'ten_bai_thi'=>'Sa hình',      'loai'=>'tot_nghiep','diem_dat'=>80,'phi_thi_lai'=>250000,'thu_tu'=>3,'created_at'=>now(),'updated_at'=>now()],
+            ['khoa_hoc_id'=>$ceId,'ten_bai_thi'=>'Đường trường', 'loai'=>'tot_nghiep','diem_dat'=>80,'phi_thi_lai'=>250000,'thu_tu'=>4,'created_at'=>now(),'updated_at'=>now()],
+            ['khoa_hoc_id'=>$ceId,'ten_bai_thi'=>'Lý thuyết',   'loai'=>'sat_hanh', 'diem_dat'=>42,'phi_thi_lai'=>200000,'thu_tu'=>1,'created_at'=>now(),'updated_at'=>now()],
+            ['khoa_hoc_id'=>$ceId,'ten_bai_thi'=>'Mô phỏng',    'loai'=>'sat_hanh', 'diem_dat'=>35,'phi_thi_lai'=>200000,'thu_tu'=>2,'created_at'=>now(),'updated_at'=>now()],
+            ['khoa_hoc_id'=>$ceId,'ten_bai_thi'=>'Sa hình',      'loai'=>'sat_hanh', 'diem_dat'=>80,'phi_thi_lai'=>350000,'thu_tu'=>3,'created_at'=>now(),'updated_at'=>now()],
+            ['khoa_hoc_id'=>$ceId,'ten_bai_thi'=>'Đường trường', 'loai'=>'sat_hanh', 'diem_dat'=>80,'phi_thi_lai'=>350000,'thu_tu'=>4,'created_at'=>now(),'updated_at'=>now()],
+        ]);
     }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\KhoaHoc;
 use App\Models\LopHoc;
 use App\Models\HoSoHocVien;
+use App\Models\HocVienLop;
 use App\Models\XeLopHoc;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -14,7 +15,7 @@ class KhoaHocDaoTaoController extends Controller
     // ── Danh sách khóa học đào tạo (có thang/nam/hang_bang) ──────────────────
     public function index(Request $request)
     {
-        $query = KhoaHoc::withCount(['lopHoc', 'hoSo'])
+        $query = KhoaHoc::withCount('lopHoc')
             ->whereNotNull('ma_khoa'); // chỉ lấy khóa đào tạo (có mã)
 
         if ($request->hang_bang) {
@@ -25,18 +26,25 @@ class KhoaHocDaoTaoController extends Controller
         }
 
         $list = $query->orderByDesc('nam')->orderByDesc('thang')->get()
-            ->map(fn($k) => [
-                'id'                => $k->id,
-                'ma_khoa'           => $k->ma_khoa,
-                'ten_khoa_dao_tao'  => $k->ten_khoa_dao_tao,
-                'thang'             => $k->thang,
-                'nam'               => $k->nam,
-                'hang_bang'         => $k->hang_bang,
-                'trang_thai'        => $k->trang_thai_khoa,
-                'ghi_chu'           => $k->ghi_chu,
-                'lop_count'         => $k->lop_hoc_count,
-                'hoc_vien_count'    => $k->ho_so_count,
-            ]);
+            ->map(function ($k) {
+                // Đếm tổng học viên qua tất cả lớp thuộc khóa này
+                $tongHocVien = \App\Models\HocVienLop::whereHas(
+                    'lopHoc', fn($q) => $q->where('khoa_hoc_id', $k->id)
+                )->count();
+
+                return [
+                    'id'                => $k->id,
+                    'ma_khoa'           => $k->ma_khoa,
+                    'ten_khoa_dao_tao'  => $k->ten_khoa_dao_tao,
+                    'thang'             => $k->thang,
+                    'nam'               => $k->nam,
+                    'hang_bang'         => $k->hang_bang,
+                    'trang_thai'        => $k->trang_thai_khoa,
+                    'ghi_chu'           => $k->ghi_chu,
+                    'lop_count'         => $k->lop_hoc_count,
+                    'hoc_vien_count'    => $tongHocVien,
+                ];
+            });
 
         return response()->json(['success' => true, 'data' => $list]);
     }
@@ -86,6 +94,11 @@ class KhoaHocDaoTaoController extends Controller
                 'lop_hoc'               => $hv->hocVienLop?->lopHoc,
             ]);
 
+        // Tổng học viên qua tất cả lớp thuộc khóa này
+        $tongHocVienTrongLop = \App\Models\HocVienLop::whereHas(
+            'lopHoc', fn($q) => $q->where('khoa_hoc_id', $id)
+        )->count();
+
         return response()->json([
             'success' => true,
             'data' => [
@@ -99,7 +112,7 @@ class KhoaHocDaoTaoController extends Controller
                 'ghi_chu'           => $khoa->ghi_chu,
                 'lop_hoc'           => $lopHoc,
                 'hoc_vien'          => $hocVien,
-                'hoc_vien_count'    => $hocVien->count(),
+                'hoc_vien_count'    => $tongHocVienTrongLop,
             ],
         ]);
     }
@@ -162,26 +175,25 @@ class KhoaHocDaoTaoController extends Controller
     // ── Xóa khóa học đào tạo ─────────────────────────────────────────────────
     public function destroy($id)
     {
-        $khoa = KhoaHoc::withCount(['lopHoc'])->findOrFail($id);
+        $khoa = KhoaHoc::with('lopHoc.hocVienLop')->findOrFail($id);
 
-        // Kiểm tra có học viên đang học (trang_thai = dang_hoc) không
-        $hocVienDangHoc = \App\Models\HoSoHocVien::where('khoa_hoc_id', $id)
-            ->where('trang_thai', 'dang_hoc')
-            ->count();
+        DB::transaction(function () use ($khoa) {
+            // Với mỗi lớp trong khóa: chuyển học viên về chờ xếp lớp rồi xóa lớp
+            foreach ($khoa->lopHoc as $lop) {
+                HoSoHocVien::whereHas('hocVienLop', fn($q) => $q->where('lop_hoc_id', $lop->id))
+                    ->update(['trang_thai' => 'cho_mo_lop']);
 
-        if ($hocVienDangHoc > 0) {
-            return response()->json([
-                'success' => false,
-                'message' => "Không thể xóa khóa học đang có {$hocVienDangHoc} học viên đang học.",
-            ], 400);
-        }
+                // Xóa bản ghi hoc_vien_lop
+                $lop->hocVienLop()->delete();
+                $lop->delete();
+            }
 
-        // Xóa khóa học — các lớp học bên trong sẽ tự xóa theo (onDelete cascade)
-        $khoa->delete();
+            $khoa->delete();
+        });
 
         return response()->json([
             'success' => true,
-            'message' => 'Đã xóa khóa học và ' . $khoa->lop_hoc_count . ' lớp học liên quan.',
+            'message' => 'Đã xóa khóa học và các lớp liên quan. Học viên đã được chuyển về trạng thái chờ xếp lớp.',
         ]);
     }
 
@@ -231,15 +243,20 @@ class KhoaHocDaoTaoController extends Controller
     {
         $lop = LopHoc::findOrFail($lopId);
 
-        if ($lop->hocVienLop()->count() > 0) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Không thể xóa lớp đang có học viên',
-            ], 400);
-        }
+        DB::transaction(function () use ($lop) {
+            // Chuyển học viên trong lớp về chờ xếp lớp
+            HoSoHocVien::whereHas('hocVienLop', fn($q) => $q->where('lop_hoc_id', $lop->id))
+                ->update(['trang_thai' => 'cho_mo_lop']);
 
-        $lop->delete();
-        return response()->json(['success' => true, 'message' => 'Đã xóa lớp học']);
+            // Xóa bản ghi hoc_vien_lop
+            $lop->hocVienLop()->delete();
+            $lop->delete();
+        });
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Đã xóa lớp học. Học viên đã được chuyển về trạng thái chờ xếp lớp.',
+        ]);
     }
 
     // ── Phân học viên vào lớp ────────────────────────────────────────────────

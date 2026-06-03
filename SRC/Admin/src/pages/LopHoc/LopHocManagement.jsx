@@ -121,6 +121,18 @@ const LopHocManagement = () => {
     finally { setViewLoading(false) }
   }
 
+  // ── Đồng bộ trạng thái học viên theo lớp ──
+  const dongBoTrangThai = async lop => {
+    try {
+      const res = await axios.post(`${backendUrl}/api/admin/lop-hoc/${lop.id}/dong-bo`, {}, { headers })
+      if (res.data.success) {
+        toast.success(res.data.message)
+        openView(lop)
+        fetchAll()
+      }
+    } catch { toast.error('Đồng bộ thất bại') }
+  }
+
   // ── Thêm học viên vào lớp ──
   const openAddHV = async lop => {
     setTargetLop(lop)
@@ -452,6 +464,13 @@ const LopHocManagement = () => {
                 <div className="modal-footer">
                   <button className="btn btn-outline" onClick={() => setViewItem(null)}>Đóng</button>
                   <button className="btn btn-warning" onClick={() => { const l = viewItem; setViewItem(null); openEdit(l) }}>✏️ Sửa</button>
+                  {viewItem.trang_thai === 'dang_hoc' && (
+                    <button className="btn btn-outline" style={{borderColor:'#06b6d4',color:'#06b6d4'}}
+                      onClick={() => dongBoTrangThai(viewItem)}
+                      title="Cập nhật trạng thái hồ sơ học viên trong lớp sang 'Đang học'">
+                      🔄 Đồng bộ HV
+                    </button>
+                  )}
                   {viewItem.trang_thai !== 'da_ket_thuc' && (
                     <button className="btn btn-primary" onClick={() => { setViewItem(null); openAddHV(viewItem) }}>➕ Thêm học viên</button>
                   )}

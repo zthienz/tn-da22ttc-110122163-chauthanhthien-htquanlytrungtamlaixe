@@ -41,10 +41,9 @@ class HocVienLop extends Model
 
         // Cập nhật trạng thái hồ sơ
         $hoSo = $this->hoSo;
-        if ($hoSo->trang_thai === 'dang_hoc') {
-            $hoSo->update([
-                'trang_thai' => $duDieuKien ? 'du_dieu_kien_thi_tn' : 'chua_du_dieu_kien_thi',
-            ]);
+        if (in_array($hoSo->trang_thai, ['dang_hoc', 'chua_du_dieu_kien_thi']) && $duDieuKien) {
+            $hoSo->update(['trang_thai' => 'du_dieu_kien_thi_tn']);
         }
+        // Chưa đủ điều kiện → giữ nguyên dang_hoc, không đổi
     }
 }

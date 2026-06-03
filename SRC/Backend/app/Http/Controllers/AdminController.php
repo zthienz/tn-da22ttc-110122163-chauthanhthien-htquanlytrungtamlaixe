@@ -22,9 +22,22 @@ class AdminController extends Controller
     public function dashboard()
     {
         $tongHoSo      = HoSoHocVien::count();
-        $choMoLop      = HoSoHocVien::where('trang_thai', 'cho_mo_lop')->count();
-        $dangHoc       = HoSoHocVien::where('trang_thai', 'dang_hoc')->count();
-        $tongKhoaHoc   = KhoaHoc::where('is_active', true)->count();
+
+        // Luồng trạng thái học viên
+        $choDongHocPhi    = HoSoHocVien::where('trang_thai', 'cho_dong_hoc_phi')->count();
+        $choMoLop         = HoSoHocVien::where('trang_thai', 'cho_mo_lop')->count();
+        $chuanBiHoc       = HoSoHocVien::where('trang_thai', 'chuan_bi_hoc')->count();
+        $dangHoc          = HoSoHocVien::where('trang_thai', 'dang_hoc')->count();
+        $duDieuKienThi    = HoSoHocVien::where('trang_thai', 'du_dieu_kien_thi_tn')->count();
+        $chuanBiThi       = HoSoHocVien::where('trang_thai', 'chuan_bi_thi')->count();
+        $dangThi          = HoSoHocVien::where('trang_thai', 'dang_thi_tn')->count();
+        $dauTotNghiep     = HoSoHocVien::where('trang_thai', 'hoan_thanh_tn')->count();
+
+        // Tổng học viên đang hoạt động (trừ đã đậu TN và đã cấp bằng)
+        $tongDangHoatDong = HoSoHocVien::whereNotIn('trang_thai', ['hoan_thanh_tn', 'da_cap_bang'])->count();
+
+        // Chỉ đếm khóa học đào tạo theo tháng (có ma_khoa) — đồng bộ với trang Quản Lý Khóa Học Đào Tạo
+        $tongKhoaHoc   = KhoaHoc::whereNotNull('ma_khoa')->count();
         $lichHocHomNay = LichHoc::whereDate('ngay_hoc', today())->count();
 
         // Doanh thu tháng này
@@ -45,12 +58,19 @@ class AdminController extends Controller
         return response()->json([
             'success'   => true,
             'stats'     => [
-                'tongHoSo'  => $tongHoSo,
-                'choMoLop'  => $choMoLop,
-                'dangHoc'   => $dangHoc,
-                'khoaHoc'   => $tongKhoaHoc,
-                'lichHoc'   => $lichHocHomNay,
-                'doanhThu'  => (float) $doanhThu,
+                'tongHoSo'         => $tongHoSo,
+                'tongDangHoatDong' => $tongDangHoatDong,
+                'choDongHocPhi'    => $choDongHocPhi,
+                'choMoLop'         => $choMoLop,
+                'chuanBiHoc'       => $chuanBiHoc,
+                'dangHoc'          => $dangHoc,
+                'duDieuKienThi'    => $duDieuKienThi,
+                'chuanBiThi'       => $chuanBiThi,
+                'dangThi'          => $dangThi,
+                'dauTotNghiep'     => $dauTotNghiep,
+                'khoaHoc'          => $tongKhoaHoc,
+                'lichHoc'          => $lichHocHomNay,
+                'doanhThu'         => (float) $doanhThu,
             ],
             'chartData' => $chartData,
         ]);
@@ -310,13 +330,37 @@ class AdminController extends Controller
             'anh_the'       => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
         ]);
 
-        // Xử lý upload ảnh thẻ — lưu thẳng vào public/anh_the/
+        // ── Kiểm tra tuổi tối thiểu theo hạng bằng ──────────────────────────
+        $tuoiToiThieu = [
+            'A1' => 18, 'A'  => 18,
+            'B1' => 18, 'B2' => 18,
+            'C1' => 21, 'C'  => 21,
+            'D'  => 24, 'E'  => 27, 'CE' => 27,
+        ];
+
+        $khoa     = KhoaHoc::findOrFail($request->khoa_hoc_id);
+        $loaiBang = $khoa->loai_bang;
+
+        if (isset($tuoiToiThieu[$loaiBang])) {
+            $ngaySinh   = \Carbon\Carbon::parse($request->ngay_sinh);
+            $tuoiHienTai = $ngaySinh->age; // Carbon tính đúng theo ngày sinh nhật
+            $tuoiMin    = $tuoiToiThieu[$loaiBang];
+
+            if ($tuoiHienTai < $tuoiMin) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Học viên chưa đủ tuổi. Bằng hạng {$loaiBang} yêu cầu tối thiểu {$tuoiMin} tuổi (hiện tại: {$tuoiHienTai} tuổi).",
+                ], 422);
+            }
+        }
+
+        // Xử lý upload ảnh thẻ — lưu vào public/uploads/hoc_vien/
         $anhThePath = null;
         if ($request->hasFile('anh_the')) {
             $file     = $request->file('anh_the');
             $fileName = 'hocvien_' . preg_replace('/[^a-zA-Z0-9]/', '', $request->ho_ten) . '_' . time() . '.' . $file->getClientOriginalExtension();
-            $file->move(public_path('uploads'), $fileName);
-            $anhThePath = $fileName;
+            $file->move(public_path('uploads/hoc_vien'), $fileName);
+            $anhThePath = 'hoc_vien/' . $fileName;
         }
 
         $hoSo = HoSoHocVien::create([
@@ -352,15 +396,16 @@ class AdminController extends Controller
 
         $file     = $request->file('anh_the');
         $fileName = 'hocvien_' . preg_replace('/[^a-zA-Z0-9]/', '', $hoSo->ho_ten) . '_' . time() . '.' . $file->getClientOriginalExtension();
-        $file->move(public_path('uploads'), $fileName);
+        $file->move(public_path('uploads/hoc_vien'), $fileName);
+        $anhPath  = 'hoc_vien/' . $fileName;
 
-        $hoSo->update(['anh_the' => $fileName]);
+        $hoSo->update(['anh_the' => $anhPath]);
 
         return response()->json([
             'success'  => true,
             'message'  => 'Cập nhật ảnh thẻ thành công',
-            'anh_the'  => $fileName,
-            'anh_url'  => url('uploads/' . $fileName),
+            'anh_the'  => $anhPath,
+            'anh_url'  => url('uploads/' . $anhPath),
         ]);
     }
 
@@ -551,12 +596,15 @@ class AdminController extends Controller
                 ]
             );
 
-            // Cập nhật trạng thái hồ sơ
-            $hoSo->update(['trang_thai' => 'dang_hoc']);
+            // Cập nhật trạng thái hồ sơ → chuan_bi_hoc (chờ ngày khai giảng)
+            $hoSo->update(['trang_thai' => 'chuan_bi_hoc']);
 
-            // Cập nhật trạng thái lớp nếu cần
-            if ($lopHoc->trang_thai === 'chuan_bi') {
-                $lopHoc->update(['trang_thai' => 'dang_hoc']);
+            // Nếu ngày khai giảng đã đến hoặc đã qua → chuyển thẳng sang dang_hoc
+            if ($lopHoc->ngay_khai_giang && $lopHoc->ngay_khai_giang->lte(today())) {
+                $hoSo->update(['trang_thai' => 'dang_hoc']);
+                if ($lopHoc->trang_thai === 'chuan_bi') {
+                    $lopHoc->update(['trang_thai' => 'dang_hoc']);
+                }
             }
 
             DB::commit();
@@ -614,8 +662,8 @@ class AdminController extends Controller
         if ($request->hasFile('anh_the')) {
             $file     = $request->file('anh_the');
             $fileName = 'hocvien_' . preg_replace('/[^a-zA-Z0-9]/', '', $request->ho_ten) . '_' . time() . '.' . $file->getClientOriginalExtension();
-            $file->move(public_path('uploads'), $fileName);
-            $anhThePath = $fileName;
+            $file->move(public_path('uploads/hoc_vien'), $fileName);
+            $anhThePath = 'hoc_vien/' . $fileName;
         }
 
         $hoSo->update([
@@ -637,11 +685,9 @@ class AdminController extends Controller
     {
         $hoSo = HoSoHocVien::findOrFail($hoSoId);
 
-        if (in_array($hoSo->trang_thai, ['dang_hoc', 'da_cap_bang'])) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Không thể xóa hồ sơ học viên đang học hoặc đã cấp bằng',
-            ], 400);
+        // Vô hiệu hóa tài khoản user liên kết để chặn đăng nhập ngay lập tức
+        if ($hoSo->user_id) {
+            User::where('id', $hoSo->user_id)->update(['is_active' => false]);
         }
 
         $hoSo->delete();
@@ -661,10 +707,27 @@ class AdminController extends Controller
             'nam_kinh_nghiem' => $gv->nam_kinh_nghiem,
             'ghi_chu'         => $gv->ghi_chu,
             'anh_dai_dien'    => $gv->anh_dai_dien,
+            'trang_thai'      => $gv->trang_thai ?? 'san_sang',
             'is_active'       => $gv->user->is_active ?? true,
         ]);
 
         return response()->json(['success' => true, 'data' => $list]);
+    }
+
+    // ─── Cập nhật trạng thái giảng viên ──────────────────────────────────────
+    public function capNhatTrangThaiGiangVien(Request $request, $id)
+    {
+        $request->validate([
+            'trang_thai' => 'required|in:san_sang,nghi_phep,dinh_chi',
+        ]);
+
+        $giangVien = GiangVien::findOrFail($id);
+        $giangVien->update(['trang_thai' => $request->trang_thai]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Cập nhật trạng thái giảng viên thành công',
+        ]);
     }
 
     // ─── Tạo tài khoản giảng viên ────────────────────────────────────────────
@@ -693,8 +756,8 @@ class AdminController extends Controller
             if ($request->hasFile('anh_dai_dien')) {
                 $file     = $request->file('anh_dai_dien');
                 $fileName = 'giangvien_' . preg_replace('/[^a-zA-Z0-9]/', '', $request->ho_ten) . '_' . time() . '.' . $file->getClientOriginalExtension();
-                $file->move(public_path('uploads'), $fileName);
-                $anhPath = $fileName;
+                $file->move(public_path('uploads/giang_vien'), $fileName);
+                $anhPath = 'giang_vien/' . $fileName;
             }
 
             GiangVien::create([
@@ -738,8 +801,8 @@ class AdminController extends Controller
         if ($request->hasFile('anh_dai_dien')) {
             $file     = $request->file('anh_dai_dien');
             $fileName = 'giangvien_' . preg_replace('/[^a-zA-Z0-9]/', '', $giangVien->user->ho_ten) . '_' . time() . '.' . $file->getClientOriginalExtension();
-            $file->move(public_path('uploads'), $fileName);
-            $anhPath = $fileName;
+            $file->move(public_path('uploads/giang_vien'), $fileName);
+            $anhPath = 'giang_vien/' . $fileName;
         }
 
         // Cập nhật giảng viên
@@ -792,5 +855,278 @@ class AdminController extends Controller
         $user->update(['is_active' => !$user->is_active]);
         $status = $user->is_active ? 'kích hoạt' : 'vô hiệu hóa';
         return response()->json(['success' => true, 'message' => "Đã {$status} tài khoản"]);
+    }
+
+    // ─── Chart kết quả thi theo kỳ ───────────────────────────────────────────
+    // ky: tuan (7 ngày gần nhất), thang (30 ngày → 4 tuần), nam (12 tháng)
+    public function chartKetQuaThi(Request $request)
+    {
+        $ky   = $request->ky ?? 'tuan';
+        $data = [];
+
+        // Helper tính kết quả tổng hợp từ tập hợp bản ghi ket_qua_thi
+        $tinhKetQua = function ($rows) {
+            $nhom = collect($rows)->groupBy(fn($r) => $r->ho_so_id . '_' . $r->lich_thi_id);
+            $dat = 0; $khongDat = 0; $vangMat = 0;
+            foreach ($nhom as $ds) {
+                $kqList = collect($ds)->pluck('ket_qua');
+                if ($kqList->contains('vang_mat'))                           $vangMat++;
+                elseif ($kqList->every(fn($kq) => $kq === 'dat'))            $dat++;
+                else                                                          $khongDat++;
+            }
+            return compact('dat', 'khongDat', 'vangMat');
+        };
+
+        switch ($ky) {
+            // 7 ngày gần nhất (mỗi cột = 1 ngày)
+            case 'tuan':
+                for ($i = 6; $i >= 0; $i--) {
+                    $date = now()->subDays($i);
+                    $rows = DB::table('ket_qua_thi')
+                        ->join('lich_thi', 'lich_thi.id', '=', 'ket_qua_thi.lich_thi_id')
+                        ->whereDate('lich_thi.ngay_thi', $date->toDateString())
+                        ->whereNotNull('ket_qua_thi.ket_qua')
+                        ->select('ket_qua_thi.ho_so_id', 'ket_qua_thi.lich_thi_id', 'ket_qua_thi.ket_qua')
+                        ->get();
+                    $r = $tinhKetQua($rows);
+                    $data[] = [
+                        'label'     => $date->format('d/m'),
+                        'dat'       => $r['dat'],
+                        'khong_dat' => $r['khongDat'],
+                        'vang_mat'  => $r['vangMat'],
+                    ];
+                }
+                break;
+
+            // 30 ngày gần nhất → chia 4 tuần (mỗi cột = 1 tuần)
+            case 'thang':
+                for ($i = 3; $i >= 0; $i--) {
+                    $from = now()->subDays($i * 7 + 6)->startOfDay();
+                    $to   = now()->subDays($i * 7)->endOfDay();
+                    $rows = DB::table('ket_qua_thi')
+                        ->join('lich_thi', 'lich_thi.id', '=', 'ket_qua_thi.lich_thi_id')
+                        ->whereBetween('lich_thi.ngay_thi', [$from, $to])
+                        ->whereNotNull('ket_qua_thi.ket_qua')
+                        ->select('ket_qua_thi.ho_so_id', 'ket_qua_thi.lich_thi_id', 'ket_qua_thi.ket_qua')
+                        ->get();
+                    $r = $tinhKetQua($rows);
+                    $data[] = [
+                        'label'     => $from->format('d/m') . '–' . $to->format('d/m'),
+                        'dat'       => $r['dat'],
+                        'khong_dat' => $r['khongDat'],
+                        'vang_mat'  => $r['vangMat'],
+                    ];
+                }
+                break;
+
+            // 12 tháng gần nhất (mỗi cột = 1 tháng)
+            case 'nam':
+            default:
+                for ($i = 11; $i >= 0; $i--) {
+                    $date  = now()->subMonths($i);
+                    $rows = DB::table('ket_qua_thi')
+                        ->join('lich_thi', 'lich_thi.id', '=', 'ket_qua_thi.lich_thi_id')
+                        ->whereMonth('lich_thi.ngay_thi', $date->month)
+                        ->whereYear('lich_thi.ngay_thi', $date->year)
+                        ->whereNotNull('ket_qua_thi.ket_qua')
+                        ->select('ket_qua_thi.ho_so_id', 'ket_qua_thi.lich_thi_id', 'ket_qua_thi.ket_qua')
+                        ->get();
+                    $r = $tinhKetQua($rows);
+                    $data[] = [
+                        'label'     => 'T' . $date->format('n/y'),
+                        'dat'       => $r['dat'],
+                        'khong_dat' => $r['khongDat'],
+                        'vang_mat'  => $r['vangMat'],
+                    ];
+                }
+                break;
+        }
+
+        return response()->json(['success' => true, 'data' => $data]);
+    }
+
+    // ─── Dashboard Extra: dữ liệu biểu đồ bổ sung ───────────────────────────
+    public function dashboardExtra()
+    {
+        // ── 1. Trạng thái lớp học ──────────────────────────────────────────
+        $lopTheoTrangThai = LopHoc::selectRaw('trang_thai, COUNT(*) as tong')
+            ->groupBy('trang_thai')
+            ->pluck('tong', 'trang_thai')
+            ->toArray();
+
+        $lopData = [
+            ['name' => 'Chuẩn bị',    'value' => $lopTheoTrangThai['chuan_bi']    ?? 0, 'color' => '#f59e0b'],
+            ['name' => 'Đang học',     'value' => $lopTheoTrangThai['dang_hoc']    ?? 0, 'color' => '#10b981'],
+            ['name' => 'Đã kết thúc',  'value' => $lopTheoTrangThai['da_ket_thuc'] ?? 0, 'color' => '#94a3b8'],
+            ['name' => 'Tạm dừng',     'value' => $lopTheoTrangThai['tam_dung']    ?? 0, 'color' => '#ef4444'],
+        ];
+
+        // ── 2. Tình trạng xe ──────────────────────────────────────────────
+        $xeTheoTrangThai = DB::table('xe')
+            ->selectRaw('trang_thai, COUNT(*) as tong')
+            ->groupBy('trang_thai')
+            ->pluck('tong', 'trang_thai')
+            ->toArray();
+
+        $xeData = [
+            ['name' => 'Sẵn sàng',  'value' => $xeTheoTrangThai['san_sang']    ?? 0, 'color' => '#10b981'],
+            ['name' => 'Đang dùng', 'value' => $xeTheoTrangThai['dang_su_dung'] ?? 0, 'color' => '#3b82f6'],
+            ['name' => 'Bảo trì',   'value' => $xeTheoTrangThai['bao_tri']      ?? 0, 'color' => '#f59e0b'],
+            ['name' => 'Hỏng',      'value' => $xeTheoTrangThai['hong']         ?? 0, 'color' => '#ef4444'],
+        ];
+
+        $tongXe     = array_sum(array_column($xeData, 'value'));
+        $xeSanSang  = $xeTheoTrangThai['san_sang'] ?? 0;
+
+        // ── 3. Giảng viên (chuyên môn & trạng thái) ──────────────────────
+        $giangVienTheoChuyenMon = DB::table('giang_vien')
+            ->join('users', 'users.id', '=', 'giang_vien.user_id')
+            ->selectRaw('giang_vien.chuyen_mon, COUNT(*) as tong, SUM(CASE WHEN users.is_active=1 THEN 1 ELSE 0 END) as active')
+            ->groupBy('giang_vien.chuyen_mon')
+            ->get();
+
+        $gvData = $giangVienTheoChuyenMon->map(fn($r) => [
+            'name'   => match($r->chuyen_mon) {
+                'ly_thuyet' => 'Lý thuyết',
+                'thuc_hanh' => 'Thực hành',
+                'ca_hai'    => 'Cả hai',
+                default     => $r->chuyen_mon,
+            },
+            'tong'   => (int) $r->tong,
+            'active' => (int) $r->active,
+        ])->values()->toArray();
+
+        $tongGV     = array_sum(array_column($gvData, 'tong'));
+        $gvActive   = array_sum(array_column($gvData, 'active'));
+
+        // ── 4. Lịch thi sắp tới (30 ngày tới) ───────────────────────────
+        $lichThiSapToi = DB::table('lich_thi')
+            ->join('khoa_hoc', 'khoa_hoc.id', '=', 'lich_thi.khoa_hoc_id')
+            ->select('lich_thi.id', 'lich_thi.ngay_thi', 'lich_thi.gio_thi', 'lich_thi.loai_thi', 'lich_thi.dia_diem', 'khoa_hoc.ten_khoa', 'khoa_hoc.loai_bang')
+            ->whereBetween('lich_thi.ngay_thi', [today(), today()->addDays(30)])
+            ->orderBy('lich_thi.ngay_thi')
+            ->limit(5)
+            ->get()
+            ->map(fn($lt) => [
+                'id'        => $lt->id,
+                'ngay_thi'  => $lt->ngay_thi,
+                'gio_thi'   => $lt->gio_thi,
+                'loai_thi'  => $lt->loai_thi,
+                'dia_diem'  => $lt->dia_diem,
+                'ten_khoa'  => $lt->ten_khoa,
+                'loai_bang' => $lt->loai_bang,
+                // Số học viên được xếp vào lịch thi
+                'so_hv'     => DB::table('lich_thi_hoc_vien')->where('lich_thi_id', $lt->id)->count(),
+            ]);
+
+        // ── 5. Kết quả thi tổng hợp (3 tháng gần nhất) ──────────────────
+        // Đếm theo HỌC VIÊN (ho_so_id distinct), không phải theo số bài thi.
+        // Một học viên có thể thi nhiều bài → nhiều bản ghi ket_qua_thi.
+        // Kết quả tổng hợp của học viên:
+        //   - Đạt:       tất cả bài đều 'dat'
+        //   - Vắng mặt:  có ít nhất 1 bài 'vang_mat'
+        //   - Không đạt: còn lại (có bài 'khong_dat', không có 'vang_mat')
+        $ketQuaThiData = [];
+        for ($i = 2; $i >= 0; $i--) {
+            $date  = now()->subMonths($i);
+            $month = $date->month;
+            $year  = $date->year;
+
+            // Lấy tất cả học viên có kết quả thi trong tháng này
+            // Nhóm theo (ho_so_id, lich_thi_id) để tính kết quả tổng hợp mỗi lần thi
+            $hocVienThang = DB::table('ket_qua_thi')
+                ->join('lich_thi', 'lich_thi.id', '=', 'ket_qua_thi.lich_thi_id')
+                ->whereMonth('lich_thi.ngay_thi', $month)
+                ->whereYear('lich_thi.ngay_thi', $year)
+                ->whereNotNull('ket_qua_thi.ket_qua')
+                ->select('ket_qua_thi.ho_so_id', 'ket_qua_thi.lich_thi_id', 'ket_qua_thi.ket_qua')
+                ->get();
+
+            // Nhóm theo (ho_so_id, lich_thi_id) → tính kết quả tổng hợp
+            $nhom = $hocVienThang->groupBy(fn($r) => $r->ho_so_id . '_' . $r->lich_thi_id);
+
+            $dat = 0; $khongDat = 0; $vangMat = 0;
+            foreach ($nhom as $dsKetQua) {
+                $ketQuaList = $dsKetQua->pluck('ket_qua');
+                if ($ketQuaList->contains('vang_mat')) {
+                    $vangMat++;
+                } elseif ($ketQuaList->every(fn($kq) => $kq === 'dat')) {
+                    $dat++;
+                } else {
+                    $khongDat++;
+                }
+            }
+
+            $ketQuaThiData[] = [
+                'label'     => 'T' . $date->format('n/y'),
+                'dat'       => $dat,
+                'khong_dat' => $khongDat,
+                'vang_mat'  => $vangMat,
+            ];
+        }
+
+        return response()->json([
+            'success'       => true,
+            'lop_hoc'       => $lopData,
+            'xe'            => ['data' => $xeData, 'tong' => $tongXe, 'san_sang' => $xeSanSang],
+            'giang_vien'    => ['data' => $gvData, 'tong' => $tongGV, 'active' => $gvActive],
+            'lich_thi'      => $lichThiSapToi,
+            'ket_qua_thi'   => $ketQuaThiData,
+        ]);
+    }
+
+    // ─── Trigger thủ công khai giảng ─────────────────────────────────────────
+    // Đồng bộ trạng thái lớp + học viên: dùng khi lớp bị kẹt ở "chuan_bi"
+    // mặc dù đã có học viên và đã qua ngày khai giảng
+    public function triggerKhaiGiang(Request $request)
+    {
+        // Nếu truyền lop_hoc_id thì chỉ xử lý lớp đó, không thì xử lý tất cả lớp đủ điều kiện
+        $query = LopHoc::where('trang_thai', 'chuan_bi')
+            ->withCount('hocVienLop')
+            ->having('hoc_vien_lop_count', '>=', 1)
+            ->whereNotNull('ngay_khai_giang')
+            ->whereDate('ngay_khai_giang', '<=', today());
+
+        if ($request->lop_hoc_id) {
+            $query->where('id', $request->lop_hoc_id);
+        }
+
+        $lopList = $query->get();
+
+        if ($lopList->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Không có lớp nào đủ điều kiện khai giảng (cần: trạng thái chuẩn bị, có học viên, đã đến ngày khai giảng)',
+            ], 400);
+        }
+
+        $ketQua = [];
+
+        foreach ($lopList as $lop) {
+            DB::beginTransaction();
+            try {
+                $lop->update(['trang_thai' => 'dang_hoc']);
+
+                $soHV = HoSoHocVien::whereHas('hocVienLop', fn($q) => $q->where('lop_hoc_id', $lop->id))
+                    ->where('trang_thai', 'chuan_bi_hoc')
+                    ->update(['trang_thai' => 'dang_hoc']);
+
+                DB::commit();
+
+                $ketQua[] = [
+                    'lop'      => $lop->ten_lop,
+                    'hoc_vien' => $soHV,
+                ];
+            } catch (\Throwable $e) {
+                DB::rollBack();
+                $ketQua[] = ['lop' => $lop->ten_lop, 'loi' => $e->getMessage()];
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Đã khai giảng ' . count($ketQua) . ' lớp',
+            'data'    => $ketQua,
+        ]);
     }
 }

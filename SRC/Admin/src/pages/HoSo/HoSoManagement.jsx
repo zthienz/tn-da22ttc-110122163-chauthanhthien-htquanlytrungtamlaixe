@@ -4,11 +4,39 @@ import { toast } from 'react-toastify'
 import { useAdmin } from '../../context/AdminContext'
 import './HoSoManagement.css'
 
+// Tuổi tối thiểu theo hạng bằng lái (Luật Giao thông đường bộ Việt Nam)
+const TUOI_TOI_THIEU = {
+  A1: 18, A: 18,
+  B1: 18, B2: 18,
+  C1: 21, C: 21,
+  D: 24, E: 27, CE: 27,
+}
+
+// Tính tuổi chính xác theo ngày (đủ tuổi khi đã qua sinh nhật)
+const tinhTuoi = (ngaySinh) => {
+  if (!ngaySinh) return null
+  const today = new Date()
+  const birth = new Date(ngaySinh)
+  let age = today.getFullYear() - birth.getFullYear()
+  const m = today.getMonth() - birth.getMonth()
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--
+  return age
+}
+
+// Kiểm tra đủ tuổi: true = đủ, false = chưa đủ, null = chưa nhập đủ thông tin
+const kiemTraTuoi = (ngaySinh, khoaHocId, khoaList) => {
+  if (!ngaySinh || !khoaHocId || !khoaList) return null
+  const khoa = khoaList.find(k => String(k.id) === String(khoaHocId))
+  if (!khoa) return null
+  const tuoiMin = TUOI_TOI_THIEU[khoa.loai_bang]
+  if (!tuoiMin) return null
+  return tinhTuoi(ngaySinh) >= tuoiMin
+}
+
 const TRANG_THAI_MAP = {
   cho_dong_hoc_phi:      { text:'Chờ đóng HP',       cls:'badge-warning' },
   cho_mo_lop:            { text:'Chờ mở lớp',         cls:'badge-info' },
   dang_hoc:              { text:'Đang học',            cls:'badge-success' },
-  chua_du_dieu_kien_thi: { text:'Chưa đủ ĐK thi',     cls:'badge-danger' },
   du_dieu_kien_thi_tn:   { text:'Đủ ĐK thi TN',       cls:'badge-blue' },
   hoan_thanh_tn:         { text:'Hoàn thành TN',       cls:'badge-success' },
   da_cap_bang:           { text:'Đã cấp bằng',         cls:'badge-success' },
@@ -106,6 +134,14 @@ const HoSoManagement = () => {
   const handleTaoHoSo = async e => {
     e.preventDefault()
     if (!validateForm(form)) return
+
+    // Kiểm tra tuổi tối thiểu
+    if (kiemTraTuoi(form.ngay_sinh, form.khoa_hoc_id, khoaList) === false) {
+      const khoa = khoaList.find(k => String(k.id) === String(form.khoa_hoc_id))
+      const tuoiMin = TUOI_TOI_THIEU[khoa?.loai_bang]
+      toast.error(`Học viên chưa đủ ${tuoiMin} tuổi để đăng ký bằng hạng ${khoa?.loai_bang}`)
+      return
+    }
     try {
       // Dùng FormData để gửi kèm file ảnh
       const fd = new FormData()
@@ -222,8 +258,25 @@ const HoSoManagement = () => {
     } catch (err) { toast.error(err.response?.data?.message || 'Lỗi tạo tài khoản') }
   }
 
-  // Xếp lớp + tạo tài khoản
-  const [xepLopForm, setXepLopForm] = useState({ lop_hoc_id:'' })
+  // Đổi trạng thái hồ sơ thủ công (dùng khi dữ liệu bị lệch)
+  const handleDoiTrangThai = async (hs, trangThaiMoi) => {
+    const label = TRANG_THAI_MAP[trangThaiMoi]?.text || trangThaiMoi
+    if (!confirm(`Đổi trạng thái của "${hs.ho_ten}" sang "${label}"?`)) return
+    try {
+      const res = await axios.patch(
+        `${backendUrl}/api/admin/ho-so/${hs.id}/trang-thai`,
+        { trang_thai: trangThaiMoi },
+        { headers }
+      )
+      if (res.data.success) {
+        toast.success(`Đã đổi trạng thái sang "${label}"`)
+        fetchList()
+        // Refresh viewItem nếu đang xem
+        const r = await axios.get(`${backendUrl}/api/admin/ho-so/${hs.id}`, { headers })
+        if (r.data.success) setViewItem(r.data.data)
+      } else toast.error(res.data.message)
+    } catch { toast.error('Lỗi đổi trạng thái') }
+  }
   const handleXepLop = async e => {
     e.preventDefault()
     try {
@@ -321,11 +374,9 @@ const HoSoManagement = () => {
                                 🏫 Xếp lớp
                               </button>
                             )}
-                            {!['dang_hoc','da_cap_bang'].includes(hs.trang_thai) && (
-                              <button className="btn btn-danger btn-sm" onClick={() => handleXoa(hs)}>
-                                🗑️
-                              </button>
-                            )}
+                            <button className="btn btn-danger btn-sm" onClick={() => handleXoa(hs)}>
+                              🗑️
+                            </button>
                           </div>
                         </td>
                       </tr>
@@ -400,7 +451,31 @@ const HoSoManagement = () => {
 
                   {/* ── Cột phải: Thông tin ── */}
                   <div className="hoso-info-col">
-                    <div className="hoso-section-title">👤 Thông Tin Cá Nhân</div>
+
+                    {/* ── BƯỚC 1: Chọn khóa học trước ── */}
+                    <div className="hoso-section-title">📚 Đăng Ký Khóa Học</div>
+                    <div className="form-group">
+                      <label>Khóa học *</label>
+                      <select value={form.khoa_hoc_id} onChange={e=>setForm({...form,khoa_hoc_id:e.target.value})} required>
+                        <option value="">-- Chọn khóa học --</option>
+                        {khoaList.map(k => (
+                          <option key={k.id} value={k.id}>{k.ten_khoa} (Hạng {k.loai_bang})</option>
+                        ))}
+                      </select>
+                      {/* Hiển thị yêu cầu tuổi tối thiểu */}
+                      {form.khoa_hoc_id && (() => {
+                        const khoa = khoaList.find(k => String(k.id) === String(form.khoa_hoc_id))
+                        const tuoiMin = TUOI_TOI_THIEU[khoa?.loai_bang]
+                        if (!tuoiMin) return null
+                        return (
+                          <span style={{fontSize:12,color:'#6b7280',marginTop:4,display:'block'}}>
+                            ℹ️ Bằng hạng <strong>{khoa.loai_bang}</strong> yêu cầu tối thiểu <strong>{tuoiMin} tuổi</strong>
+                          </span>
+                        )
+                      })()}                    </div>
+
+                    {/* ── BƯỚC 2: Thông tin cá nhân ── */}
+                    <div className="hoso-section-title" style={{marginTop:8}}>👤 Thông Tin Cá Nhân</div>
                     <div className="form-row-2">
                       <div className="form-group">
                         <label>Họ và tên *</label>
@@ -429,7 +504,31 @@ const HoSoManagement = () => {
                     <div className="form-row-2">
                       <div className="form-group">
                         <label>Ngày sinh *</label>
-                        <input type="date" value={form.ngay_sinh} onChange={e=>setForm({...form,ngay_sinh:e.target.value})} required />
+                        <input
+                          type="date"
+                          value={form.ngay_sinh}
+                          onChange={e=>setForm({...form,ngay_sinh:e.target.value})}
+                          required
+                          style={kiemTraTuoi(form.ngay_sinh, form.khoa_hoc_id) === false
+                            ? {borderColor:'#ef4444'}
+                            : {}}
+                        />
+                        {/* Cảnh báo tuổi */}
+                        {kiemTraTuoi(form.ngay_sinh, form.khoa_hoc_id, khoaList) === false && (() => {
+                          const khoa = khoaList.find(k => String(k.id) === String(form.khoa_hoc_id))
+                          const tuoiMin = TUOI_TOI_THIEU[khoa?.loai_bang]
+                          const tuoiHienTai = tinhTuoi(form.ngay_sinh)
+                          return (
+                            <span className="field-error">
+                              ❌ Chưa đủ tuổi — Bằng hạng {khoa?.loai_bang} yêu cầu tối thiểu {tuoiMin} tuổi (hiện tại: {tuoiHienTai} tuổi)
+                            </span>
+                          )
+                        })()}
+                        {kiemTraTuoi(form.ngay_sinh, form.khoa_hoc_id, khoaList) === true && (
+                          <span style={{fontSize:12,color:'#10b981',marginTop:4,display:'block'}}>
+                            ✅ Đủ tuổi đăng ký
+                          </span>
+                        )}
                       </div>
                       <div className="form-group">
                         <label>Số điện thoại</label>
@@ -467,17 +566,6 @@ const HoSoManagement = () => {
                     <div className="form-group">
                       <label>Địa chỉ</label>
                       <input value={form.dia_chi} onChange={e=>setForm({...form,dia_chi:e.target.value})} placeholder="123 Đường ABC, Quận 1, TP.HCM" />
-                    </div>
-
-                    <div className="hoso-section-title" style={{marginTop:8}}>📚 Đăng Ký Khóa Học</div>
-                    <div className="form-group">
-                      <label>Khóa học *</label>
-                      <select value={form.khoa_hoc_id} onChange={e=>setForm({...form,khoa_hoc_id:e.target.value})} required>
-                        <option value="">-- Chọn khóa học --</option>
-                        {khoaList.map(k => (
-                          <option key={k.id} value={k.id}>{k.ten_khoa} (Hạng {k.loai_bang})</option>
-                        ))}
-                      </select>
                     </div>
 
                     <div className="hoso-form-note">
@@ -830,6 +918,7 @@ const HoSoManagement = () => {
                   🔑 Tạo tài khoản
                 </button>
               )}
+              {/* Nút fix trạng thái khi bị lệch: đang trong lớp nhưng trạng thái sai */}
             </div>
           </div>
         </div>

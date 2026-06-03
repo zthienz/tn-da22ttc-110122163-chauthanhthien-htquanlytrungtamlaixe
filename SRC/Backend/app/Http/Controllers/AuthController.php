@@ -41,12 +41,19 @@ class AuthController extends Controller
             ], 403);
         }
 
-        $token = JWTAuth::fromUser($user);
-
-        // Lấy hồ sơ học viên
+        // Kiểm tra hồ sơ học viên còn tồn tại không
         $hoSo = HoSoHocVien::with('khoaHoc', 'hocVienLop.lopHoc')
             ->where('user_id', $user->id)
             ->first();
+
+        if (!$hoSo) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Hồ sơ học viên không tồn tại. Vui lòng liên hệ trung tâm.',
+            ], 403);
+        }
+
+        $token = JWTAuth::fromUser($user);
 
         return response()->json([
             'success' => true,

@@ -2,3 +2,34 @@
 .thi-tabs { display:flex;gap:4px;background:#fff;border-radius:10px;padding:4px;box-shadow:0 1px 4px rgba(0,0,0,.06);width:fit-content; }
 .thi-tab { padding:8px 20px;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;background:transparent;color:#718096;transition:all .2s; }
 .thi-tab.active { background:#0d47a1;color:#fff; }
+
+/* Modal XL */
+.modal.modal-xl { width: min(960px, 95vw); }
+
+/* Quản lý học viên trong lịch thi */
+.them-hv-section { background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:16px; }
+.them-hv-section-title {
+  font-size: 13px; font-weight: 700; color: #1e40af;
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 12px; padding-bottom: 8px;
+  border-bottom: 2px solid #dbeafe;
+}
+.them-hv-count {
+  margin-left: auto;
+  background: #dbeafe; color: #1e40af;
+  font-size: 11px; font-weight: 700;
+  padding: 2px 8px; border-radius: 20px;
+}
+.them-hv-empty {
+  text-align: center; padding: 24px;
+  color: #94a3b8; font-size: 13px; font-style: italic;
+}
+
+/* Row được chọn */
+.data-table tbody tr.row-selected { background: #eff6ff; }
+.data-table tbody tr.row-selected td { border-color: #bfdbfe; }
+
+/* Bảng nhập kết quả thi */
+.kq-table th, .kq-table td { vertical-align: middle; }
+.kq-table thead th { background: #f8fafc; font-size: 12px; }
+.kq-table tbody td { padding: 8px 6px; }

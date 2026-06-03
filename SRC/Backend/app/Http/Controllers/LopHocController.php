@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\LopHoc;
+use App\Models\HoSoHocVien;
+use App\Models\GiangVien;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class LopHocController extends Controller
 {
@@ -51,12 +54,42 @@ class LopHocController extends Controller
         return response()->json(['success' => true, 'data' => $lop]);
     }
 
+    /**
+     * Kiểm tra giảng viên có thể được xếp dạy không.
+     * Điều kiện: tài khoản đang hoạt động VÀ trạng thái là san_sang.
+     */
+    private function kiemTraGiangVienHopLe(?int $gvId, string $vai): ?array
+    {
+        if (!$gvId) return null;
+        $gv = GiangVien::with('user')->find($gvId);
+        if (!$gv) return ['success' => false, 'message' => "Không tìm thấy giảng viên ({$vai})."];
+        if (!$gv->user?->is_active) {
+            return ['success' => false, 'message' => "Giảng viên {$gv->user->ho_ten} ({$vai}) đang bị khóa tài khoản, không thể xếp dạy."];
+        }
+        $tt = $gv->trang_thai ?? 'san_sang';
+        if ($tt !== 'san_sang') {
+            $ttLabel = $tt === 'nghi_phep' ? 'đang nghỉ phép' : 'đang bị đình chỉ';
+            return ['success' => false, 'message' => "Giảng viên {$gv->user->ho_ten} ({$vai}) {$ttLabel}, không thể xếp dạy."];
+        }
+        return null;
+    }
+
     public function store(Request $request)
     {
         $request->validate([
             'ten_lop'     => 'required|string|max:100',
             'khoa_hoc_id' => 'required|exists:khoa_hoc,id',
         ]);
+
+        // Kiểm tra giảng viên hợp lệ
+        if ($request->giang_vien_ly_thuyet_id) {
+            $err = $this->kiemTraGiangVienHopLe((int)$request->giang_vien_ly_thuyet_id, 'lý thuyết');
+            if ($err) return response()->json($err, 422);
+        }
+        if ($request->giang_vien_thuc_hanh_id) {
+            $err = $this->kiemTraGiangVienHopLe((int)$request->giang_vien_thuc_hanh_id, 'thực hành');
+            if ($err) return response()->json($err, 422);
+        }
 
         $lop = LopHoc::create([
             'khoa_hoc_id'             => $request->khoa_hoc_id,
@@ -80,18 +113,48 @@ class LopHocController extends Controller
     public function update(Request $request, $id)
     {
         $lop = LopHoc::findOrFail($id);
+        $trangThaiCu  = $lop->trang_thai;
+        $trangThaiMoi = $request->trang_thai ?? $lop->trang_thai;
 
-        $lop->update([
-            'ten_lop'                 => $request->ten_lop ?? $lop->ten_lop,
-            'khoa_hoc_id'             => $request->khoa_hoc_id ?? $lop->khoa_hoc_id,
-            'giang_vien_ly_thuyet_id' => $request->giang_vien_ly_thuyet_id ?: null,
-            'giang_vien_thuc_hanh_id' => $request->giang_vien_thuc_hanh_id ?: null,
-            'ngay_khai_giang'         => $request->ngay_khai_giang ?: $lop->ngay_khai_giang,
-            'ngay_ket_thuc'           => $request->ngay_ket_thuc ?: $lop->ngay_ket_thuc,
-            'si_so_toi_da'            => $request->si_so_toi_da ?? $lop->si_so_toi_da,
-            'trang_thai'              => $request->trang_thai ?? $lop->trang_thai,
-            'ghi_chu'                 => $request->ghi_chu ?? $lop->ghi_chu,
-        ]);
+        DB::beginTransaction();
+        try {
+            // Kiểm tra giảng viên hợp lệ khi có thay đổi
+            $gvLTId = $request->has('giang_vien_ly_thuyet_id') ? ($request->giang_vien_ly_thuyet_id ?: null) : $lop->giang_vien_ly_thuyet_id;
+            $gvTHId = $request->has('giang_vien_thuc_hanh_id') ? ($request->giang_vien_thuc_hanh_id ?: null) : $lop->giang_vien_thuc_hanh_id;
+
+            if ($gvLTId && $request->has('giang_vien_ly_thuyet_id')) {
+                $err = $this->kiemTraGiangVienHopLe((int)$gvLTId, 'lý thuyết');
+                if ($err) return response()->json($err, 422);
+            }
+            if ($gvTHId && $request->has('giang_vien_thuc_hanh_id')) {
+                $err = $this->kiemTraGiangVienHopLe((int)$gvTHId, 'thực hành');
+                if ($err) return response()->json($err, 422);
+            }
+
+            $lop->update([
+                'ten_lop'                 => $request->ten_lop ?? $lop->ten_lop,
+                'khoa_hoc_id'             => $request->khoa_hoc_id ?? $lop->khoa_hoc_id,
+                'giang_vien_ly_thuyet_id' => $request->giang_vien_ly_thuyet_id ?: null,
+                'giang_vien_thuc_hanh_id' => $request->giang_vien_thuc_hanh_id ?: null,
+                'ngay_khai_giang'         => $request->ngay_khai_giang ?: $lop->ngay_khai_giang,
+                'ngay_ket_thuc'           => $request->ngay_ket_thuc ?: $lop->ngay_ket_thuc,
+                'si_so_toi_da'            => $request->si_so_toi_da ?? $lop->si_so_toi_da,
+                'trang_thai'              => $trangThaiMoi,
+                'ghi_chu'                 => $request->ghi_chu ?? $lop->ghi_chu,
+            ]);
+
+            // Khi lớp chuyển sang đang_hoc → cập nhật học viên chưa học sang dang_hoc
+            if ($trangThaiCu !== 'dang_hoc' && $trangThaiMoi === 'dang_hoc') {
+                HoSoHocVien::whereHas('hocVienLop', fn($q) => $q->where('lop_hoc_id', $lop->id))
+                    ->whereIn('trang_thai', ['cho_mo_lop', 'chuan_bi_hoc'])
+                    ->update(['trang_thai' => 'dang_hoc']);
+            }
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['success' => false, 'message' => 'Cập nhật thất bại: ' . $e->getMessage()], 500);
+        }
 
         return response()->json(['success' => true, 'message' => 'Cập nhật lớp học thành công']);
     }
@@ -100,15 +163,48 @@ class LopHocController extends Controller
     {
         $lop = LopHoc::findOrFail($id);
 
-        // Kiểm tra có học viên chưa
-        if ($lop->hocVienLop()->count() > 0) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Không thể xóa lớp đang có học viên',
-            ], 400);
+        DB::beginTransaction();
+        try {
+            // Chuyển học viên trong lớp về chờ xếp lớp
+            HoSoHocVien::whereHas('hocVienLop', fn($q) => $q->where('lop_hoc_id', $lop->id))
+                ->update(['trang_thai' => 'cho_mo_lop']);
+
+            // Xóa bản ghi hoc_vien_lop
+            $lop->hocVienLop()->delete();
+            $lop->delete();
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['success' => false, 'message' => 'Xóa thất bại: ' . $e->getMessage()], 500);
         }
 
-        $lop->delete();
-        return response()->json(['success' => true, 'message' => 'Đã xóa lớp học']);
+        return response()->json([
+            'success' => true,
+            'message' => 'Đã xóa lớp học. Học viên đã được chuyển về trạng thái chờ xếp lớp.',
+        ]);
+    }
+
+    /**
+     * Đồng bộ lại trạng thái hồ sơ học viên theo trạng thái lớp hiện tại.
+     * Dùng khi dữ liệu bị lệch (lớp đang học nhưng học viên vẫn ở cho_mo_lop).
+     */
+    public function dongBoTrangThai($id)
+    {
+        $lop = LopHoc::findOrFail($id);
+
+        $soHV = 0;
+
+        if ($lop->trang_thai === 'dang_hoc') {
+            $soHV = HoSoHocVien::whereHas('hocVienLop', fn($q) => $q->where('lop_hoc_id', $lop->id))
+                ->whereIn('trang_thai', ['cho_mo_lop', 'chuan_bi_hoc'])
+                ->update(['trang_thai' => 'dang_hoc']);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => "Đã đồng bộ {$soHV} học viên sang trạng thái phù hợp với lớp [{$lop->ten_lop}]",
+            'so_hv_cap_nhat' => $soHV,
+        ]);
     }
 }

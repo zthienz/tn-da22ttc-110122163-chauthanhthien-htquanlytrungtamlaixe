@@ -5,11 +5,10 @@ import { useAdmin } from '../../context/AdminContext'
 import './XeManagement.css'
 
 const TRANG_THAI_MAP = {
-  san_sang:     { label: '✅ Sẵn sàng',   cls: 'badge-success' },
-  dang_su_dung: { label: '🚗 Đang dùng',  cls: 'badge-info' },
-  bao_tri:      { label: '🔧 Bảo trì',    cls: 'badge-warning' },
-  hong:         { label: '❌ Hỏng',        cls: 'badge-danger' },
-  nghi_huu:     { label: '🚫 Nghỉ hưu',   cls: 'badge-gray' },
+  san_sang:     { label: '✅ Sẵn sàng',  cls: 'badge-success' },
+  dang_su_dung: { label: '🚗 Đang dùng', cls: 'badge-info' },
+  bao_tri:      { label: '🔧 Bảo trì',   cls: 'badge-warning' },
+  hong:         { label: '❌ Hỏng',       cls: 'badge-danger' },
 }
 const LOAI_XE_MAP = { so_san: 'Số sàn', so_tu_dong: 'Số tự động' }
 const MUC_DO_MAP  = {
@@ -131,7 +130,11 @@ const XeManagement = () => {
   const handleTrangThai = async (id, tt) => {
     try {
       const res = await axios.patch(`${backendUrl}/api/admin/xe/${id}/trang-thai`, { trang_thai: tt }, { headers })
-      if (res.data.success) { toast.success('Cập nhật trạng thái thành công'); fetchXe() }
+      if (res.data.success) {
+        toast.success('Cập nhật trạng thái thành công')
+        // Cập nhật local state thay vì re-fetch để xe không biến mất khi đang lọc
+        setXeList(prev => prev.map(x => x.id === id ? { ...x, trang_thai: tt } : x))
+      }
     } catch (err) { toast.error(err.response?.data?.message || 'Lỗi') }
   }
 
@@ -209,13 +212,16 @@ const XeManagement = () => {
       {tab === 'xe' && (
         <div className="card">
           <div className="card-header" style={{display:'flex',alignItems:'center',gap:12,flexWrap:'wrap'}}>
-            <h3>🚗 Đội Xe ({filteredXe.length})</h3>
+            <h3>🚗 Đội Xe ({filteredXe.length}{filterTT ? ` / ${xeList.length} tổng` : ''})</h3>
             <input className="search-input" style={{flex:1,minWidth:200}} placeholder="🔍 Tìm theo biển số, hãng xe, dòng xe..."
               value={searchXe} onChange={e => setSearchXe(e.target.value)} />
-            <select className="search-input" style={{maxWidth:180}} value={filterTT} onChange={e=>setFilterTT(e.target.value)}>
+            <select className="search-input" style={{maxWidth:200, borderColor: filterTT ? '#0d47a1' : '', fontWeight: filterTT ? 700 : 400}} value={filterTT} onChange={e=>setFilterTT(e.target.value)}>
               <option value="">Tất cả trạng thái</option>
               {Object.entries(TRANG_THAI_MAP).map(([k,v]) => <option key={k} value={k}>{v.label}</option>)}
             </select>
+            {filterTT && (
+              <button className="btn btn-outline btn-sm" onClick={() => setFilterTT('')}>✕ Bỏ lọc</button>
+            )}
           </div>
           <div className="card-body" style={{padding:0}}>
             {loading ? <div className="loading-wrap"><div className="spinner"/></div> : (

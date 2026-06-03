@@ -27,20 +27,6 @@
 .dash-pie-card { }
 .dash-pie-body { display:flex;align-items:center;justify-content:center; }
 
-/* Quick actions */
-.dash-quick-grid {
-  display:grid;grid-template-columns:repeat(6,1fr);gap:12px;
-}
-.dash-quick-card {
-  background:#f8fafc;border-radius:12px;padding:16px 10px;
-  text-align:center;border:1px solid #e2e8f0;
-  transition:all .2s;cursor:pointer;display:block;
-}
-.dash-quick-card:hover { background:#eff6ff;border-color:#bfdbfe;transform:translateY(-2px); }
-.dash-quick-card span { font-size:26px;display:block;margin-bottom:6px; }
-.dash-quick-card p    { font-size:12px;font-weight:700;color:#1a202c;margin-bottom:2px; }
-.dash-quick-card small { font-size:11px;color:#a0aec0; }
-
 /* GV lịch */
 .gv-lich-list { display:flex;flex-direction:column;gap:10px; }
 .gv-lich-item {
@@ -60,15 +46,14 @@
   .dash-charts-row { grid-template-columns:1fr; }
   .dash-quick-grid { grid-template-columns:repeat(3,1fr); }
 }
-@media (max-width:640px) {
-  .dash-stat-grid  { grid-template-columns:1fr 1fr; }
-  .dash-quick-grid { grid-template-columns:repeat(2,1fr); }
+@media (max-width: 640px) {
+  .dash-stat-grid  { grid-template-columns: 1fr 1fr; }
 }
 
-/* ── Bottom row: Grouped chart + Donut + Quick actions ── */
+/* ── Bottom row: Grouped chart + Donut ── */
 .dash-bottom-row {
   display: grid;
-  grid-template-columns: 1.6fr 1fr 1.2fr;
+  grid-template-columns: 1.6fr 1fr;
   gap: 16px;
   align-items: start;
 }
@@ -121,15 +106,10 @@
   flex-shrink: 0; padding-top: 2px;
 }
 
-/* Quick actions (inside bottom row) */
-.dash-quick-card-wrap .dash-quick-grid {
-  grid-template-columns: repeat(3, 1fr);
-}
 
 @media (max-width: 1100px) {
   .dash-main-row   { grid-template-columns: 1fr; }
   .dash-bottom-row { grid-template-columns: 1fr; }
-  .dash-quick-card-wrap .dash-quick-grid { grid-template-columns: repeat(3, 1fr); }
 }
 
 /* Chart period select */
@@ -147,3 +127,27 @@
 }
 .dash-chart-select:hover  { border-color: #93c5fd; }
 .dash-chart-select:focus  { border-color: #0d47a1; }
+
+/* ── Hàng 3 cột (xe, giảng viên, lịch thi) ── */
+.dash-tri-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+/* KPI box nhỏ trong card giảng viên */
+.dash-kpi-box {
+  flex: 1;
+  border: 1px solid;
+  border-radius: 10px;
+  padding: 10px 14px;
+  text-align: center;
+}
+
+@media (max-width: 1100px) {
+  .dash-tri-row { grid-template-columns: 1fr; }
+}
+@media (max-width: 900px) {
+  .dash-bottom-row { grid-template-columns: 1fr; }
+}

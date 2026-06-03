@@ -91,7 +91,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
       </nav>
 
       {/* Logout */}
-      <button className="sidebar-logout" onClick={logout} title="Đăng xuất">
+      <button className="sidebar-logout" onClick={() => logout()} title="Đăng xuất">
         <span>🚪</span>
         {!collapsed && <span>Đăng Xuất</span>}
       </button>

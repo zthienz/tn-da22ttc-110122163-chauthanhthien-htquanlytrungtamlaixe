@@ -32,8 +32,8 @@ class DangKyController extends Controller
         if ($request->hasFile('anh_the')) {
             $file     = $request->file('anh_the');
             $fileName = 'hocvien_' . preg_replace('/[^a-zA-Z0-9]/', '', $request->ho_ten) . '_' . time() . '.' . $file->getClientOriginalExtension();
-            $file->move(public_path('uploads'), $fileName);
-            $anhThePath = $fileName;
+            $file->move(public_path('uploads/hoc_vien'), $fileName);
+            $anhThePath = 'hoc_vien/' . $fileName;
         }
 
         $hoSo = HoSoHocVien::create([

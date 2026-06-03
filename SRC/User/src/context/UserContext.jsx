@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react'
+import { createContext, useContext, useState, useEffect, useRef } from 'react'
 import axios from 'axios'
 
 const UserContext = createContext()
@@ -13,6 +13,9 @@ export const UserProvider = ({ children }) => {
 
   const backendUrl = 'http://localhost:8000'
 
+  // Dùng ref để logout có thể gọi từ interceptor mà không bị stale closure
+  const logoutRef = useRef(null)
+
   const login = (newToken, info) => {
     setToken(newToken)
     setUserInfo(info)
@@ -20,13 +23,37 @@ export const UserProvider = ({ children }) => {
     localStorage.setItem('userInfo', JSON.stringify(info))
   }
 
-  const logout = () => {
+  const logout = (message) => {
     setToken('')
     setUserInfo(null)
     setHoSo(null)
     localStorage.removeItem('userToken')
     localStorage.removeItem('userInfo')
+    if (message) {
+      // Lưu thông báo để trang Login hiển thị
+      localStorage.setItem('logoutMessage', message)
+    }
   }
+
+  logoutRef.current = logout
+
+  // Axios interceptor: tự động logout khi hồ sơ bị xóa (403 HO_SO_DELETED)
+  useEffect(() => {
+    const interceptor = axios.interceptors.response.use(
+      res => res,
+      err => {
+        const data = err.response?.data
+        if (
+          err.response?.status === 403 &&
+          (data?.code === 'HO_SO_DELETED' || data?.message?.includes('Hồ sơ học viên không còn tồn tại'))
+        ) {
+          logoutRef.current('Hồ sơ của bạn đã bị xóa khỏi hệ thống. Vui lòng liên hệ trung tâm.')
+        }
+        return Promise.reject(err)
+      }
+    )
+    return () => axios.interceptors.response.eject(interceptor)
+  }, [])
 
   // Tự động fetch hồ sơ khi có token
   useEffect(() => {
@@ -36,7 +63,12 @@ export const UserProvider = ({ children }) => {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => { if (res.data.success) setHoSo(res.data.data) })
-      .catch(() => {})
+      .catch(err => {
+        // Nếu token hết hạn hoặc hồ sơ bị xóa → logout
+        if (err.response?.status === 401 || err.response?.status === 403) {
+          logout()
+        }
+      })
       .finally(() => setLoading(false))
   }, [token])
 

@@ -60,6 +60,8 @@ Route::middleware(['auth.jwt', 'role:admin|giang_vien'])->prefix('admin')->group
 
     // Dashboard
     Route::get('/dashboard',                [AdminController::class, 'dashboard']);
+    Route::get('/dashboard-extra',          [AdminController::class, 'dashboardExtra']);
+    Route::get('/chart-ket-qua-thi',        [AdminController::class, 'chartKetQuaThi']);
     Route::get('/hoat-dong-gan-day',        [AdminController::class, 'hoatDongGanDay']);
     Route::get('/chart-doanh-thu',          [AdminController::class, 'chartDoanhThu']);
     Route::get('/chart-hoc-vien',           [AdminController::class, 'chartHocVien']);
@@ -82,6 +84,9 @@ Route::middleware(['auth.jwt', 'role:admin|giang_vien'])->prefix('admin')->group
 
     // Xếp lớp + tạo tài khoản cùng lúc
     Route::post('/ho-so/{id}/xep-lop',              [AdminController::class, 'xepLopVaTaoTaiKhoan']);
+
+    // Trigger thủ công khai giảng (đồng bộ trạng thái lớp + học viên)
+    Route::post('/lop-hoc/khai-giang',              [AdminController::class, 'triggerKhaiGiang']);
 
     // ── Khóa học (loại bằng lái - dùng cho trang BangLai) ──────────────────
     Route::get('/khoa-hoc',                 [KhoaHocController::class, 'index']);
@@ -111,6 +116,7 @@ Route::middleware(['auth.jwt', 'role:admin|giang_vien'])->prefix('admin')->group
     Route::post('/lop-hoc',                 [LopHocController::class, 'store']);
     Route::put('/lop-hoc/{id}',             [LopHocController::class, 'update']);
     Route::delete('/lop-hoc/{id}',          [LopHocController::class, 'destroy']);
+    Route::post('/lop-hoc/{id}/dong-bo',    [LopHocController::class, 'dongBoTrangThai']);
 
     // ── Lịch học ────────────────────────────────────────────────────────────
     Route::get('/lich-hoc',                 [LichHocController::class, 'index']);
@@ -121,12 +127,15 @@ Route::middleware(['auth.jwt', 'role:admin|giang_vien'])->prefix('admin')->group
     Route::post('/lich-hoc/{id}/diem-danh', [LichHocController::class, 'diemDanh']);
 
     // ── Thi ─────────────────────────────────────────────────────────────────
-    Route::get('/lich-thi',                 [ThiController::class, 'indexLichThi']);
-    Route::post('/lich-thi',                [ThiController::class, 'storeLichThi']);
-    Route::put('/lich-thi/{id}',            [ThiController::class, 'updateLichThi']);
-    Route::delete('/lich-thi/{id}',         [ThiController::class, 'destroyLichThi']);
-    Route::post('/lich-thi/{id}/ket-qua',   [ThiController::class, 'nhapKetQua']);
-    Route::post('/chung-chi',               [ThiController::class, 'capChungChi']);
+    Route::get('/lich-thi',                                     [ThiController::class, 'indexLichThi']);
+    Route::post('/lich-thi',                                    [ThiController::class, 'storeLichThi']);
+    Route::put('/lich-thi/{id}',                                [ThiController::class, 'updateLichThi']);
+    Route::delete('/lich-thi/{id}',                             [ThiController::class, 'destroyLichThi']);
+    Route::post('/lich-thi/{id}/ket-qua',                       [ThiController::class, 'nhapKetQua']);
+    Route::get('/lich-thi/{id}/hoc-vien-du-dieu-kien',          [ThiController::class, 'hocVienDuDieuKien']);
+    Route::post('/lich-thi/{id}/them-hoc-vien',                 [ThiController::class, 'themHocVienVaoLich']);
+    Route::delete('/lich-thi/{id}/hoc-vien/{hoSoId}',           [ThiController::class, 'xoaHocVienKhoiLich']);
+    Route::post('/chung-chi',                                   [ThiController::class, 'capChungChi']);
 
     // ── Học phí ─────────────────────────────────────────────────────────────
     Route::get('/hoc-phi',                  [HocPhiController::class, 'index']);
@@ -136,6 +145,7 @@ Route::middleware(['auth.jwt', 'role:admin|giang_vien'])->prefix('admin')->group
     Route::post('/giang-vien',              [AdminController::class, 'taoGiangVien']);
     Route::put('/giang-vien/{id}',          [AdminController::class, 'capNhatGiangVien']);
     Route::delete('/giang-vien/{id}',       [AdminController::class, 'xoaGiangVien']);
+    Route::patch('/giang-vien/{id}/trang-thai', [AdminController::class, 'capNhatTrangThaiGiangVien']);
     Route::patch('/users/{id}/toggle',      [AdminController::class, 'toggleUser']);
 
     // ── Xe ──────────────────────────────────────────────────────────────────

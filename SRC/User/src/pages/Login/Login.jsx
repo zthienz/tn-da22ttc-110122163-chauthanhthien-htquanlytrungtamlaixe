@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { toast } from 'react-toastify'
@@ -13,7 +13,14 @@ const Login = () => {
   const { login, backendUrl }   = useUser()
   const navigate                = useNavigate()
 
-  // Ngày sinh nhập dạng DDMMYYYY trực tiếp — không cần convert
+  // Hiển thị thông báo nếu bị logout cưỡng bức (hồ sơ bị xóa)
+  useEffect(() => {
+    const msg = localStorage.getItem('logoutMessage')
+    if (msg) {
+      toast.error(msg, { autoClose: 6000 })
+      localStorage.removeItem('logoutMessage')
+    }
+  }, [])
   const handleSubmit = async e => {
     e.preventDefault()
     if (!soCccd.trim()) { toast.error('Vui lòng nhập số CCCD'); return }

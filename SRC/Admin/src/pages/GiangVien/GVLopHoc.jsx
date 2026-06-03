@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import axios from 'axios'
 import { useAdmin } from '../../context/AdminContext'
 import './GVLopHoc.css'
@@ -160,7 +160,7 @@ const GVLopHoc = () => {
                           <div key={xe.id} style={{background:'#f0f4ff',border:'1px solid #c7d7f9',borderRadius:10,padding:'14px 16px'}}>
                             <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:8}}>
                               {xe.anh_xe
-                                ? <img src={`http://localhost:8000/uploads/${xe.anh_xe}`} alt={xe.bien_so} style={{width:48,height:36,objectFit:'cover',borderRadius:6}} />
+                                ? <img src={`/uploads/${xe.anh_xe}`} alt={xe.bien_so} style={{width:48,height:36,objectFit:'cover',borderRadius:6}} />
                                 : <div style={{width:48,height:36,background:'#e0ecff',borderRadius:6,display:'flex',alignItems:'center',justifyContent:'center',fontSize:20}}>🚗</div>}
                               <div>
                                 <p style={{fontWeight:800,fontSize:15,color:'#0d47a1',margin:0}}>{xe.bien_so}</p>

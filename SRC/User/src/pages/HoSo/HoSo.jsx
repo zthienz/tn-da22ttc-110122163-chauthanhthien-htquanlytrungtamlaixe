@@ -41,7 +41,6 @@ const HoSo = () => {
     cho_dong_hoc_phi:      { text: 'Chờ đóng học phí',     cls: 'badge-warning', icon: '⏳' },
     cho_mo_lop:            { text: 'Chờ mở lớp',            cls: 'badge-info',    icon: '🕐' },
     dang_hoc:              { text: 'Đang học',               cls: 'badge-success', icon: '📚' },
-    chua_du_dieu_kien_thi: { text: 'Chưa đủ điều kiện thi', cls: 'badge-danger',  icon: '⚠️' },
     du_dieu_kien_thi_tn:   { text: 'Đủ điều kiện thi TN',   cls: 'badge-blue',    icon: '✅' },
     hoan_thanh_tn:         { text: 'Hoàn thành tốt nghiệp', cls: 'badge-success', icon: '🎓' },
     da_cap_bang:           { text: 'Đã cấp bằng lái',       cls: 'badge-success', icon: '🏆' },
