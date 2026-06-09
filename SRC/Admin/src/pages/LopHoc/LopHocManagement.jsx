@@ -5,8 +5,8 @@ import { useAdmin } from '../../context/AdminContext'
 
 const TS_MAP   = { chuan_bi:'badge-info', dang_hoc:'badge-success', da_ket_thuc:'badge-gray' }
 const TS_LABEL = { chuan_bi:'Chuẩn bị', dang_hoc:'Đang học', da_ket_thuc:'Kết thúc' }
-const HV_MAP   = { dang_hoc:'badge-success', dinh_chi:'badge-danger', hoan_thanh_tn:'badge-success', da_cap_bang:'badge-success' }
-const HV_LABEL = { dang_hoc:'Đang học', dinh_chi:'Đình chỉ', hoan_thanh_tn:'Hoàn thành TN', da_cap_bang:'Đã cấp bằng' }
+const HV_MAP   = { dang_hoc:'badge-success', hoan_thanh_tn:'badge-success', da_cap_bang:'badge-success' }
+const HV_LABEL = { dang_hoc:'Đang học', hoan_thanh_tn:'Hoàn thành TN', da_cap_bang:'Đã cấp bằng' }
 
 const sectionTitle = { fontSize:13, fontWeight:700, color:'#0d47a1', textTransform:'uppercase', letterSpacing:'0.05em', paddingBottom:8, borderBottom:'2px solid #e0ecff', marginBottom:12 }
 const grid2  = { display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }
@@ -36,7 +36,7 @@ const LopHocManagement = () => {
   // Modal xem chi tiết
   const [viewItem, setViewItem]       = useState(null)
   const [viewLoading, setViewLoading] = useState(false)
-  const [detailTab, setDetailTab]     = useState('info') // 'info' | 'hocvien' | 'lichoc'
+  const [detailTab, setDetailTab]     = useState('info') // 'info' | 'hocvien'
 
   // Modal thêm học viên vào lớp
   const [showAddHV, setShowAddHV]   = useState(false)
@@ -52,7 +52,7 @@ const LopHocManagement = () => {
     try {
       const [r1, r2, r3] = await Promise.all([
         axios.get(`${backendUrl}/api/admin/lop-hoc`, { headers }),
-        axios.get(`${backendUrl}/api/admin/khoa-hoc`, { headers }),
+        axios.get(`${backendUrl}/api/admin/khoa-hoc-dao-tao`, { headers }),
         axios.get(`${backendUrl}/api/admin/giang-vien`, { headers }),
       ])
       if (r1.data.success) setList(r1.data.data)
@@ -94,8 +94,8 @@ const LopHocManagement = () => {
         toast.success(editing ? 'Cập nhật lớp thành công!' : 'Tạo lớp học thành công!')
         setShowModal(false)
         fetchAll()
-        // Refresh viewItem nếu đang xem
-        if (viewItem?.id === editing?.id) openView({ id: editing.id })
+        // Refresh viewItem chỉ khi đang sửa (editing !== null) và đang xem đúng lớp đó
+        if (editing && viewItem?.id === editing.id) openView({ id: editing.id })
       } else toast.error(res.data.message)
     } catch (err) { toast.error(err.response?.data?.message || 'Lỗi') }
   }
@@ -201,6 +201,9 @@ const LopHocManagement = () => {
 
   // Khóa học được chọn trong form (để lọc GV theo hạng)
   const selectedKhoa = khoaList.find(k => String(k.id) === String(form.khoa_hoc_id))
+  // Thông tin hiển thị: dùng ten_khoa_dao_tao và hang_bang (từ API khoa-hoc-dao-tao)
+  const khoaTenHien  = selectedKhoa?.ten_khoa_dao_tao || selectedKhoa?.ten_khoa || ''
+  const khoaHang     = selectedKhoa?.hang_bang || selectedKhoa?.loai_bang || ''
 
   return (
     <div>
@@ -279,11 +282,12 @@ const LopHocManagement = () => {
                   <label>Khóa học *</label>
                   <select value={form.khoa_hoc_id} onChange={e=>setForm({...form,khoa_hoc_id:e.target.value,giang_vien_ly_thuyet_id:'',giang_vien_thuc_hanh_id:''})} required>
                     <option value="">-- Chọn khóa học --</option>
-                    {khoaList.map(k => <option key={k.id} value={k.id}>{k.ten_khoa} {k.loai_bang ? `(Hạng ${k.loai_bang})` : ''}</option>)}
+                    {khoaList.map(k => <option key={k.id} value={k.id}>{k.ten_khoa_dao_tao} (Hạng {k.hang_bang})</option>)}
                   </select>
                   {selectedKhoa && (
                     <p style={{fontSize:12,color:'#0d47a1',marginTop:4}}>
-                      ℹ️ Hạng bằng: <strong>{selectedKhoa.loai_bang}</strong> — Học phí: <strong>{Number(selectedKhoa.hoc_phi||0).toLocaleString('vi-VN')} VNĐ</strong>
+                      ℹ️ Hạng bằng: <strong>{khoaHang}</strong>
+                      {selectedKhoa.thang && <> — Tháng <strong>{selectedKhoa.thang}/{selectedKhoa.nam}</strong></>}
                     </p>
                   )}
                 </div>
@@ -348,7 +352,6 @@ const LopHocManagement = () => {
                   {[
                     { key:'info',    label:`📋 Thông tin` },
                     { key:'hocvien', label:`👥 Học viên (${viewItem.hoc_vien_lop?.length || 0})` },
-                    { key:'lichoc',  label:`📅 Lịch học (${viewItem.lich_hoc?.length || 0})` },
                   ].map(t => (
                     <button key={t.key}
                       style={{padding:'12px 18px',border:'none',background:'none',cursor:'pointer',fontSize:14,fontWeight:600,
@@ -428,30 +431,6 @@ const LopHocManagement = () => {
                                 <td><code style={{fontSize:11}}>{hvl.ho_so?.so_cccd || '—'}</code></td>
                                 <td style={{fontSize:12}}>{hvl.ho_so?.so_dien_thoai || '—'}</td>
                                 <td><span className={`badge ${HV_MAP[hvl.ho_so?.trang_thai]||'badge-gray'}`}>{HV_LABEL[hvl.ho_so?.trang_thai]||hvl.ho_so?.trang_thai||'—'}</span></td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      )}
-                    </>
-                  )}
-
-                  {/* Tab: Lịch học */}
-                  {detailTab === 'lichoc' && (
-                    <>
-                      {(!viewItem.lich_hoc || viewItem.lich_hoc.length === 0) ? (
-                        <div style={{textAlign:'center',padding:'40px',color:'#9ca3af'}}>Chưa có lịch học nào</div>
-                      ) : (
-                        <table className="data-table">
-                          <thead><tr><th>Ngày</th><th>Loại</th><th>Giờ</th><th>Địa điểm</th><th>Nội dung</th></tr></thead>
-                          <tbody>
-                            {viewItem.lich_hoc.map((lh, i) => (
-                              <tr key={lh.id}>
-                                <td>{new Date(lh.ngay_hoc).toLocaleDateString('vi-VN')}</td>
-                                <td><span className={`badge ${lh.loai_buoi==='ly_thuyet'?'badge-info':'badge-success'}`}>{lh.loai_buoi==='ly_thuyet'?'📖 LT':'🚗 TH'}</span></td>
-                                <td style={{fontSize:12}}>{lh.gio_bat_dau?.slice(0,5)} – {lh.gio_ket_thuc?.slice(0,5)}</td>
-                                <td style={{fontSize:12}}>{lh.dia_diem || '—'}</td>
-                                <td style={{fontSize:12,color:'#718096'}}>{lh.noi_dung || '—'}</td>
                               </tr>
                             ))}
                           </tbody>

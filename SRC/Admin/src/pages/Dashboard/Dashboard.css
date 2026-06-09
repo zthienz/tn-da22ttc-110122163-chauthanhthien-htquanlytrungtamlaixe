@@ -55,7 +55,7 @@
   display: grid;
   grid-template-columns: 1.6fr 1fr;
   gap: 16px;
-  align-items: start;
+  align-items: stretch;
 }
 
 /* Main row: Chart + Activity feed */

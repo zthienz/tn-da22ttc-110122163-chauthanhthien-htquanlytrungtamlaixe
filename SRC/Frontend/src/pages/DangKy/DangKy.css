@@ -215,3 +215,12 @@
   .dangky-form-layout { grid-template-columns: 1fr; }
   .dangky-anh-col { flex-direction: row; flex-wrap: wrap; }
 }
+
+/* Radio item chưa đủ tuổi */
+.radio-item.radio-disabled {
+  opacity: 0.6;
+  background: #fef2f2;
+  border-color: #fca5a5;
+  cursor: not-allowed;
+}
+.radio-item.radio-disabled input { cursor: not-allowed; }

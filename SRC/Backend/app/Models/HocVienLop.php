@@ -28,9 +28,30 @@ class HocVienLop extends Model
     // Tự động kiểm tra điều kiện thi sau khi cập nhật
     public function kiemTraDieuKien(): void
     {
-        $khoa = $this->lopHoc->khoaHoc;
+        $lopKhoa = $this->lopHoc->khoaHoc;
+
+        // Ưu tiên lấy ngưỡng từ khóa DANH MỤC cùng hạng bằng (có đủ thông tin đào tạo).
+        // Khóa đào tạo theo tháng thường có so_buoi và so_km = 0 nên không dùng làm ngưỡng.
+        $khoaNguong = null;
+        if (!is_null($lopKhoa->ma_khoa)) {
+            // Đây là khóa đào tạo theo tháng → tìm khóa danh mục cùng hạng
+            $khoaNguong = \App\Models\KhoaHoc::where('loai_bang', $lopKhoa->loai_bang)
+                ->whereNull('ma_khoa')
+                ->first();
+        }
+        // Nếu không tìm được hoặc lớp đã thuộc khóa danh mục → dùng chính nó
+        $khoa = $khoaNguong ?? $lopKhoa;
+
         $duLyThuyet = $this->so_buoi_ly_thuyet_da_hoc >= $khoa->so_buoi_ly_thuyet_toi_thieu;
-        $duKm       = $this->so_km_da_chay >= $khoa->so_km_toi_thieu;
+
+        // Bằng A1 và A: chỉ học lý thuyết, không cần km thực hành
+        $hangKhongCanKm = ['A1', 'A'];
+        if (in_array($lopKhoa->loai_bang, $hangKhongCanKm)) {
+            $duKm       = true; // luôn đủ điều kiện km
+        } else {
+            $duKm       = $this->so_km_da_chay >= $khoa->so_km_toi_thieu;
+        }
+
         $duDieuKien = $duLyThuyet && $duKm;
 
         $this->update([
@@ -44,6 +65,9 @@ class HocVienLop extends Model
         if (in_array($hoSo->trang_thai, ['dang_hoc', 'chua_du_dieu_kien_thi']) && $duDieuKien) {
             $hoSo->update(['trang_thai' => 'du_dieu_kien_thi_tn']);
         }
-        // Chưa đủ điều kiện → giữ nguyên dang_hoc, không đổi
+        // Khi không còn đủ điều kiện (bị trừ km/buổi) → rollback về dang_hoc
+        if ($hoSo->trang_thai === 'du_dieu_kien_thi_tn' && !$duDieuKien) {
+            $hoSo->update(['trang_thai' => 'dang_hoc']);
+        }
     }
 }

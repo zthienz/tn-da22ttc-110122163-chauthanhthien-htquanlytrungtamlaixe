@@ -75,19 +75,25 @@ class HocVienController extends Controller
             return response()->json(['success' => false, 'message' => 'Không tìm thấy hồ sơ'], 404);
         }
 
-        $hvLop = HocVienLop::where('ho_so_id', $hoSo->id)->first();
-        $khoa  = $hoSo->khoaHoc;
+        $hvLop   = HocVienLop::where('ho_so_id', $hoSo->id)->first();
+        $khoa    = $hoSo->khoaHoc;
+        $loaiBang = $khoa?->loai_bang ?? '';
+
+        // A1 và A không cần thực hành km — chỉ cần đủ buổi lý thuyết
+        $coThucHanh = !in_array($loaiBang, ['A1', 'A']);
 
         return response()->json([
             'success' => true,
             'data'    => [
+                'loai_bang'                   => $loaiBang,
+                'co_thuc_hanh'                => $coThucHanh,
                 'so_buoi_ly_thuyet_da_hoc'    => $hvLop?->so_buoi_ly_thuyet_da_hoc ?? 0,
                 'so_buoi_thuc_hanh_da_hoc'    => $hvLop?->so_buoi_thuc_hanh_da_hoc ?? 0,
                 'so_km_da_chay'               => $hvLop?->so_km_da_chay ?? 0,
                 'so_buoi_ly_thuyet_toi_thieu' => $khoa?->so_buoi_ly_thuyet_toi_thieu ?? 20,
-                'so_km_toi_thieu'             => $khoa?->so_km_toi_thieu ?? 810,
+                'so_km_toi_thieu'             => $coThucHanh ? ($khoa?->so_km_toi_thieu ?? 810) : 0,
                 'du_buoi_ly_thuyet'           => $hvLop?->du_buoi_ly_thuyet ?? false,
-                'du_km_thuc_hanh'             => $hvLop?->du_km_thuc_hanh ?? false,
+                'du_km_thuc_hanh'             => $coThucHanh ? ($hvLop?->du_km_thuc_hanh ?? false) : true,
                 'du_dieu_kien_thi_tn'         => $hvLop?->du_dieu_kien_thi_tn ?? false,
             ],
         ]);

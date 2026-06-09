@@ -352,3 +352,62 @@
 .form-group input.error {
   border-color: #dc2626;
 }
+
+/* ── Stat cards trạng thái học viên ── */
+.hoso-stats-row {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 12px;
+}
+
+.hoso-stat-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #fff;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: all .18s;
+  text-align: left;
+  position: relative;
+  overflow: hidden;
+}
+.hoso-stat-card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 4px;
+  background: var(--sc, #94a3b8);
+  border-radius: 12px 0 0 12px;
+}
+.hoso-stat-card:hover {
+  border-color: var(--sc, #94a3b8);
+  box-shadow: 0 4px 14px rgba(0,0,0,.08);
+  transform: translateY(-1px);
+}
+.hoso-stat-card.active {
+  border-color: var(--sc);
+  background: color-mix(in srgb, var(--sc) 8%, #fff);
+}
+
+.hsc-icon { font-size: 22px; flex-shrink: 0; }
+.hsc-body { display: flex; flex-direction: column; flex: 1; }
+.hsc-value { font-size: 24px; font-weight: 800; color: var(--sc); line-height: 1.1; }
+.hsc-label { font-size: 11px; font-weight: 600; color: #718096; margin-top: 2px; }
+
+.hsc-active-dot {
+  position: absolute;
+  top: 8px; right: 8px;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--sc);
+}
+
+@media (max-width: 1100px) {
+  .hoso-stats-row { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 700px) {
+  .hoso-stats-row { grid-template-columns: repeat(2, 1fr); }
+}

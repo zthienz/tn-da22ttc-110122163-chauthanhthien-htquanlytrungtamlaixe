@@ -11,7 +11,6 @@ const TRANG_THAI_MAP = {
   du_dieu_kien_thi_tn:   { text:'Đủ ĐK thi TN',    cls:'badge-blue' },
   hoan_thanh_tn:         { text:'Hoàn thành TN',    cls:'badge-success' },
   da_cap_bang:           { text:'Đã cấp bằng',      cls:'badge-success' },
-  dinh_chi:              { text:'Đình chỉ',         cls:'badge-danger' },
 }
 
 const HocVienManagement = () => {

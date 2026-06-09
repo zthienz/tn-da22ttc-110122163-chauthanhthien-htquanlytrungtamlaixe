@@ -188,30 +188,30 @@ class DatabaseSeeder extends Seeder
         // ── A) Đang học — khóa 03/2026 ──────────────────────
 
         // Lớp B1-03/2026-A (3 HV)
-        $this->taoHocVienDangHoc('Huỳnh Bảo Trâm', '079204001001','15032004','0911001001','huynhbaotram@gmail.com', $dt_03_B1->id, $lop_03_B1_A->id, 15000000, 'hocvien_HuynhBaoTram.jpg',    '2026-03-10', 12, 8, 280);
-        $this->taoHocVienDangHoc('Huỳnh Yến Nhi',  '079204001002','22072004','0911001002','huynhyennhi@gmail.com',  $dt_03_B1->id, $lop_03_B1_A->id, 15000000, 'hocvien_HuynhYenNhi.jpg',     '2026-03-10', 10, 6, 210);
-        $this->taoHocVienDangHoc('Kim Anh Tuyết',  '079204001003','10052003','0911001003','kimanhthuyet@gmail.com', $dt_03_B1->id, $lop_03_B1_A->id, 15000000, 'hocvien_KimAnhTuyet.jpg',     '2026-03-10', 14, 9, 320);
+        $this->taoHocVienDangHoc('Huỳnh Bảo Trâm', '079204001001','15032004','0911001001','huynhbaotram@gmail.com', $dt_03_B1->id, $lop_03_B1_A->id, 15000000, 'hoc_vien/hocvien_HuynhBaoTram.jpg',    '2026-03-10', 12, 8, 280);
+        $this->taoHocVienDangHoc('Huỳnh Yến Nhi',  '079204001002','22072004','0911001002','huynhyennhi@gmail.com',  $dt_03_B1->id, $lop_03_B1_A->id, 15000000, 'hoc_vien/hocvien_HuynhYenNhi.jpg',     '2026-03-10', 10, 6, 210);
+        $this->taoHocVienDangHoc('Kim Anh Tuyết',  '079204001003','10052003','0911001003','kimanhthuyet@gmail.com', $dt_03_B1->id, $lop_03_B1_A->id, 15000000, 'hoc_vien/hocvien_KimAnhTuyet.jpg',     '2026-03-10', 14, 9, 320);
 
         // Lớp B1-03/2026-B (2 HV)
-        $this->taoHocVienDangHoc('Lê Hữu Nghĩa',   '079204001004','05092003','0911001004','lehuunghia@gmail.com',   $dt_03_B1->id, $lop_03_B1_B->id, 15000000, 'hocvien_LeHuuNghia.jpg',      '2026-03-15', 11, 7, 240);
-        $this->taoHocVienDangHoc('Liêu Như Yên',   '079204001005','18112003','0911001005','lieunhuyen@gmail.com',   $dt_03_B1->id, $lop_03_B1_B->id, 15000000, 'hocvien_LieuNhuYen.jpg',      '2026-03-15', 9,  5, 190);
+        $this->taoHocVienDangHoc('Lê Hữu Nghĩa',   '079204001004','05092003','0911001004','lehuunghia@gmail.com',   $dt_03_B1->id, $lop_03_B1_B->id, 15000000, 'hoc_vien/hocvien_LeHuuNghia.jpg',      '2026-03-15', 11, 7, 240);
+        $this->taoHocVienDangHoc('Liêu Như Yên',   '079204001005','18112003','0911001005','lieunhuyen@gmail.com',   $dt_03_B1->id, $lop_03_B1_B->id, 15000000, 'hoc_vien/hocvien_LieuNhuYen.jpg',      '2026-03-15', 9,  5, 190);
 
         // Lớp B2-03/2026-A (2 HV)
-        $this->taoHocVienDangHoc('Phạm Tuyết Trân','079204001006','30012004','0911001006','phamtuyettran@gmail.com',$dt_03_B2->id, $lop_03_B2_A->id, 18000000, 'hocvien_PhamTuyetTran.jpg',   '2026-03-08', 13, 8, 350);
-        $this->taoHocVienDangHoc('Phạm Văn Khôi',  '079204001007','14062003','0911001007','phamvankhoi@gmail.com',  $dt_03_B2->id, $lop_03_B2_A->id, 18000000, 'hocvien_PhamVanKhoi.webp',    '2026-03-08', 15, 10, 420);
+        $this->taoHocVienDangHoc('Phạm Tuyết Trân','079204001006','30012004','0911001006','phamtuyettran@gmail.com',$dt_03_B2->id, $lop_03_B2_A->id, 18000000, 'hoc_vien/hocvien_PhamTuyetTran.jpg',   '2026-03-08', 13, 8, 350);
+        $this->taoHocVienDangHoc('Phạm Văn Khôi',  '079204001007','14062003','0911001007','phamvankhoi@gmail.com',  $dt_03_B2->id, $lop_03_B2_A->id, 18000000, 'hoc_vien/hocvien_PhamVanKhoi.webp',    '2026-03-08', 15, 10, 420);
 
         // Lớp B2-03/2026-B (1 HV)
-        $this->taoHocVienDangHoc('Phan Bảo Khánh', '079204001008','25082004','0911001008','phanbaokhanh@gmail.com', $dt_03_B2->id, $lop_03_B2_B->id, 18000000, 'hocvien_PhanBaoKhanh.jpg',    '2026-03-12', 16, 11, 480);
+        $this->taoHocVienDangHoc('Phan Bảo Khánh', '079204001008','25082004','0911001008','phanbaokhanh@gmail.com', $dt_03_B2->id, $lop_03_B2_B->id, 18000000, 'hoc_vien/hocvien_PhanBaoKhanh.jpg',    '2026-03-12', 16, 11, 480);
 
         // ── B) Chờ mở lớp, đã đóng HP — dành cho khóa 05/2026 ──
 
         // 3 HV chờ lớp B1 tháng 5/2026
-        $this->taoHocVienChoMoLop('Tô Tuyết Anh',   '079204001009','07042004','0911001009','totuyetanh@gmail.com',   $dt_05_B1->id, 15000000, 'hocvien_ToTuyetAnh.jpg');
-        $this->taoHocVienChoMoLop('Trần Tấn Tài',   '079204001010','12102003','0911001010','trantantai@gmail.com',   $dt_05_B1->id, 15000000, 'hocvien_TranTanTai.jpg');
-        $this->taoHocVienChoMoLop('Trần Minh Hiếu', '079204001011','20022004','0911001011','tranminhhieu@gmail.com', $dt_05_B1->id, 15000000, 'họcvien_TranMinhHieu.jpg');
+        $this->taoHocVienChoMoLop('Tô Tuyết Anh',   '079204001009','07042004','0911001009','totuyetanh@gmail.com',   $dt_05_B1->id, 15000000, 'hoc_vien/hocvien_ToTuyetAnh.jpg');
+        $this->taoHocVienChoMoLop('Trần Tấn Tài',   '079204001010','12102003','0911001010','trantantai@gmail.com',   $dt_05_B1->id, 15000000, 'hoc_vien/hocvien_TranTanTai.jpg');
+        $this->taoHocVienChoMoLop('Trần Minh Hiếu', '079204001011','20022004','0911001011','tranminhhieu@gmail.com', $dt_05_B1->id, 15000000, 'hoc_vien/hocvien_TranMinhHieu.jpg');
 
         // 3 HV chờ lớp B2 tháng 5/2026
-        $this->taoHocVienChoMoLop('Võ Thành Nam',   '079204001012','03112003','0911001012','vothanhnam@gmail.com',   $dt_05_B2->id, 18000000, 'hocvien_VoThanhNam.jpg');
+        $this->taoHocVienChoMoLop('Võ Thành Nam',   '079204001012','03112003','0911001012','vothanhnam@gmail.com',   $dt_05_B2->id, 18000000, 'hoc_vien/hocvien_VoThanhNam.jpg');
         $this->taoHocVienChoMoLop('Nguyễn Thị Lan', '079204001013','25061999','0911001013','nguyenthilan@gmail.com', $dt_05_B2->id, 18000000, null);
         $this->taoHocVienChoMoLop('Trần Văn Bình',  '079204001014','08031998','0911001014','tranvanbinh@gmail.com',  $dt_05_B2->id, 18000000, null);
 

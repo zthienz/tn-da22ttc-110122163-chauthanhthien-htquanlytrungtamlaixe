@@ -15,36 +15,29 @@ class KhoaHocDaoTaoController extends Controller
     // ── Danh sách khóa học đào tạo (có thang/nam/hang_bang) ──────────────────
     public function index(Request $request)
     {
-        $query = KhoaHoc::withCount('lopHoc')
-            ->whereNotNull('ma_khoa'); // chỉ lấy khóa đào tạo (có mã)
+        $query = KhoaHoc::withCount([
+                'lopHoc',
+                'lopHoc as lop_dang_hoc_count' => fn($q) => $q->where('trang_thai', 'dang_hoc'),
+            ])
+            ->whereNotNull('ma_khoa');
 
-        if ($request->hang_bang) {
-            $query->where('hang_bang', $request->hang_bang);
-        }
-        if ($request->nam) {
-            $query->where('nam', $request->nam);
-        }
+        if ($request->hang_bang) $query->where('hang_bang', $request->hang_bang);
+        if ($request->nam)       $query->where('nam',       $request->nam);
+        if ($request->thang)     $query->where('thang',     $request->thang);
 
         $list = $query->orderByDesc('nam')->orderByDesc('thang')->get()
-            ->map(function ($k) {
-                // Đếm tổng học viên qua tất cả lớp thuộc khóa này
-                $tongHocVien = \App\Models\HocVienLop::whereHas(
-                    'lopHoc', fn($q) => $q->where('khoa_hoc_id', $k->id)
-                )->count();
-
-                return [
-                    'id'                => $k->id,
-                    'ma_khoa'           => $k->ma_khoa,
-                    'ten_khoa_dao_tao'  => $k->ten_khoa_dao_tao,
-                    'thang'             => $k->thang,
-                    'nam'               => $k->nam,
-                    'hang_bang'         => $k->hang_bang,
-                    'trang_thai'        => $k->trang_thai_khoa,
-                    'ghi_chu'           => $k->ghi_chu,
-                    'lop_count'         => $k->lop_hoc_count,
-                    'hoc_vien_count'    => $tongHocVien,
-                ];
-            });
+            ->map(fn($k) => [
+                'id'               => $k->id,
+                'ma_khoa'          => $k->ma_khoa,
+                'ten_khoa_dao_tao' => $k->ten_khoa_dao_tao,
+                'thang'            => $k->thang,
+                'nam'              => $k->nam,
+                'hang_bang'        => $k->hang_bang,
+                'trang_thai'       => $k->trang_thai_khoa,
+                'ghi_chu'          => $k->ghi_chu,
+                'lop_count'        => $k->lop_hoc_count,
+                'lop_dang_hoc'     => $k->lop_dang_hoc_count,
+            ]);
 
         return response()->json(['success' => true, 'data' => $list]);
     }
@@ -102,17 +95,29 @@ class KhoaHocDaoTaoController extends Controller
         return response()->json([
             'success' => true,
             'data' => [
-                'id'                => $khoa->id,
-                'ma_khoa'           => $khoa->ma_khoa,
-                'ten_khoa_dao_tao'  => $khoa->ten_khoa_dao_tao,
-                'thang'             => $khoa->thang,
-                'nam'               => $khoa->nam,
-                'hang_bang'         => $khoa->hang_bang,
-                'trang_thai'        => $khoa->trang_thai_khoa,
-                'ghi_chu'           => $khoa->ghi_chu,
-                'lop_hoc'           => $lopHoc,
-                'hoc_vien'          => $hocVien,
-                'hoc_vien_count'    => $tongHocVienTrongLop,
+                'id'                      => $khoa->id,
+                'ma_khoa'                 => $khoa->ma_khoa,
+                'ten_khoa_dao_tao'        => $khoa->ten_khoa_dao_tao,
+                'thang'                   => $khoa->thang,
+                'nam'                     => $khoa->nam,
+                'hang_bang'               => $khoa->hang_bang,
+                'trang_thai'              => $khoa->trang_thai_khoa,
+                'ghi_chu'                 => $khoa->ghi_chu,
+                // Thông tin khóa học danh mục cùng hạng (để hiện mô tả)
+                'hoc_phi'                 => $khoa->hoc_phi,
+                'so_buoi_ly_thuyet_toi_thieu' => $khoa->so_buoi_ly_thuyet_toi_thieu,
+                'so_km_toi_thieu'         => $khoa->so_km_toi_thieu,
+                'mo_ta'                   => $khoa->mo_ta,
+                'doi_tuong'               => $khoa->doi_tuong,
+                'loai_xe_mo_ta'           => $khoa->loai_xe_mo_ta,
+                'thoi_han_bang'           => $khoa->thoi_han_bang,
+                'yeu_cau_truoc'           => $khoa->yeu_cau_truoc,
+                'quyen_lai_xe'            => $khoa->quyen_lai_xe,
+                'quy_trinh_dao_tao'       => $khoa->quy_trinh_dao_tao,
+                'le_phi_sat_hach'         => $khoa->le_phi_sat_hach,
+                'lop_hoc'                 => $lopHoc,
+                'hoc_vien'                => $hocVien,
+                'hoc_vien_count'          => $tongHocVienTrongLop,
             ],
         ]);
     }
@@ -197,6 +202,22 @@ class KhoaHocDaoTaoController extends Controller
         ]);
     }
 
+    // ── Helper đồng bộ trạng thái khóa học theo lớp học ─────────────────────
+    private function dongBoTrangThaiKhoa(int $khoaHocId): void
+    {
+        $lops = LopHoc::where('khoa_hoc_id', $khoaHocId)->pluck('trang_thai');
+        if ($lops->isEmpty()) {
+            $tt = 'chuan_bi';
+        } elseif ($lops->contains('dang_hoc')) {
+            $tt = 'dang_hoc';
+        } elseif ($lops->every(fn($t) => $t === 'da_ket_thuc')) {
+            $tt = 'da_ket_thuc';
+        } else {
+            $tt = 'chuan_bi';
+        }
+        KhoaHoc::where('id', $khoaHocId)->update(['trang_thai_khoa' => $tt]);
+    }
+
     // ── Tạo lớp học trong khóa đào tạo ───────────────────────────────────────
     public function storeLop(Request $request, $khoaId)
     {
@@ -217,6 +238,8 @@ class KhoaHocDaoTaoController extends Controller
             'ghi_chu'                   => $request->ghi_chu ?: null,
         ]);
 
+        $this->dongBoTrangThaiKhoa($khoaId);
+
         return response()->json(['success' => true, 'message' => 'Tạo lớp học thành công', 'data' => $lop], 201);
     }
 
@@ -235,6 +258,8 @@ class KhoaHocDaoTaoController extends Controller
             'ghi_chu'                   => $request->ghi_chu ?? $lop->ghi_chu,
         ]);
 
+        $this->dongBoTrangThaiKhoa($lop->khoa_hoc_id);
+
         return response()->json(['success' => true, 'message' => 'Cập nhật lớp thành công']);
     }
 
@@ -242,16 +267,16 @@ class KhoaHocDaoTaoController extends Controller
     public function destroyLop($lopId)
     {
         $lop = LopHoc::findOrFail($lopId);
+        $khoaHocId = $lop->khoa_hoc_id;
 
         DB::transaction(function () use ($lop) {
-            // Chuyển học viên trong lớp về chờ xếp lớp
             HoSoHocVien::whereHas('hocVienLop', fn($q) => $q->where('lop_hoc_id', $lop->id))
                 ->update(['trang_thai' => 'cho_mo_lop']);
-
-            // Xóa bản ghi hoc_vien_lop
             $lop->hocVienLop()->delete();
             $lop->delete();
         });
+
+        $this->dongBoTrangThaiKhoa($khoaHocId);
 
         return response()->json([
             'success' => true,

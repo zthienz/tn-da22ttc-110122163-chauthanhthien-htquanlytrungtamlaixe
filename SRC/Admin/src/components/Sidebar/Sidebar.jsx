@@ -11,6 +11,7 @@ const adminMenu = [
   { path: '/lop-hoc',    icon: '🏫', label: 'Lớp Học' },
   { path: '/lich-hoc',   icon: '🗓️', label: 'Lịch Học' },
   { path: '/thi',        icon: '🏆', label: 'Thi & Kết Quả' },
+  { path: '/cap-bang',   icon: '🎓', label: 'Cấp Bằng' },
   { path: '/giang-vien', icon: '👨‍🏫', label: 'Giảng Viên' },
   { path: '/hoc-phi',    icon: '💰', label: 'Học Phí' },
   { path: '/xe',         icon: '🚗', label: 'Quản Lý Xe' },

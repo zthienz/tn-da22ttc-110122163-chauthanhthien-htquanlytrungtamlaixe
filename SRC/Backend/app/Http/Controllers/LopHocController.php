@@ -103,6 +103,8 @@ class LopHocController extends Controller
             'ghi_chu'                 => $request->ghi_chu ?: null,
         ]);
 
+        $this->dongBoTrangThaiKhoaHoc($lop->khoa_hoc_id);
+
         return response()->json([
             'success' => true,
             'message' => 'Tạo lớp học thành công',
@@ -156,6 +158,8 @@ class LopHocController extends Controller
             return response()->json(['success' => false, 'message' => 'Cập nhật thất bại: ' . $e->getMessage()], 500);
         }
 
+        $this->dongBoTrangThaiKhoaHoc($lop->khoa_hoc_id);
+
         return response()->json(['success' => true, 'message' => 'Cập nhật lớp học thành công']);
     }
 
@@ -171,6 +175,7 @@ class LopHocController extends Controller
 
             // Xóa bản ghi hoc_vien_lop
             $lop->hocVienLop()->delete();
+            $khoaHocId = $lop->khoa_hoc_id;
             $lop->delete();
 
             DB::commit();
@@ -179,10 +184,38 @@ class LopHocController extends Controller
             return response()->json(['success' => false, 'message' => 'Xóa thất bại: ' . $e->getMessage()], 500);
         }
 
+        $this->dongBoTrangThaiKhoaHoc($khoaHocId);
+
         return response()->json([
             'success' => true,
             'message' => 'Đã xóa lớp học. Học viên đã được chuyển về trạng thái chờ xếp lớp.',
         ]);
+    }
+
+    /**
+     * Đồng bộ trang_thai_khoa dựa trên trạng thái các lớp học bên trong:
+     *   - Không có lớp nào              → chuan_bi
+     *   - Có ít nhất 1 lớp dang_hoc     → dang_hoc
+     *   - Tất cả lớp đều da_ket_thuc    → da_ket_thuc
+     *   - Còn lại (tất cả chuan_bi)     → chuan_bi
+     */
+    private function dongBoTrangThaiKhoaHoc(int $khoaHocId): void
+    {
+        $lops = LopHoc::where('khoa_hoc_id', $khoaHocId)
+            ->pluck('trang_thai');
+
+        if ($lops->isEmpty()) {
+            $ttMoi = 'chuan_bi';
+        } elseif ($lops->contains('dang_hoc')) {
+            $ttMoi = 'dang_hoc';
+        } elseif ($lops->every(fn($tt) => $tt === 'da_ket_thuc')) {
+            $ttMoi = 'da_ket_thuc';
+        } else {
+            $ttMoi = 'chuan_bi';
+        }
+
+        \App\Models\KhoaHoc::where('id', $khoaHocId)
+            ->update(['trang_thai_khoa' => $ttMoi]);
     }
 
     /**

@@ -279,11 +279,133 @@ class AdminController extends Controller
         return response()->json(['success' => true, 'data' => $result]);
     }
 
-    // ─── Danh sách hồ sơ học viên ────────────────────────────────────────────
+    // ─── Thu phí thi lại cho học viên ──────────────────────────────────────
+    public function thuPhiThiLai(Request $request, $hoSoId)
+    {
+        $request->validate([
+            'bai_thi_ids' => 'required|array|min:1',
+            'bai_thi_ids.*' => 'required|exists:bai_thi,id',
+            'lich_thi_id'  => 'required|exists:lich_thi,id',
+            'phuong_thuc'  => 'required|in:tien_mat,chuyen_khoan,vnpay,momo',
+            'ma_giao_dich' => 'nullable|string',
+        ]);
+
+        $hoSo = HoSoHocVien::findOrFail($hoSoId);
+
+        $tongPhi = 0;
+        $daThu   = [];
+
+        foreach ($request->bai_thi_ids as $baiThiId) {
+            $baiThi = \App\Models\BaiThi::findOrFail($baiThiId);
+
+            // Kiểm tra bài thi này có thực sự chưa đạt không
+            $ketQua = \App\Models\KetQuaThi::where('ho_so_id', $hoSoId)
+                ->where('lich_thi_id', $request->lich_thi_id)
+                ->where('bai_thi_id', $baiThiId)
+                ->whereIn('ket_qua', ['khong_dat', 'vang_mat'])
+                ->first();
+
+            if (!$ketQua) continue;
+
+            // Kiểm tra đã thu phí cho lần thi lại này chưa
+            $daCoPhieu = \App\Models\ThanhToanHocPhi::where('ho_so_id', $hoSoId)
+                ->where('loai_phi', 'phi_thi_lai')
+                ->where('bai_thi_id', $baiThiId)
+                ->where('lich_thi_id', $request->lich_thi_id)
+                ->where('trang_thai', 'thanh_cong')
+                ->exists();
+
+            if ($daCoPhieu) continue;
+
+            $phi = $baiThi->phi_thi_lai ?? 0;
+            $tongPhi += $phi;
+
+            \App\Models\ThanhToanHocPhi::create([
+                'ho_so_id'        => $hoSoId,
+                'loai_phi'        => 'phi_thi_lai',
+                'bai_thi_id'      => $baiThiId,
+                'lich_thi_id'     => $request->lich_thi_id,
+                'so_tien'         => $phi,
+                'phuong_thuc'     => $request->phuong_thuc,
+                'ma_giao_dich'    => $request->ma_giao_dich ?? null,
+                'trang_thai'      => 'thanh_cong',
+                'nguoi_thu'       => $request->auth_user?->ho_ten ?? 'Admin',
+                'ghi_chu'         => "Phí thi lại bài: {$baiThi->ten_bai_thi}",
+                'ngay_thanh_toan' => now(),
+            ]);
+
+            // Cập nhật da_thu_phi trong ket_qua_thi
+            \App\Models\KetQuaThi::where('ho_so_id', $hoSoId)
+                ->where('lich_thi_id', $request->lich_thi_id)
+                ->where('bai_thi_id', $baiThiId)
+                ->update(['da_thu_phi' => true, 'phi_thi_lai' => $phi]);
+
+            $daThu[] = $baiThi->ten_bai_thi;
+        }
+
+        if (empty($daThu)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Không có bài thi nào cần thu phí (đã thu hoặc không đủ điều kiện).',
+            ], 422);
+        }
+
+        return response()->json([
+            'success'   => true,
+            'message'   => 'Đã thu phí thi lại thành công.',
+            'bai_da_thu'=> $daThu,
+            'tong_phi'  => $tongPhi,
+        ]);
+    }
+
+    // ─── Lấy danh sách phí thi lại chưa thu của 1 học viên ──────────────────
+    public function phiThiLaiChuaThu(Request $request, $hoSoId)
+    {
+        // Lấy tất cả bài thi rớt, chưa thu phí
+        $baiThiChuaThu = \App\Models\KetQuaThi::with(['baiThi', 'lichThi'])
+            ->where('ho_so_id', $hoSoId)
+            ->whereIn('ket_qua', ['khong_dat', 'vang_mat'])
+            ->where('da_thu_phi', false)
+            ->get()
+            ->map(fn($kq) => [
+                'ket_qua_thi_id' => $kq->id,
+                'lich_thi_id'    => $kq->lich_thi_id,
+                'ngay_thi'       => $kq->lichThi?->ngay_thi,
+                'loai_thi'       => $kq->lichThi?->loai_thi,
+                'bai_thi_id'     => $kq->bai_thi_id,
+                'ten_bai_thi'    => $kq->baiThi?->ten_bai_thi,
+                'phi_thi_lai'    => $kq->baiThi?->phi_thi_lai ?? 0,
+                'ket_qua'        => $kq->ket_qua,
+                'diem'           => $kq->diem,
+            ]);
+
+        return response()->json(['success' => true, 'data' => $baiThiChuaThu]);
+    }
+
+    // ─── Danh sách tất cả phí thi lại (admin xem) ────────────────────────────
+    public function danhSachPhiThiLai(Request $request)
+    {
+        $query = \App\Models\ThanhToanHocPhi::with(['hoSo.khoaHoc', 'baiThi', 'lichThi'])
+            ->where('loai_phi', 'phi_thi_lai')
+            ->when($request->ho_so_id, fn($q) => $q->where('ho_so_id', $request->ho_so_id))
+            ->when($request->search, fn($q) => $q->whereHas('hoSo', fn($s) =>
+                $s->where('ho_ten', 'like', "%{$request->search}%")
+                  ->orWhere('so_cccd', 'like', "%{$request->search}%")
+            ));
+
+        return response()->json([
+            'success' => true,
+            'data'    => $query->latest()->get(),
+        ]);
+    }
     public function hoSoList(Request $request)
     {
+        // Các trạng thái sau khi đậu sát hạch → không hiện ở trang Hồ Sơ, chỉ hiện ở trang Cấp Bằng
+        $trangThaiCapBang = ['du_dieu_kien_sat_hanh', 'dang_thi_sat_hanh', 'da_cap_bang'];
+
         $query = HoSoHocVien::with(['khoaHoc', 'user'])
             ->when($request->trang_thai, fn($q) => $q->where('trang_thai', $request->trang_thai))
+            ->when(!$request->trang_thai, fn($q) => $q->whereNotIn('trang_thai', $trangThaiCapBang))
             ->when($request->search, fn($q) => $q
                 ->where('ho_ten', 'like', "%{$request->search}%")
                 ->orWhere('so_cccd', 'like', "%{$request->search}%")
@@ -292,9 +414,24 @@ class AdminController extends Controller
 
         $data = $query->latest()->paginate($request->per_page ?? 20);
 
+        // Lấy danh sách ho_so_id có phí thi lại chưa thu trong trang hiện tại
+        $hoSoIds = collect($data->items())->pluck('id');
+        $coPhiChuaThu = \App\Models\KetQuaThi::whereIn('ho_so_id', $hoSoIds)
+            ->whereIn('ket_qua', ['khong_dat', 'vang_mat'])
+            ->where('da_thu_phi', false)
+            ->distinct()
+            ->pluck('ho_so_id')
+            ->flip(); // dùng flip để O(1) lookup
+
+        $items = collect($data->items())->map(function ($hs) use ($coPhiChuaThu) {
+            $arr = $hs->toArray();
+            $arr['co_phi_thi_lai_chua_thu'] = isset($coPhiChuaThu[$hs->id]);
+            return $arr;
+        });
+
         return response()->json([
             'success' => true,
-            'data'    => $data->items(),
+            'data'    => $items,
             'total'   => $data->total(),
             'pages'   => $data->lastPage(),
         ]);
@@ -633,7 +770,7 @@ class AdminController extends Controller
     public function capNhatTrangThai(Request $request, $hoSoId)
     {
         $request->validate([
-            'trang_thai' => 'required|string',
+            'trang_thai' => 'required|in:cho_dong_hoc_phi,cho_mo_lop,chuan_bi_hoc,dang_hoc,du_dieu_kien_thi_tn,chuan_bi_thi,dang_thi_tn,hoan_thanh_tn,du_dieu_kien_sat_hanh,dang_thi_sat_hanh,da_cap_bang',
         ]);
 
         $hoSo = HoSoHocVien::findOrFail($hoSoId);
@@ -958,7 +1095,19 @@ class AdminController extends Controller
             ['name' => 'Chuẩn bị',    'value' => $lopTheoTrangThai['chuan_bi']    ?? 0, 'color' => '#f59e0b'],
             ['name' => 'Đang học',     'value' => $lopTheoTrangThai['dang_hoc']    ?? 0, 'color' => '#10b981'],
             ['name' => 'Đã kết thúc',  'value' => $lopTheoTrangThai['da_ket_thuc'] ?? 0, 'color' => '#94a3b8'],
-            ['name' => 'Tạm dừng',     'value' => $lopTheoTrangThai['tam_dung']    ?? 0, 'color' => '#ef4444'],
+        ];
+
+        // ── 1b. Trạng thái khóa học đào tạo ──────────────────────────────
+        $khoaTheoTrangThai = \App\Models\KhoaHoc::whereNotNull('ma_khoa')
+            ->selectRaw('trang_thai_khoa, COUNT(*) as tong')
+            ->groupBy('trang_thai_khoa')
+            ->pluck('tong', 'trang_thai_khoa')
+            ->toArray();
+
+        $khoaData = [
+            ['name' => 'Chuẩn bị',    'value' => $khoaTheoTrangThai['chuan_bi']    ?? 0, 'color' => '#3b82f6'],
+            ['name' => 'Đang học',     'value' => $khoaTheoTrangThai['dang_hoc']    ?? 0, 'color' => '#10b981'],
+            ['name' => 'Đã kết thúc',  'value' => $khoaTheoTrangThai['da_ket_thuc'] ?? 0, 'color' => '#94a3b8'],
         ];
 
         // ── 2. Tình trạng xe ──────────────────────────────────────────────
@@ -1068,6 +1217,7 @@ class AdminController extends Controller
         return response()->json([
             'success'       => true,
             'lop_hoc'       => $lopData,
+            'khoa_hoc'      => $khoaData,
             'xe'            => ['data' => $xeData, 'tong' => $tongXe, 'san_sang' => $xeSanSang],
             'giang_vien'    => ['data' => $gvData, 'tong' => $tongGV, 'active' => $gvActive],
             'lich_thi'      => $lichThiSapToi,
@@ -1110,6 +1260,10 @@ class AdminController extends Controller
                 $soHV = HoSoHocVien::whereHas('hocVienLop', fn($q) => $q->where('lop_hoc_id', $lop->id))
                     ->where('trang_thai', 'chuan_bi_hoc')
                     ->update(['trang_thai' => 'dang_hoc']);
+
+                // Đồng bộ trạng thái khóa học
+                \App\Models\KhoaHoc::where('id', $lop->khoa_hoc_id)
+                    ->update(['trang_thai_khoa' => 'dang_hoc']);
 
                 DB::commit();
 

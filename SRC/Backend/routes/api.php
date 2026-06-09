@@ -11,11 +11,10 @@ use App\Http\Controllers\ThiController;
 use App\Http\Controllers\HocPhiController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\DangKyController;
+use App\Http\Controllers\CapBangController;
 use App\Http\Controllers\GiangVienController;
-use App\Http\Controllers\XeController;
 
-// ═══════════════════════════════════════════════════════
-// PUBLIC
+use App\Http\Controllers\XeController;
 // ═══════════════════════════════════════════════════════
 
 // Đăng nhập học viên (CCCD + ngày sinh)
@@ -138,7 +137,10 @@ Route::middleware(['auth.jwt', 'role:admin|giang_vien'])->prefix('admin')->group
     Route::post('/chung-chi',                                   [ThiController::class, 'capChungChi']);
 
     // ── Học phí ─────────────────────────────────────────────────────────────
-    Route::get('/hoc-phi',                  [HocPhiController::class, 'index']);
+    Route::get('/hoc-phi',                         [HocPhiController::class, 'index']);
+    Route::get('/phi-thi-lai',                     [AdminController::class, 'danhSachPhiThiLai']);
+    Route::get('/ho-so/{id}/phi-thi-lai-chua-thu', [AdminController::class, 'phiThiLaiChuaThu']);
+    Route::post('/ho-so/{id}/phi-thi-lai',         [AdminController::class, 'thuPhiThiLai']);
 
     // ── Giảng viên ──────────────────────────────────────────────────────────
     Route::get('/giang-vien',               [AdminController::class, 'giangVienList']);
@@ -159,6 +161,14 @@ Route::middleware(['auth.jwt', 'role:admin|giang_vien'])->prefix('admin')->group
     Route::patch('/xe/{id}/trang-thai',     [XeController::class, 'capNhatTrangThai']);
     Route::patch('/xe/{id}/km',             [XeController::class, 'capNhatKm']);
     Route::patch('/lich-hoc/{id}/phan-xe',  [XeController::class, 'phanXeChoLichHoc']);
+
+    // ── Cấp bằng ────────────────────────────────────────────────────────────
+    Route::get('/cap-bang/tot-nghiep',             [CapBangController::class, 'danhSachCapBangTN']);
+    Route::post('/cap-bang/tot-nghiep/{id}',       [CapBangController::class, 'capBangTN']);
+    Route::delete('/cap-bang/tot-nghiep/{id}',     [CapBangController::class, 'huyCBangTN']);
+    Route::get('/cap-bang/bang-lai',               [CapBangController::class, 'danhSachCapBangLX']);
+    Route::post('/cap-bang/bang-lai/{id}',         [CapBangController::class, 'capBangLX']);
+    Route::delete('/cap-bang/bang-lai/{id}',       [CapBangController::class, 'huyCBangLX']);
 
     // ── Báo lỗi xe (admin xem & xử lý) ─────────────────────────────────────
     Route::get('/bao-loi-xe',               [XeController::class, 'danhSachBaoLoi']);

@@ -6,6 +6,25 @@ import './DangKy.css'
 
 const API = 'http://localhost:8000/api'
 
+// Tuổi tối thiểu theo hạng bằng lái
+const TUOI_TOI_THIEU = {
+  A1: 18, A: 18,
+  B1: 18, B2: 18,
+  C1: 21, C: 21,
+  D: 24, E: 27, CE: 27,
+}
+
+// Tính tuổi chính xác theo ngày sinh
+const tinhTuoi = (ngaySinh) => {
+  if (!ngaySinh) return null
+  const today = new Date()
+  const birth = new Date(ngaySinh)
+  let age = today.getFullYear() - birth.getFullYear()
+  const m = today.getMonth() - birth.getMonth()
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--
+  return age
+}
+
 const DangKy = () => {
   const [searchParams] = useSearchParams()
   const [khoaList, setKhoaList] = useState([])
@@ -61,6 +80,21 @@ const DangKy = () => {
     if (!form.khoa_hoc_id)          errs.khoa_hoc_id = 'Vui lòng chọn loại bằng lái'
     if (form.email && !/^[a-zA-Z0-9._%+\-]+@gmail\.com$/.test(form.email))
       errs.email = 'Email phải có định dạng @gmail.com'
+
+    // Kiểm tra tuổi tối thiểu theo hạng bằng
+    if (form.ngay_sinh && form.khoa_hoc_id) {
+      const khoa = khoaList.find(k => String(k.id) === String(form.khoa_hoc_id))
+      if (khoa) {
+        const tuoiMin = TUOI_TOI_THIEU[khoa.loai_bang]
+        if (tuoiMin) {
+          const tuoi = tinhTuoi(form.ngay_sinh)
+          if (tuoi !== null && tuoi < tuoiMin) {
+            errs.ngay_sinh = `Chưa đủ tuổi — Bằng hạng ${khoa.loai_bang} yêu cầu tối thiểu ${tuoiMin} tuổi (hiện tại: ${tuoi} tuổi)`
+          }
+        }
+      }
+    }
+
     return errs
   }
 
@@ -91,6 +125,12 @@ const DangKy = () => {
       setLoading(false)
     }
   }
+
+  // Tính cảnh báo tuổi realtime
+  const selectedKhoa = khoaList.find(k => String(k.id) === String(form.khoa_hoc_id))
+  const tuoiMin      = selectedKhoa ? TUOI_TOI_THIEU[selectedKhoa.loai_bang] : null
+  const tuoiHienTai  = form.ngay_sinh ? tinhTuoi(form.ngay_sinh) : null
+  const chuaDuTuoi   = tuoiMin && tuoiHienTai !== null && tuoiHienTai < tuoiMin
 
   return (
     <div className="dangky-page">
@@ -192,8 +232,21 @@ const DangKy = () => {
                       </div>
                       <div className="form-group">
                         <label>Ngày sinh <span className="req">*</span></label>
-                        <input name="ngay_sinh" type="date" value={form.ngay_sinh} onChange={handleChange} />
-                        {errors.ngay_sinh && <span className="field-err">{errors.ngay_sinh}</span>}
+                        <input name="ngay_sinh" type="date" value={form.ngay_sinh} onChange={handleChange}
+                          style={chuaDuTuoi ? { borderColor: '#e53935' } : {}} />
+                        {/* Cảnh báo tuổi realtime */}
+                        {chuaDuTuoi && (
+                          <span className="field-err">
+                            ❌ Chưa đủ tuổi — Bằng hạng {selectedKhoa.loai_bang} yêu cầu tối thiểu {tuoiMin} tuổi<br/>
+                            <span style={{ color: '#718096' }}>(hiện tại: {tuoiHienTai} tuổi)</span>
+                          </span>
+                        )}
+                        {!chuaDuTuoi && tuoiMin && tuoiHienTai !== null && (
+                          <span style={{ fontSize: 11, color: '#16a34a', marginTop: 3, display: 'block' }}>
+                            ✅ Đủ tuổi đăng ký
+                          </span>
+                        )}
+                        {errors.ngay_sinh && !chuaDuTuoi && <span className="field-err">{errors.ngay_sinh}</span>}
                       </div>
                     </div>
                     <div className="form-row">
@@ -215,18 +268,31 @@ const DangKy = () => {
                 {/* Chọn loại bằng lái */}
                 <div className="form-group">
                   <label>Loại bằng lái đăng ký <span className="req">*</span></label>
+                  {/* Gợi ý tuổi tối thiểu */}
+                  {selectedKhoa && tuoiMin && (
+                    <p style={{ fontSize: 12, color: '#0066cc', margin: '2px 0 6px', fontWeight: 600 }}>
+                      ℹ️ Bằng hạng <strong>{selectedKhoa.loai_bang}</strong> yêu cầu tối thiểu <strong>{tuoiMin} tuổi</strong>
+                    </p>
+                  )}
                   <div className="radio-grid">
                     {khoaList.length > 0
-                      ? khoaList.map(kh => (
-                          <label key={kh.id} className={`radio-item ${form.khoa_hoc_id === String(kh.id) ? 'selected' : ''}`}>
-                            <input type="radio" name="khoa_hoc_id" value={String(kh.id)}
-                              checked={form.khoa_hoc_id === String(kh.id)} onChange={handleChange} />
-                            <span>
-                              <strong>Hạng {kh.loai_bang}</strong>
-                              <small>{Number(kh.hoc_phi).toLocaleString('vi-VN')} đ</small>
-                            </span>
-                          </label>
-                        ))
+                      ? khoaList.map(kh => {
+                          const tm = TUOI_TOI_THIEU[kh.loai_bang]
+                          const chuaDu = tm && tuoiHienTai !== null && tuoiHienTai < tm
+                          return (
+                            <label key={kh.id}
+                              className={`radio-item ${form.khoa_hoc_id === String(kh.id) ? 'selected' : ''} ${chuaDu ? 'radio-disabled' : ''}`}
+                              title={chuaDu ? `Cần tối thiểu ${tm} tuổi` : ''}>
+                              <input type="radio" name="khoa_hoc_id" value={String(kh.id)}
+                                checked={form.khoa_hoc_id === String(kh.id)} onChange={handleChange} />
+                              <span>
+                                <strong>Hạng {kh.loai_bang}</strong>
+                                <small>{Number(kh.hoc_phi).toLocaleString('vi-VN')} đ</small>
+                                {tm && <small style={{ color: chuaDu ? '#e53935' : '#718096' }}>≥ {tm} tuổi</small>}
+                              </span>
+                            </label>
+                          )
+                        })
                       : ['A1','A','B1','B2','C1','C'].map(h => (
                           <label key={h} className="radio-item">
                             <input type="radio" name="khoa_hoc_id" value={h}
@@ -246,8 +312,8 @@ const DangKy = () => {
                     placeholder="Thời gian rảnh, câu hỏi, yêu cầu đặc biệt..." rows={3} />
                 </div>
 
-                <button type="submit" className="btn-submit" disabled={loading}>
-                  {loading ? 'Đang gửi...' : '📝 Đăng Ký Học Lái Xe'}
+                <button type="submit" className="btn-submit" disabled={loading || chuaDuTuoi}>
+                  {loading ? 'Đang gửi...' : chuaDuTuoi ? '⚠️ Chưa đủ tuổi đăng ký' : '📝 Đăng Ký Học Lái Xe'}
                 </button>
               </form>
             </div>

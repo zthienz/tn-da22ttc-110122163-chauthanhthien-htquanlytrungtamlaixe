@@ -9,15 +9,17 @@ class ThanhToanHocPhi extends Model
     protected $table = 'thanh_toan_hoc_phi';
 
     protected $fillable = [
-        'ho_so_id', 'so_tien', 'phuong_thuc',
-        'ma_giao_dich', 'trang_thai', 'nguoi_thu',
-        'ghi_chu', 'ngay_thanh_toan',
+        'ho_so_id', 'loai_phi', 'bai_thi_id', 'lich_thi_id',
+        'so_tien', 'phuong_thuc', 'ma_giao_dich',
+        'trang_thai', 'nguoi_thu', 'ghi_chu', 'ngay_thanh_toan',
     ];
 
     protected $casts = [
-        'so_tien'        => 'decimal:2',
+        'so_tien'         => 'decimal:2',
         'ngay_thanh_toan' => 'datetime',
     ];
 
-    public function hoSo() { return $this->belongsTo(HoSoHocVien::class, 'ho_so_id'); }
+    public function hoSo()   { return $this->belongsTo(HoSoHocVien::class, 'ho_so_id'); }
+    public function baiThi() { return $this->belongsTo(BaiThi::class, 'bai_thi_id'); }
+    public function lichThi(){ return $this->belongsTo(LichThi::class, 'lich_thi_id'); }
 }

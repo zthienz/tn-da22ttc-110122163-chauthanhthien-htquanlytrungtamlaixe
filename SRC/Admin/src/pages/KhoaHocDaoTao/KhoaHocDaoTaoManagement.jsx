@@ -33,6 +33,7 @@ const KhoaHocDaoTaoManagement = () => {
   const [loading, setLoading]       = useState(true)
   const [filterHang, setFilterHang] = useState('')
   const [filterNam, setFilterNam]   = useState('')
+  const [filterThang, setFilterThang] = useState('')
   const [filterTT, setFilterTT]     = useState('')
   const [searchKhoa, setSearchKhoa] = useState('')
 
@@ -73,14 +74,15 @@ const KhoaHocDaoTaoManagement = () => {
     setLoading(true)
     try {
       const params = {}
-      if (filterHang) params.hang_bang = filterHang
-      if (filterNam)  params.nam = filterNam
+      if (filterHang)  params.hang_bang = filterHang
+      if (filterNam)   params.nam       = filterNam
+      if (filterThang) params.thang     = filterThang
       const res = await axios.get(`${backendUrl}/api/admin/khoa-hoc-dao-tao`, { headers, params })
       if (res.data.success) setKhoaList(res.data.data)
     } catch (err) {
       toast.error(err.response?.data?.message || 'Lỗi tải danh sách khóa học')
     } finally { setLoading(false) }
-  }, [filterHang, filterNam, token])
+  }, [filterHang, filterNam, filterThang, token])
 
   useEffect(() => { fetchKhoa() }, [fetchKhoa])
 
@@ -288,7 +290,11 @@ const KhoaHocDaoTaoManagement = () => {
           <option value="">Tất cả hạng bằng</option>
           {HANG_BANG.map(h => <option key={h} value={h}>Hạng {h}</option>)}
         </select>
-        <select className="search-input" style={{maxWidth:140}} value={filterNam} onChange={e => setFilterNam(e.target.value)}>
+        <select className="search-input" style={{maxWidth:130}} value={filterThang} onChange={e => setFilterThang(e.target.value)}>
+          <option value="">Tất cả tháng</option>
+          {THANG_LIST.map(t => <option key={t} value={t}>Tháng {t}</option>)}
+        </select>
+        <select className="search-input" style={{maxWidth:120}} value={filterNam} onChange={e => setFilterNam(e.target.value)}>
           <option value="">Tất cả năm</option>
           {NAM_LIST.map(n => <option key={n} value={n}>{n}</option>)}
         </select>
@@ -311,14 +317,13 @@ const KhoaHocDaoTaoManagement = () => {
                   <th>Hạng</th>
                   <th>Tháng / Năm</th>
                   <th>Số lớp</th>
-                  <th>Học viên</th>
                   <th>Trạng thái</th>
                   <th>Thao tác</th>
                 </tr>
               </thead>
               <tbody>
                 {filtered.length === 0 ? (
-                  <tr><td colSpan={9} style={{textAlign:'center',padding:'40px',color:'#a0aec0'}}>Chưa có khóa học nào</td></tr>
+                  <tr><td colSpan={8} style={{textAlign:'center',padding:'40px',color:'#a0aec0'}}>Chưa có khóa học nào</td></tr>
                 ) : filtered.map((k, i) => {
                   const tt = TRANG_THAI_MAP[k.trang_thai] || { label: k.trang_thai, cls: 'badge-gray' }
                   return (
@@ -330,8 +335,16 @@ const KhoaHocDaoTaoManagement = () => {
                       <td><strong>{k.ten_khoa_dao_tao}</strong></td>
                       <td><span className="badge badge-blue">Hạng {k.hang_bang}</span></td>
                       <td>Tháng {k.thang}/{k.nam}</td>
-                      <td>🏫 {k.lop_count || 0} lớp</td>
-                      <td>👥 {k.hoc_vien_count || 0} HV</td>
+                      <td>
+                        <div style={{ display:'flex', flexDirection:'column', gap:3 }}>
+                          <span style={{ fontWeight:600, fontSize:13 }}>🏫 {k.lop_count || 0} lớp</span>
+                          {(k.lop_dang_hoc || 0) > 0 && (
+                            <span style={{ fontSize:11, color:'#059669', fontWeight:600 }}>
+                              ▶ {k.lop_dang_hoc} đang học
+                            </span>
+                          )}
+                        </div>
+                      </td>
                       <td><span className={`badge ${tt.cls}`}>{tt.label}</span></td>
                       <td>
                         <div className="action-cell">
@@ -371,24 +384,18 @@ const KhoaHocDaoTaoManagement = () => {
                 <button className="btn btn-primary btn-sm" style={{marginLeft:'auto'}} onClick={openAddLop}>+ Thêm lớp</button>
               </div>
 
-              {/* Tabs */}
+              {/* Tabs — chỉ có tab Lớp học */}
               <div className="khdt-detail-tabs" style={{marginTop:16}}>
-                <button className={`khdt-detail-tab ${detailTab==='lop'?'active':''}`} onClick={() => setDetailTab('lop')}>
+                <button className="khdt-detail-tab active">
                   🏫 Lớp học ({khoaDetail?.lop_hoc?.length || 0})
-                </button>
-                <button className={`khdt-detail-tab ${detailTab==='hocvien'?'active':''}`} onClick={() => setDetailTab('hocvien')}>
-                  👥 Học viên ({khoaDetail?.hoc_vien_count || 0})
                 </button>
               </div>
 
               {detailLoading ? (
                 <div className="loading-wrap"><div className="spinner"/></div>
               ) : khoaDetail ? (
-                <>
-                  {/* Tab lớp học */}
-                  {detailTab === 'lop' && (
-                    <div className="khdt-lop-list" style={{marginTop:12}}>
-                      {(!khoaDetail.lop_hoc || khoaDetail.lop_hoc.length === 0) ? (
+                <div className="khdt-lop-list" style={{marginTop:12}}>
+                  {(!khoaDetail.lop_hoc || khoaDetail.lop_hoc.length === 0) ? (
                         <div className="khdt-empty">
                           <p>Chưa có lớp học nào trong khóa này</p>
                           <button className="btn btn-primary btn-sm" onClick={openAddLop}>+ Thêm lớp đầu tiên</button>
@@ -427,39 +434,6 @@ const KhoaHocDaoTaoManagement = () => {
                         </div>
                       ))}
                     </div>
-                  )}
-
-                  {/* Tab học viên */}
-                  {detailTab === 'hocvien' && (
-                    <div style={{marginTop:12}}>
-                      {(!khoaDetail.hoc_vien || khoaDetail.hoc_vien.length === 0) ? (
-                        <div className="khdt-empty"><p>Chưa có học viên nào trong khóa này</p></div>
-                      ) : (
-                        <table className="data-table">
-                          <thead>
-                            <tr><th>#</th><th>Họ tên</th><th>CCCD</th><th>Lớp</th><th>Học phí</th><th>Trạng thái</th></tr>
-                          </thead>
-                          <tbody>
-                            {khoaDetail.hoc_vien.map((hv, i) => (
-                              <tr key={hv.id}>
-                                <td>{i+1}</td>
-                                <td><strong>{hv.ho_ten}</strong></td>
-                                <td><code style={{fontSize:11}}>{hv.so_cccd}</code></td>
-                                <td>{hv.lop_hoc?.ten_lop || <em style={{color:'#9ca3af'}}>Chưa xếp lớp</em>}</td>
-                                <td>
-                                  <span className={`badge ${hv.trang_thai_hoc_phi==='da_dong'?'badge-success':'badge-danger'}`}>
-                                    {hv.trang_thai_hoc_phi==='da_dong'?'✅ Đã đóng':'❌ Chưa đóng'}
-                                  </span>
-                                </td>
-                                <td><span className="badge badge-info" style={{fontSize:11}}>{hv.trang_thai}</span></td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      )}
-                    </div>
-                  )}
-                </>
               ) : null}
             </div>
             <div className="modal-footer">

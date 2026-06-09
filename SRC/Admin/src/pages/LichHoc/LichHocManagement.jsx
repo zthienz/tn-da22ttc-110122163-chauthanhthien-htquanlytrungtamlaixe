@@ -143,7 +143,7 @@ const LichHocManagement = () => {
     setSelectedLich(lich)
     try {
       const res = await axios.get(`${backendUrl}/api/admin/lich-hoc/${lich.id}/diem-danh`, { headers })
-      if (res.data.success) setDiemDanhData(res.data.data.map(d => ({ ...d, co_mat: d.co_mat || false, km_chay: d.km_chay || '' })))
+      if (res.data.success) setDiemDanhData(res.data.data.map(d => ({ ...d, co_mat: d.co_mat || false, km_chay: d.km_chay || '', ghi_chu: d.ghi_chu || '' })))
     } catch {}
     setShowDiemDanhModal(true)
   }
@@ -151,7 +151,7 @@ const LichHocManagement = () => {
   const handleSaveDiemDanh = async () => {
     try {
       const res = await axios.post(`${backendUrl}/api/admin/lich-hoc/${selectedLich.id}/diem-danh`, {
-        diem_danh: diemDanhData.map(d => ({ ho_so_id: d.ho_so_id, co_mat: d.co_mat, km_chay: d.km_chay || null }))
+        diem_danh: diemDanhData.map(d => ({ ho_so_id: d.ho_so_id, co_mat: d.co_mat, km_chay: d.km_chay || null, ghi_chu: d.ghi_chu || null }))
       }, { headers })
       if (res.data.success) { toast.success('Điểm danh thành công!'); setShowDiemDanhModal(false) }
       else toast.error(res.data.message)
@@ -488,6 +488,7 @@ const LichHocManagement = () => {
                     <thead><tr>
                       <th>Học viên</th>
                       <th style={{textAlign:'center'}}>Có mặt</th>
+                      <th>Lý do vắng</th>
                       {selectedLich.loai_buoi==='thuc_hanh'&&<th>Km chạy được</th>}
                     </tr></thead>
                     <tbody>
@@ -505,9 +506,22 @@ const LichHocManagement = () => {
                           <td style={{textAlign:'center'}}>
                             <label className="dd-toggle">
                               <input type="checkbox" checked={d.co_mat}
-                                onChange={e=>setDiemDanhData(diemDanhData.map((x,j)=>j===i?{...x,co_mat:e.target.checked}:x))} />
+                                onChange={e=>setDiemDanhData(diemDanhData.map((x,j)=>j===i?{...x,co_mat:e.target.checked,ghi_chu:e.target.checked?'':x.ghi_chu}:x))} />
                               <span className="dd-toggle-slider"/>
                             </label>
+                          </td>
+                          <td>
+                            {!d.co_mat ? (
+                              <input
+                                type="text"
+                                value={d.ghi_chu}
+                                onChange={e=>setDiemDanhData(diemDanhData.map((x,j)=>j===i?{...x,ghi_chu:e.target.value}:x))}
+                                placeholder="Nhập lý do vắng mặt..."
+                                style={{width:'100%',padding:'5px 8px',border:'1px solid #fca5a5',borderRadius:6,fontSize:12}}
+                              />
+                            ) : (
+                              <span style={{fontSize:12,color:'#9ca3af'}}>—</span>
+                            )}
                           </td>
                           {selectedLich.loai_buoi==='thuc_hanh'&&(
                             <td>

@@ -27,4 +27,6 @@ class HoSoHocVien extends Model
     public function hocVienLop()  { return $this->hasOne(HocVienLop::class, 'ho_so_id'); }
     public function ketQuaThi()   { return $this->hasMany(KetQuaThi::class, 'ho_so_id'); }
     public function bang()        { return $this->hasOne(Bang::class, 'ho_so_id'); }
+    public function bangTotNghiep() { return $this->hasOne(\App\Models\BangTotNghiep::class, 'ho_so_id'); }
+    public function bangLaiXe()     { return $this->hasOne(\App\Models\BangLaiXe::class, 'ho_so_id'); }
 }

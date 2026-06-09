@@ -57,7 +57,11 @@ const TienDo = () => {
 
   const dieuKienList = [
     { label: 'Đủ buổi học lý thuyết', ok: data.du_buoi_ly_thuyet },
-    { label: 'Đủ km thực hành',        ok: data.du_km_thuc_hanh },
+    // Chỉ hiển thị điều kiện km nếu hạng bằng cần thực hành (không phải A1, A)
+    ...(data.co_thuc_hanh !== false
+      ? [{ label: 'Đủ km thực hành', ok: data.du_km_thuc_hanh }]
+      : []
+    ),
     { label: 'Đủ điều kiện dự thi TN', ok: data.du_dieu_kien_thi_tn },
   ]
 
@@ -106,13 +110,16 @@ const TienDo = () => {
                 unit="buổi"
                 color="#3b82f6"
               />
-              <ProgressBar
-                label="🚗 Km thực hành đã chạy"
-                value={Number(data.so_km_da_chay)}
-                max={data.so_km_toi_thieu}
-                unit="km"
-                color="#10b981"
-              />
+              {/* Chỉ hiển thị km với bằng cần thực hành (B1, B2, C...) */}
+              {data.co_thuc_hanh !== false && (
+                <ProgressBar
+                  label="🚗 Km thực hành đã chạy"
+                  value={Number(data.so_km_da_chay)}
+                  max={data.so_km_toi_thieu}
+                  unit="km"
+                  color="#10b981"
+                />
+              )}
             </div>
           </div>
 
@@ -125,13 +132,16 @@ const TienDo = () => {
                 <h3>{data.so_buoi_ly_thuyet_da_hoc} <small>/ {data.so_buoi_ly_thuyet_toi_thieu} buổi</small></h3>
               </div>
             </div>
-            <div className="td-stat-card green">
-              <span className="tds-icon">🚗</span>
-              <div>
-                <p>Km thực hành đã chạy</p>
-                <h3>{Number(data.so_km_da_chay).toFixed(1)} <small>/ {data.so_km_toi_thieu} km</small></h3>
+            {/* Chỉ hiển thị km với bằng cần thực hành */}
+            {data.co_thuc_hanh !== false && (
+              <div className="td-stat-card green">
+                <span className="tds-icon">🚗</span>
+                <div>
+                  <p>Km thực hành đã chạy</p>
+                  <h3>{Number(data.so_km_da_chay).toFixed(1)} <small>/ {data.so_km_toi_thieu} km</small></h3>
+                </div>
               </div>
-            </div>
+            )}
             <div className="td-stat-card purple">
               <span className="tds-icon">📚</span>
               <div>
@@ -167,10 +177,12 @@ const TienDo = () => {
                   <span>📖 Yêu cầu lý thuyết</span>
                   <strong>{khoa.so_buoi_ly_thuyet_toi_thieu} buổi</strong>
                 </div>
-                <div className="td-khoa-item">
-                  <span>🚗 Yêu cầu km</span>
-                  <strong>{khoa.so_km_toi_thieu} km</strong>
-                </div>
+                {data.co_thuc_hanh !== false && (
+                  <div className="td-khoa-item">
+                    <span>🚗 Yêu cầu km</span>
+                    <strong>{khoa.so_km_toi_thieu} km</strong>
+                  </div>
+                )}
               </div>
             </div>
           )}

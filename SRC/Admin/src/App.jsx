@@ -17,6 +17,8 @@ import GiangVienManagement from './pages/GiangVien/GiangVienManagement'
 import HocPhiManagement from './pages/HocPhi/HocPhiManagement'
 import XeManagement from './pages/Xe/XeManagement'
 
+import CapBangManagement from './pages/CapBang/CapBangManagement'
+
 // Giảng viên pages
 import GVThongTin from './pages/GiangVien/GVThongTin'
 import GVLopHoc from './pages/GiangVien/GVLopHoc'
@@ -52,6 +54,7 @@ const AppRoutes = () => {
         <Route path="lop-hoc"         element={<ProtectedRoute adminOnly><LopHocManagement /></ProtectedRoute>} />
         <Route path="lich-hoc"   element={<ProtectedRoute adminOnly><LichHocManagement /></ProtectedRoute>} />
         <Route path="thi"        element={<ProtectedRoute adminOnly><ThiManagement /></ProtectedRoute>} />
+        <Route path="cap-bang"   element={<ProtectedRoute adminOnly><CapBangManagement /></ProtectedRoute>} />
         <Route path="giang-vien" element={<ProtectedRoute adminOnly><GiangVienManagement /></ProtectedRoute>} />
         <Route path="hoc-phi"    element={<ProtectedRoute adminOnly><HocPhiManagement /></ProtectedRoute>} />
         <Route path="xe"         element={<ProtectedRoute adminOnly><XeManagement /></ProtectedRoute>} />

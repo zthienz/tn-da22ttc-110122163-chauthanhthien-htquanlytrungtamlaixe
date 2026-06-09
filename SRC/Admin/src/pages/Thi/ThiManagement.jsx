@@ -29,11 +29,12 @@ const ThiManagement = () => {
   // ── State cho modal thêm học viên vào lịch thi ──────────────────────────
   const [showThemHVModal, setShowThemHVModal] = useState(false)
   const [selectedLichForHV, setSelectedLichForHV] = useState(null)
-  const [hocVienDuDK, setHocVienDuDK]   = useState([])   // chưa có trong lịch
-  const [daXepVaoLich, setDaXepVaoLich] = useState([])   // đã có trong lịch
-  const [selectedHVIds, setSelectedHVIds] = useState([]) // checkbox đang chọn
-  const [loadingHV, setLoadingHV] = useState(false)
-  const [searchHV, setSearchHV] = useState('')
+  const [hocVienDuDK, setHocVienDuDK]         = useState([])   // đủ điều kiện, chưa có trong lịch
+  const [hocVienChuaDuDK, setHocVienChuaDuDK] = useState([])   // chưa đủ điều kiện (hiển thị mờ)
+  const [daXepVaoLich, setDaXepVaoLich]       = useState([])   // đã có trong lịch
+  const [selectedHVIds, setSelectedHVIds]     = useState([])   // checkbox đang chọn
+  const [loadingHV, setLoadingHV]             = useState(false)
+  const [searchHV, setSearchHV]               = useState('')
 
   const fetchAll = async () => {
     setLoading(true)
@@ -95,6 +96,7 @@ const ThiManagement = () => {
       )
       if (res.data.success) {
         setHocVienDuDK(res.data.du_dieu_kien || [])
+        setHocVienChuaDuDK(res.data.chua_du_dieu_kien || [])
         setDaXepVaoLich(res.data.da_xep_vao_lich || [])
         setBaiThiList(res.data.bai_thi || [])
       }
@@ -120,6 +122,7 @@ const ThiManagement = () => {
         )
         if (r2.data.success) {
           setHocVienDuDK(r2.data.du_dieu_kien || [])
+          setHocVienChuaDuDK(r2.data.chua_du_dieu_kien || [])
           setDaXepVaoLich(r2.data.da_xep_vao_lich || [])
         }
       } else toast.error(res.data.message)
@@ -141,6 +144,7 @@ const ThiManagement = () => {
         )
         if (r2.data.success) {
           setHocVienDuDK(r2.data.du_dieu_kien || [])
+          setHocVienChuaDuDK(r2.data.chua_du_dieu_kien || [])
           setDaXepVaoLich(r2.data.da_xep_vao_lich || [])
         }
       } else toast.error(res.data.message)
@@ -219,6 +223,17 @@ const ThiManagement = () => {
     hv.ten_lop?.toLowerCase().includes(searchHV.toLowerCase())
   )
 
+  // Lọc học viên CHƯA đủ điều kiện theo search
+  const filteredHVChuaDuDK = hocVienChuaDuDK.filter(hv =>
+    !searchHV ||
+    hv.ho_ten?.toLowerCase().includes(searchHV.toLowerCase()) ||
+    hv.so_cccd?.includes(searchHV) ||
+    hv.ten_lop?.toLowerCase().includes(searchHV.toLowerCase())
+  )
+
+  // Bằng A1 và A không cần km thực hành
+  const isKhongCanKm = ['A1', 'A'].includes(selectedLichForHV?.khoa_hoc?.loai_bang)
+
   const toggleSelectHV = (id) => {
     setSelectedHVIds(prev =>
       prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
@@ -226,10 +241,12 @@ const ThiManagement = () => {
   }
 
   const toggleSelectAll = () => {
-    if (selectedHVIds.length === filteredHVDuDK.length) {
+    // Chỉ chọn/bỏ chọn các học viên ĐỦ điều kiện và không có phí chưa thu
+    const eligible = filteredHVDuDK.filter(hv => !hv.co_phi_chua_thu).map(hv => hv.ho_so_id)
+    if (selectedHVIds.length === eligible.length && eligible.length > 0) {
       setSelectedHVIds([])
     } else {
-      setSelectedHVIds(filteredHVDuDK.map(hv => hv.ho_so_id))
+      setSelectedHVIds(eligible)
     }
   }
 
@@ -443,16 +460,21 @@ const ThiManagement = () => {
                     )}
                   </div>
 
-                  {/* ── Học viên đủ điều kiện chưa được xếp ── */}
+                  {/* ── Danh sách học viên cùng hạng bằng ── */}
                   <div className="them-hv-section" style={{ marginTop: 20 }}>
                     <div className="them-hv-section-title">
-                      🎓 Học viên đủ điều kiện (chưa xếp lịch)
-                      <span className="them-hv-count">{hocVienDuDK.length} học viên</span>
+                      🎓 Học viên hạng {selectedLichForHV?.khoa_hoc?.loai_bang || '—'} (chưa xếp lịch)
+                      <span className="them-hv-count">
+                        <span style={{ color: '#16a34a', fontWeight: 700 }}>{hocVienDuDK.length} đủ ĐK</span>
+                        {hocVienChuaDuDK.length > 0 && (
+                          <span style={{ color: '#9ca3af', marginLeft: 8 }}>· {hocVienChuaDuDK.length} chưa đủ ĐK</span>
+                        )}
+                      </span>
                     </div>
 
-                    {hocVienDuDK.length === 0 ? (
+                    {hocVienDuDK.length === 0 && hocVienChuaDuDK.length === 0 ? (
                       <div className="them-hv-empty">
-                        Tất cả học viên đủ điều kiện đã được xếp vào lịch thi, hoặc chưa có học viên nào đủ điều kiện.
+                        Không có học viên nào cùng hạng bằng chưa được xếp lịch thi.
                       </div>
                     ) : (
                       <>
@@ -477,16 +499,19 @@ const ThiManagement = () => {
                               <th>
                                 <input
                                   type="checkbox"
-                                  checked={filteredHVDuDK.length > 0 && selectedHVIds.length === filteredHVDuDK.length}
+                                  checked={filteredHVDuDK.length > 0 && selectedHVIds.length === filteredHVDuDK.filter(hv => !hv.co_phi_chua_thu).length && filteredHVDuDK.filter(hv => !hv.co_phi_chua_thu).length > 0}
                                   onChange={toggleSelectAll}
-                                  title="Chọn tất cả"
+                                  title="Chọn tất cả học viên đủ điều kiện"
                                 />
                               </th>
                               <th>#</th><th>Họ tên</th><th>CCCD</th><th>Lớp</th>
-                              <th>Buổi LT</th><th>Km TH</th><th>Điều kiện</th>
+                              <th>Buổi LT</th>
+                              {!isKhongCanKm && <th>Km TH</th>}
+                              <th>Điều kiện</th>
                             </tr>
                           </thead>
                           <tbody>
+                            {/* ── Học viên ĐỦ điều kiện — hiển thị bình thường ── */}
                             {filteredHVDuDK.map((hv, i) => (
                               <tr key={hv.ho_so_id} className={selectedHVIds.includes(hv.ho_so_id) ? 'row-selected' : ''}>
                                 <td>
@@ -494,22 +519,83 @@ const ThiManagement = () => {
                                     type="checkbox"
                                     checked={selectedHVIds.includes(hv.ho_so_id)}
                                     onChange={() => toggleSelectHV(hv.ho_so_id)}
+                                    disabled={hv.co_phi_chua_thu}
+                                    title={hv.co_phi_chua_thu ? 'Học viên còn phí thi lại chưa đóng' : ''}
                                   />
                                 </td>
                                 <td>{i + 1}</td>
-                                <td><strong>{hv.ho_ten}</strong></td>
+                                <td>
+                                  <strong>{hv.ho_ten}</strong>
+                                  {hv.co_phi_chua_thu && (
+                                    <div style={{ fontSize: 10, color: '#dc2626', marginTop: 2, fontWeight: 600 }}>
+                                      🔒 Còn phí thi lại chưa đóng
+                                    </div>
+                                  )}
+                                </td>
                                 <td style={{ fontFamily: 'monospace', fontSize: 12 }}>{hv.so_cccd}</td>
                                 <td><span className="badge badge-blue">{hv.ten_lop}</span></td>
                                 <td>{hv.so_buoi_ly_thuyet_da_hoc} buổi</td>
-                                <td>{hv.so_km_da_chay} km</td>
+                                {!isKhongCanKm && <td>{hv.so_km_da_chay} km</td>}
                                 <td>
                                   <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                                     <span className={`badge ${hv.du_buoi_ly_thuyet ? 'badge-success' : 'badge-danger'}`} style={{ fontSize: 10 }}>
                                       {hv.du_buoi_ly_thuyet ? '✅ LT' : '❌ LT'}
                                     </span>
-                                    <span className={`badge ${hv.du_km_thuc_hanh ? 'badge-success' : 'badge-danger'}`} style={{ fontSize: 10 }}>
-                                      {hv.du_km_thuc_hanh ? '✅ TH' : '❌ TH'}
+                                    {!isKhongCanKm && (
+                                      <span className={`badge ${hv.du_km_thuc_hanh ? 'badge-success' : 'badge-danger'}`} style={{ fontSize: 10 }}>
+                                        {hv.du_km_thuc_hanh ? '✅ TH' : '❌ TH'}
+                                      </span>
+                                    )}
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+
+                            {/* ── Dòng phân cách nếu có cả 2 nhóm ── */}
+                            {filteredHVDuDK.length > 0 && filteredHVChuaDuDK.length > 0 && (
+                              <tr>
+                                <td colSpan={isKhongCanKm ? 8 : 9} style={{
+                                  padding: '6px 12px',
+                                  background: '#f8fafc',
+                                  borderTop: '2px dashed #e2e8f0',
+                                  borderBottom: '2px dashed #e2e8f0',
+                                  color: '#94a3b8',
+                                  fontSize: 11,
+                                  fontStyle: 'italic',
+                                  textAlign: 'center',
+                                }}>
+                                  ── Học viên chưa đủ điều kiện (không thể thêm vào lịch thi) ──
+                                </td>
+                              </tr>
+                            )}
+
+                            {/* ── Học viên CHƯA ĐỦ điều kiện — hiển thị mờ, disable ── */}
+                            {filteredHVChuaDuDK.map((hv, i) => (
+                              <tr key={hv.ho_so_id} style={{ opacity: 0.4, pointerEvents: 'none' }}>
+                                <td>
+                                  <input type="checkbox" disabled />
+                                </td>
+                                <td>{filteredHVDuDK.length + i + 1}</td>
+                                <td>
+                                  <strong>{hv.ho_ten}</strong>
+                                  <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 2 }}>
+                                    Chưa đủ điều kiện thi
+                                  </div>
+                                </td>
+                                <td style={{ fontFamily: 'monospace', fontSize: 12 }}>{hv.so_cccd}</td>
+                                <td><span className="badge badge-gray">{hv.ten_lop}</span></td>
+                                <td>{hv.so_buoi_ly_thuyet_da_hoc} buổi</td>
+                                {!isKhongCanKm && <td>{hv.so_km_da_chay} km</td>}
+                                <td>
+                                  <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                                    <span className={`badge ${hv.du_buoi_ly_thuyet ? 'badge-success' : 'badge-danger'}`} style={{ fontSize: 10 }}>
+                                      {hv.du_buoi_ly_thuyet ? '✅ LT' : '❌ LT'}
                                     </span>
+                                    {!isKhongCanKm && (
+                                      <span className={`badge ${hv.du_km_thuc_hanh ? 'badge-success' : 'badge-danger'}`} style={{ fontSize: 10 }}>
+                                        {hv.du_km_thuc_hanh ? '✅ TH' : '❌ TH'}
+                                      </span>
+                                    )}
                                   </div>
                                 </td>
                               </tr>

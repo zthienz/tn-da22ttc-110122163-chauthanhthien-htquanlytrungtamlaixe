@@ -303,8 +303,8 @@ const GVLichHoc = () => {
               ) : (
                 <>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14, flexWrap: 'wrap' }}>
-                    <button className="btn btn-success btn-sm" onClick={() => setDiemDanhData(diemDanhData.map(d => ({ ...d, co_mat: true })))}>✅ Tất cả có mặt</button>
-                    <button className="btn btn-outline btn-sm" onClick={() => setDiemDanhData(diemDanhData.map(d => ({ ...d, co_mat: false })))}>❌ Bỏ chọn tất cả</button>
+                    <button className="btn btn-success btn-sm" onClick={() => setDiemDanhData(prev => prev.map(d => ({ ...d, co_mat: true })))}>✅ Tất cả có mặt</button>
+                    <button className="btn btn-outline btn-sm" onClick={() => setDiemDanhData(prev => prev.map(d => ({ ...d, co_mat: false })))}>❌ Bỏ chọn tất cả</button>
                     <span style={{ marginLeft: 'auto', fontSize: 13, fontWeight: 600, color: '#374151' }}>{coMatCount}/{diemDanhData.length} có mặt</span>
                   </div>
                   <table className="data-table">
@@ -331,14 +331,14 @@ const GVLichHoc = () => {
                             </div>
                           </td>
                           <td style={{ textAlign: 'center' }}>
-                            <label style={{ position: 'relative', display: 'inline-block', width: 44, height: 24, cursor: 'pointer' }}>
-                              <input type="checkbox" checked={d.co_mat} style={{ opacity: 0, width: 0, height: 0 }}
-                                onChange={e => setDiemDanhData(diemDanhData.map((x, j) => j === i ? { ...x, co_mat: e.target.checked } : x))} />
-                              <span style={{ position: 'absolute', inset: 0, background: d.co_mat ? '#22c55e' : '#e2e8f0', borderRadius: 24, transition: '.2s', cursor: 'pointer' }}
-                                onClick={() => setDiemDanhData(diemDanhData.map((x, j) => j === i ? { ...x, co_mat: !x.co_mat } : x))}>
+                            <div
+                              onClick={() => setDiemDanhData(prev => prev.map((x, j) => j === i ? { ...x, co_mat: !x.co_mat } : x))}
+                              style={{ position: 'relative', display: 'inline-block', width: 44, height: 24, cursor: 'pointer' }}
+                            >
+                              <span style={{ position: 'absolute', inset: 0, background: d.co_mat ? '#22c55e' : '#e2e8f0', borderRadius: 24, transition: '.2s' }}>
                                 <span style={{ position: 'absolute', width: 18, height: 18, borderRadius: '50%', background: '#fff', top: 3, left: d.co_mat ? 23 : 3, transition: '.2s', boxShadow: '0 1px 3px rgba(0,0,0,.2)' }} />
                               </span>
-                            </label>
+                            </div>
                           </td>
                           <td>
                             {!d.co_mat && (

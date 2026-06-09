@@ -66,27 +66,23 @@ const AdminDashboard = () => {
   const s = stats?.stats || {}
 
   const tongHoSo         = s.tongHoSo         || 0
-  const tongDangHoatDong = s.tongDangHoatDong  || 0
   const dauTotNghiep     = s.dauTotNghiep      || 0
 
-  const ALL_TRANG_THAI = [
-    { name: 'Chưa đóng HP', value: s.choDongHocPhi  || 0, color: '#94a3b8' },
-    { name: 'Chờ mở lớp',   value: s.choMoLop        || 0, color: '#f59e0b' },
-    { name: 'Chuẩn bị học', value: s.chuanBiHoc      || 0, color: '#a78bfa' },
-    { name: 'Đang học',     value: s.dangHoc          || 0, color: '#10b981' },
-    { name: 'Đủ ĐK thi',   value: s.duDieuKienThi   || 0, color: '#06b6d4' },
-    { name: 'Chuẩn bị thi',value: s.chuanBiThi      || 0, color: '#f97316' },
-    { name: 'Đang thi',     value: s.dangThi          || 0, color: '#ef4444' },
+  // 5 trạng thái hiển thị cố định theo yêu cầu
+  const TRANG_THAI_5 = [
+    { name: 'Chưa đóng học phí', value: s.choDongHocPhi  || 0, color: '#94a3b8', icon: '💰' },
+    { name: 'Chờ mở lớp',        value: s.choMoLop       || 0, color: '#f59e0b', icon: '⏳' },
+    { name: 'Đang học',           value: s.dangHoc        || 0, color: '#10b981', icon: '📚' },
+    { name: 'Đủ ĐK thi TN',      value: s.duDieuKienThi  || 0, color: '#06b6d4', icon: '✅' },
+    { name: 'Đã đậu tốt nghiệp', value: dauTotNghiep,           color: '#8b5cf6', icon: '🎓' },
   ]
-  const tongSlice    = ALL_TRANG_THAI.reduce((acc, t) => acc + t.value, 0)
-  const conLai       = tongDangHoatDong - tongSlice
-  const trangThaiData = [
-    ...ALL_TRANG_THAI,
-    ...(conLai > 0 ? [{ name: 'Khác', value: conLai, color: '#e2e8f0' }] : []),
-  ].filter(item => item.value > 0)
+  const maxVal = Math.max(...TRANG_THAI_5.map(t => t.value), 1)
+
+  // Dữ liệu đã đủ — không cần biến phụ nào thêm
 
   // Extra data
-  const lopData     = (extra?.lop_hoc  || []).filter(d => d.value > 0)
+  const lopData     = extra?.lop_hoc   || []
+  const khoaData    = extra?.khoa_hoc   || []
   const xeInfo      = extra?.xe        || { data: [], tong: 0, san_sang: 0 }
   const xeData      = xeInfo.data      || []   // hiển thị đủ 4 trạng thái kể cả = 0
   const gvInfo      = extra?.giang_vien|| { data: [], tong: 0, active: 0 }
@@ -192,10 +188,10 @@ const AdminDashboard = () => {
       </div>
 
       {/* ── Hàng 2: Học viên 6 tháng + Trạng thái học viên ── */}
-      <div className="dash-bottom-row">
-        <div className="card">
+      <div className="dash-bottom-row" style={{ alignItems: 'stretch' }}>
+        <div className="card" style={{ display:'flex', flexDirection:'column' }}>
           <div className="card-header"><h3>👥 Học Viên 6 Tháng Gần Nhất</h3></div>
-          <div className="card-body">
+          <div className="card-body" style={{ flex: 1 }}>
             <ResponsiveContainer width="100%" height={260}>
               <BarChart data={hvChartData} barGap={6} barCategoryGap="30%">
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
@@ -210,76 +206,41 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        <div className="card dash-pie-card">
+        <div className="card dash-pie-card" style={{ display:'flex', flexDirection:'column' }}>
           <div className="card-header"><h3>🎯 Trạng Thái Học Viên</h3></div>
-          <div className="card-body dash-pie-body">
+          <div className="card-body" style={{ flex: 1, padding: '16px 20px' }}>
             {tongHoSo === 0 ? (
               <div className="empty-state"><span>📭</span><p>Chưa có học viên nào</p></div>
             ) : (
               <>
-                <ResponsiveContainer width="100%" height={260}>
-                  <PieChart>
-                    <Pie data={trangThaiData.length > 0 ? trangThaiData : [{ name:'Trống',value:1,color:'#e2e8f0' }]}
-                      cx="50%" cy="46%" innerRadius={65} outerRadius={100}
-                      dataKey="value" paddingAngle={trangThaiData.length > 1 ? 3 : 0} strokeWidth={0} labelLine={false}>
-                      {(trangThaiData.length > 0 ? trangThaiData : [{ color:'#e2e8f0' }]).map((entry, i) => <Cell key={i} fill={entry.color} />)}
-                      <Label content={({ viewBox }) => {
-                        const { cx, cy } = viewBox
-                        return (<g>
-                          <text x={cx} y={cy-10} textAnchor="middle" dominantBaseline="middle" style={{ fontSize:28,fontWeight:800,fill:'#1a202c' }}>{tongHoSo}</text>
-                          <text x={cx} y={cy+12} textAnchor="middle" dominantBaseline="middle" style={{ fontSize:10,fill:'#718096',fontWeight:500 }}>tổng hồ sơ</text>
-                        </g>)
-                      }} />
-                    </Pie>
-                    <Legend iconType="circle" iconSize={10} wrapperStyle={{ fontSize:12,paddingTop:8 }} formatter={(value, entry) => <span style={{ color:'#374151',fontWeight:600 }}>{value}: <span style={{ color:entry.color }}>{entry.payload.value}</span></span>} />
-                    <Tooltip contentStyle={{ borderRadius:10,border:'none',boxShadow:'0 4px 16px rgba(0,0,0,0.12)',fontSize:13 }} formatter={(value, name) => [value+' học viên', name]} />
-                  </PieChart>
-                </ResponsiveContainer>
-                {dauTotNghiep > 0 && (
-                  <div style={{ display:'flex',alignItems:'center',justifyContent:'center',gap:8,marginTop:4,padding:'6px 12px',background:'#f0fdf4',borderRadius:8,border:'1px dashed #86efac',fontSize:12,color:'#15803d',fontWeight:600 }}>
-                    <span>🎓</span><span>Đã tốt nghiệp (không tính trong vòng tròn): </span><span style={{ fontSize:14,fontWeight:800 }}>{dauTotNghiep}</span>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        </div>
-      </div>
+                {/* Tổng số */}
+                <div style={{ textAlign: 'center', marginBottom: 16 }}>
+                  <span style={{ fontSize: 32, fontWeight: 800, color: '#1a202c' }}>{tongHoSo}</span>
+                  <span style={{ fontSize: 13, color: '#718096', marginLeft: 6 }}>tổng hồ sơ</span>
+                </div>
 
-
-      {/* ── Hàng 3: Trạng thái lớp học + Kết quả thi 3 tháng ── */}
-      <div className="dash-bottom-row">
-        {/* Trạng thái lớp học — Donut */}
-        <div className="card">
-          <div className="card-header"><h3>🏫 Trạng Thái Lớp Học</h3><Link to="/lop-hoc" className="btn btn-outline btn-sm">Xem tất cả →</Link></div>
-          <div className="card-body" style={{ display:'flex', alignItems:'center', gap:24 }}>
-            {lopData.length === 0 ? (
-              <div className="empty-state" style={{flex:1}}><span>🏫</span><p>Chưa có lớp học nào</p></div>
-            ) : (
-              <>
-                <ResponsiveContainer width="55%" height={220}>
-                  <PieChart>
-                    <Pie data={lopData} cx="50%" cy="50%" innerRadius={55} outerRadius={88}
-                      dataKey="value" paddingAngle={3} strokeWidth={0}>
-                      {lopData.map((e, i) => <Cell key={i} fill={e.color} />)}
-                      <Label content={({ viewBox }) => {
-                        const { cx, cy } = viewBox
-                        const total = lopData.reduce((s,d) => s+d.value, 0)
-                        return (<g>
-                          <text x={cx} y={cy-8} textAnchor="middle" dominantBaseline="middle" style={{ fontSize:24,fontWeight:800,fill:'#1a202c' }}>{total}</text>
-                          <text x={cx} y={cy+12} textAnchor="middle" dominantBaseline="middle" style={{ fontSize:10,fill:'#718096' }}>lớp học</text>
-                        </g>)
-                      }} />
-                    </Pie>
-                    <Tooltip formatter={(v, n) => [v+' lớp', n]} contentStyle={{ borderRadius:8,border:'none',boxShadow:'0 4px 12px rgba(0,0,0,.1)',fontSize:12 }} />
-                  </PieChart>
-                </ResponsiveContainer>
-                <div style={{ flex:1, display:'flex', flexDirection:'column', gap:10 }}>
-                  {lopData.map((d, i) => (
-                    <div key={i} style={{ display:'flex', alignItems:'center', gap:10 }}>
-                      <div style={{ width:12, height:12, borderRadius:3, background:d.color, flexShrink:0 }} />
-                      <span style={{ fontSize:13, color:'#374151', flex:1 }}>{d.name}</span>
-                      <span style={{ fontSize:15, fontWeight:800, color:d.color }}>{d.value}</span>
+                {/* Bar ngang 5 trạng thái */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {TRANG_THAI_5.map((t, i) => (
+                    <div key={i}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4, alignItems: 'center' }}>
+                        <span style={{ fontSize: 12, fontWeight: 600, color: '#374151' }}>
+                          {t.icon} {t.name}
+                        </span>
+                        <span style={{ fontSize: 14, fontWeight: 800, color: t.color }}>
+                          {t.value}
+                        </span>
+                      </div>
+                      <div style={{ background: '#f1f5f9', borderRadius: 6, height: 10, overflow: 'hidden' }}>
+                        <div style={{
+                          height: '100%',
+                          borderRadius: 6,
+                          background: t.color,
+                          width: `${(t.value / maxVal) * 100}%`,
+                          minWidth: t.value > 0 ? 6 : 0,
+                          transition: 'width .5s ease',
+                        }} />
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -287,17 +248,18 @@ const AdminDashboard = () => {
             )}
           </div>
         </div>
+      </div>
 
-        {/* Kết quả thi — Grouped Bar với dropdown kỳ */}
-        <div className="card">
+
+      {/* ── Hàng 3: Kết quả thi + (Trạng thái khóa học / Trạng thái lớp học) ── */}
+      <div style={{ display:'grid', gridTemplateColumns:'1.4fr 1fr', gap:16, alignItems:'stretch' }}>
+
+        {/* Kết quả thi — Grouped Bar */}
+        <div className="card" style={{ display:'flex', flexDirection:'column' }}>
           <div className="card-header">
             <h3>🏆 Kết Quả Thi</h3>
-            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-              <select
-                className="dash-chart-select"
-                value={kqKy}
-                onChange={e => setKqKy(e.target.value)}
-              >
+            <div style={{ display:'flex', gap:8, alignItems:'center' }}>
+              <select className="dash-chart-select" value={kqKy} onChange={e => setKqKy(e.target.value)}>
                 <option value="tuan">7 Ngày Gần Nhất</option>
                 <option value="thang">30 Ngày (4 Tuần)</option>
                 <option value="nam">12 Tháng</option>
@@ -305,7 +267,7 @@ const AdminDashboard = () => {
               <Link to="/thi" className="btn btn-outline btn-sm">Chi tiết →</Link>
             </div>
           </div>
-          <div className="card-body" style={{ position: 'relative' }}>
+          <div className="card-body" style={{ position:'relative', flex:1 }}>
             {kqLoading && (
               <div style={{ position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(255,255,255,0.7)',zIndex:2,borderRadius:12 }}>
                 <div className="spinner" />
@@ -317,12 +279,9 @@ const AdminDashboard = () => {
               <ResponsiveContainer width="100%" height={260}>
                 <BarChart data={kqData} barGap={4} barCategoryGap="20%">
                   <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                  <XAxis dataKey="label" tick={{ fontSize: kqKy === 'thang' ? 10 : 13, fontWeight: 600, fill: '#4a5568' }} axisLine={false} tickLine={false} />
+                  <XAxis dataKey="label" tick={{ fontSize: kqKy === 'thang' ? 10 : 13, fontWeight:600, fill:'#4a5568' }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fontSize:12, fill:'#9ca3af' }} allowDecimals={false} axisLine={false} tickLine={false} />
-                  <Tooltip
-                    contentStyle={{ borderRadius:8, border:'none', boxShadow:'0 4px 12px rgba(0,0,0,.1)', fontSize:12 }}
-                    formatter={(v, n) => [v + ' học viên', n]}
-                  />
+                  <Tooltip contentStyle={{ borderRadius:8, border:'none', boxShadow:'0 4px 12px rgba(0,0,0,.1)', fontSize:12 }} formatter={(v, n) => [v + ' học viên', n]} />
                   <Legend iconType="circle" iconSize={9} wrapperStyle={{ fontSize:12, paddingTop:10 }} />
                   <Bar dataKey="dat"       name="Đạt"       fill="#10b981" radius={[6,6,0,0]} maxBarSize={60} />
                   <Bar dataKey="khong_dat" name="Không đạt" fill="#ef4444" radius={[6,6,0,0]} maxBarSize={60} />
@@ -331,6 +290,53 @@ const AdminDashboard = () => {
               </ResponsiveContainer>
             )}
           </div>
+        </div>
+
+        {/* Cột phải: 2 mini card stack dọc */}
+        <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
+
+          {/* Mini card: Trạng thái khóa học */}
+          <div className="card" style={{ flex:1 }}>
+            <div className="card-header">
+              <h3 style={{ fontSize:14 }}>📅 Trạng Thái Khóa Học</h3>
+              <Link to="/khoa-hoc" className="btn btn-outline btn-sm">Xem →</Link>
+            </div>
+            <div className="card-body" style={{ padding:'12px 16px' }}>
+              {khoaData.length === 0 ? (
+                <div style={{ textAlign:'center', color:'#94a3b8', fontSize:13, padding:'12px 0' }}>Chưa có khóa học</div>
+              ) : khoaData.map((d, i) => (
+                <div key={i} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'7px 0', borderBottom: i < khoaData.length-1 ? '1px solid #f1f5f9' : 'none' }}>
+                  <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                    <div style={{ width:10, height:10, borderRadius:2, background: d.value > 0 ? d.color : '#e2e8f0', flexShrink:0 }} />
+                    <span style={{ fontSize:13, color: d.value > 0 ? '#374151' : '#94a3b8' }}>{d.name}</span>
+                  </div>
+                  <span style={{ fontSize:16, fontWeight:800, color: d.value > 0 ? d.color : '#cbd5e1' }}>{d.value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Mini card: Trạng thái lớp học */}
+          <div className="card" style={{ flex:1 }}>
+            <div className="card-header">
+              <h3 style={{ fontSize:14 }}>🏫 Trạng Thái Lớp Học</h3>
+              <Link to="/lop-hoc" className="btn btn-outline btn-sm">Xem →</Link>
+            </div>
+            <div className="card-body" style={{ padding:'12px 16px' }}>
+              {lopData.length === 0 ? (
+                <div style={{ textAlign:'center', color:'#94a3b8', fontSize:13, padding:'12px 0' }}>Chưa có lớp học</div>
+              ) : lopData.map((d, i) => (
+                <div key={i} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'7px 0', borderBottom: i < lopData.length-1 ? '1px solid #f1f5f9' : 'none' }}>
+                  <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                    <div style={{ width:10, height:10, borderRadius:2, background: d.value > 0 ? d.color : '#e2e8f0', flexShrink:0 }} />
+                    <span style={{ fontSize:13, color: d.value > 0 ? '#374151' : '#94a3b8' }}>{d.name}</span>
+                  </div>
+                  <span style={{ fontSize:16, fontWeight:800, color: d.value > 0 ? d.color : '#cbd5e1' }}>{d.value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
         </div>
       </div>
 

@@ -38,9 +38,10 @@ const TRANG_THAI_MAP = {
   cho_mo_lop:            { text:'Chờ mở lớp',         cls:'badge-info' },
   dang_hoc:              { text:'Đang học',            cls:'badge-success' },
   du_dieu_kien_thi_tn:   { text:'Đủ ĐK thi TN',       cls:'badge-blue' },
+  chuan_bi_thi:          { text:'Chuẩn bị thi',        cls:'badge-warning' },
   hoan_thanh_tn:         { text:'Hoàn thành TN',       cls:'badge-success' },
-  da_cap_bang:           { text:'Đã cấp bằng',         cls:'badge-success' },
-  dinh_chi:              { text:'Đình chỉ',            cls:'badge-danger' },
+  // Các trạng thái sau khi đậu sát hạch → chỉ hiện ở trang Cấp Bằng
+  // du_dieu_kien_sat_hanh, dang_thi_sat_hanh, da_cap_bang không hiện ở đây
 }
 
 const HoSoManagement = () => {
@@ -51,14 +52,21 @@ const HoSoManagement = () => {
   const [filterTT, setFilterTT] = useState('')
   const [page, setPage]         = useState(1)
   const [totalPages, setTotalPages] = useState(1)
-  const [showModal, setShowModal]         = useState(false)  // thêm / sửa
+  const [showModal, setShowModal]         = useState(false)
   const [showHocPhiModal, setShowHocPhiModal] = useState(false)
   const [showXepLopModal, setShowXepLopModal] = useState(false)
+  // Modal thu phí thi lại
+  const [showPhiThiLaiModal, setShowPhiThiLaiModal] = useState(false)
+  const [phiThiLaiData, setPhiThiLaiData]           = useState([])
+  const [phiThiLaiLoading, setPhiThiLaiLoading]     = useState(false)
+  const [selectedBaiThiIds, setSelectedBaiThiIds]   = useState([])
+  const [phuongThucTL, setPhuongThucTL]             = useState('tien_mat')
   const [viewItem, setViewItem]     = useState(null)
   const [viewLoading, setViewLoading] = useState(false)
   const [selected, setSelected] = useState(null)
-  const [editingHoSo, setEditingHoSo] = useState(null)  // null = thêm mới, object = sửa
+  const [editingHoSo, setEditingHoSo] = useState(null)
   const [lopList, setLopList]   = useState([])
+  const [stats, setStats]       = useState(null)
 
   const headers = { Authorization: `Bearer ${token}` }
 
@@ -75,6 +83,13 @@ const HoSoManagement = () => {
       }
     } catch { toast.error('Lỗi tải dữ liệu') }
     finally { setLoading(false) }
+  }
+
+  const fetchStats = async () => {
+    try {
+      const res = await axios.get(`${backendUrl}/api/admin/dashboard`, { headers })
+      if (res.data.success) setStats(res.data.stats)
+    } catch {}
   }
 
   const fetchLopList = async () => {
@@ -96,6 +111,7 @@ const HoSoManagement = () => {
   }
 
   useEffect(() => { fetchList() }, [search, filterTT, page])
+  useEffect(() => { fetchStats() }, [])
 
   // Form tạo hồ sơ offline
   const [form, setForm] = useState({ ho_ten:'', ngay_sinh:'', so_cccd:'', khoa_hoc_id:'', so_dien_thoai:'', dia_chi:'', email:'' })
@@ -183,6 +199,38 @@ const HoSoManagement = () => {
       if (res.data.success) {
         toast.success('Xác nhận học phí thành công!')
         setShowHocPhiModal(false)
+        fetchList()
+      } else toast.error(res.data.message)
+    } catch (err) { toast.error(err.response?.data?.message || 'Lỗi') }
+  }
+
+  // Mở modal thu phí thi lại
+  const openPhiThiLai = async (hs) => {
+    setSelected(hs)
+    setSelectedBaiThiIds([])
+    setPhuongThucTL('tien_mat')
+    setPhiThiLaiLoading(true)
+    setShowPhiThiLaiModal(true)
+    try {
+      const res = await axios.get(`${backendUrl}/api/admin/ho-so/${hs.id}/phi-thi-lai-chua-thu`, { headers })
+      if (res.data.success) setPhiThiLaiData(res.data.data)
+    } catch { toast.error('Không tải được dữ liệu') }
+    finally { setPhiThiLaiLoading(false) }
+  }
+
+  const handleThuPhiThiLai = async () => {
+    if (selectedBaiThiIds.length === 0) { toast.warning('Chưa chọn bài thi nào'); return }
+    const lichThiId = phiThiLaiData.find(b => selectedBaiThiIds.includes(b.bai_thi_id))?.lich_thi_id
+    if (!lichThiId) { toast.error('Không xác định được lịch thi'); return }
+    try {
+      const res = await axios.post(
+        `${backendUrl}/api/admin/ho-so/${selected.id}/phi-thi-lai`,
+        { bai_thi_ids: selectedBaiThiIds, lich_thi_id: lichThiId, phuong_thuc: phuongThucTL },
+        { headers }
+      )
+      if (res.data.success) {
+        toast.success(res.data.message)
+        setShowPhiThiLaiModal(false)
         fetchList()
       } else toast.error(res.data.message)
     } catch (err) { toast.error(err.response?.data?.message || 'Lỗi') }
@@ -309,6 +357,35 @@ const HoSoManagement = () => {
         </button>
       </div>
 
+      {/* ── Stat cards trạng thái học viên ── */}
+      {stats && (
+        <div className="hoso-stats-row">
+          {[
+            { key: 'cho_dong_hoc_phi', label: 'Chờ đóng HP',    value: stats.choDongHocPhi  || 0, color: '#f59e0b', icon: '💰' },
+            { key: 'cho_mo_lop',       label: 'Chờ mở lớp',     value: stats.choMoLop       || 0, color: '#3b82f6', icon: '⏳' },
+            { key: 'dang_hoc',         label: 'Đang học',        value: stats.dangHoc        || 0, color: '#10b981', icon: '📚' },
+            { key: 'du_dieu_kien_thi_tn', label: 'Đủ ĐK thi TN', value: stats.duDieuKienThi || 0, color: '#06b6d4', icon: '✅' },
+            { key: 'chuan_bi_thi',     label: 'Chuẩn bị thi',   value: stats.chuanBiThi     || 0, color: '#f97316', icon: '📝' },
+            { key: 'hoan_thanh_tn',    label: 'Hoàn thành TN',  value: stats.dauTotNghiep   || 0, color: '#8b5cf6', icon: '🎓' },
+          ].map(s => (
+            <button
+              key={s.key}
+              className={`hoso-stat-card ${filterTT === s.key ? 'active' : ''}`}
+              style={{ '--sc': s.color }}
+              onClick={() => { setFilterTT(filterTT === s.key ? '' : s.key); setPage(1) }}
+              title={`Lọc: ${s.label}`}
+            >
+              <span className="hsc-icon">{s.icon}</span>
+              <div className="hsc-body">
+                <span className="hsc-value">{s.value}</span>
+                <span className="hsc-label">{s.label}</span>
+              </div>
+              {filterTT === s.key && <span className="hsc-active-dot" />}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Filter */}
       <div className="search-bar">
         <input className="search-input" placeholder="🔍 Tìm theo tên, CCCD, SĐT..."
@@ -372,6 +449,12 @@ const HoSoManagement = () => {
                               <button className="btn btn-primary btn-sm"
                                 onClick={() => { setSelected(hs); fetchLopList(); setShowXepLopModal(true) }}>
                                 🏫 Xếp lớp
+                              </button>
+                            )}
+                            {/* Nút phí thi lại: chỉ hiện khi có bài rớt chưa đóng phí */}
+                            {hs.co_phi_thi_lai_chua_thu && (
+                              <button className="btn btn-warning btn-sm" onClick={() => openPhiThiLai(hs)}>
+                                🔁 Phí thi lại
                               </button>
                             )}
                             <button className="btn btn-danger btn-sm" onClick={() => handleXoa(hs)}>
@@ -919,6 +1002,118 @@ const HoSoManagement = () => {
                 </button>
               )}
               {/* Nút fix trạng thái khi bị lệch: đang trong lớp nhưng trạng thái sai */}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL THU PHÍ THI LẠI ── */}
+      {showPhiThiLaiModal && selected && (
+        <div className="modal-overlay" onClick={() => setShowPhiThiLaiModal(false)}>
+          <div className="modal modal-lg" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <div>
+                <h3>🔁 Thu Phí Thi Lại</h3>
+                <p style={{ fontSize:12, color:'#718096', marginTop:3 }}>
+                  {selected.ho_ten} — {selected.so_cccd}
+                </p>
+              </div>
+              <button className="modal-close" onClick={() => setShowPhiThiLaiModal(false)}>✕</button>
+            </div>
+            <div className="modal-body">
+              {phiThiLaiLoading ? (
+                <div className="loading-wrap"><div className="spinner"/></div>
+              ) : phiThiLaiData.length === 0 ? (
+                <div className="empty-state">
+                  <span>✅</span>
+                  <h3>Không có khoản phí thi lại nào chưa thu</h3>
+                  <p>Học viên chưa có bài thi rớt hoặc đã thu phí đầy đủ.</p>
+                </div>
+              ) : (
+                <>
+                  <div style={{ background:'#fffbeb', border:'1px solid #fde68a', borderRadius:8, padding:'10px 14px', fontSize:13, color:'#92400e', marginBottom:14 }}>
+                    ℹ️ Lần đầu thi được <strong>miễn phí</strong>. Chỉ thu phí từ lần thi lại (bài chưa đạt).
+                  </div>
+
+                  {/* Nhóm theo lịch thi */}
+                  {Object.values(
+                    phiThiLaiData.reduce((acc, b) => {
+                      const k = b.lich_thi_id
+                      if (!acc[k]) acc[k] = { lich_thi_id: k, ngay_thi: b.ngay_thi, loai_thi: b.loai_thi, bai_thi: [] }
+                      acc[k].bai_thi.push(b)
+                      return acc
+                    }, {})
+                  ).map(lichObj => (
+                    <div key={lichObj.lich_thi_id} style={{ marginBottom:16 }}>
+                      <div style={{ fontSize:13, fontWeight:700, color:'#0d47a1', marginBottom:8, padding:'6px 10px', background:'#eff6ff', borderRadius:6 }}>
+                        📅 {lichObj.ngay_thi ? new Date(lichObj.ngay_thi).toLocaleDateString('vi-VN') : '—'}
+                        &nbsp;—&nbsp;
+                        {lichObj.loai_thi === 'tot_nghiep' ? '🎓 Tốt nghiệp' : '🏛️ Sát hạch'}
+                      </div>
+                      {lichObj.bai_thi.map(b => (
+                        <label key={b.bai_thi_id} style={{
+                          display:'flex', alignItems:'center', gap:12,
+                          padding:'10px 14px', borderRadius:8, marginBottom:6, cursor:'pointer',
+                          border:`1px solid ${selectedBaiThiIds.includes(b.bai_thi_id) ? '#0d47a1' : '#e2e8f0'}`,
+                          background: selectedBaiThiIds.includes(b.bai_thi_id) ? '#eff6ff' : '#fff',
+                          transition:'all .15s'
+                        }}>
+                          <input type="checkbox"
+                            checked={selectedBaiThiIds.includes(b.bai_thi_id)}
+                            onChange={() => setSelectedBaiThiIds(prev =>
+                              prev.includes(b.bai_thi_id)
+                                ? prev.filter(x => x !== b.bai_thi_id)
+                                : [...prev, b.bai_thi_id]
+                            )}
+                          />
+                          <div style={{ flex:1 }}>
+                            <strong style={{ fontSize:14 }}>{b.ten_bai_thi}</strong>
+                            <span className={`badge ${b.ket_qua === 'vang_mat' ? 'badge-warning' : 'badge-danger'}`}
+                              style={{ marginLeft:8, fontSize:11 }}>
+                              {b.ket_qua === 'vang_mat' ? '⚠️ Vắng' : '❌ Không đạt'}
+                            </span>
+                            {b.diem != null && (
+                              <span style={{ fontSize:12, color:'#718096', marginLeft:8 }}>Điểm: {b.diem}</span>
+                            )}
+                          </div>
+                          <strong style={{ color:'#dc2626', fontSize:14, flexShrink:0 }}>
+                            {Number(b.phi_thi_lai || 0).toLocaleString('vi-VN')} ₫
+                          </strong>
+                        </label>
+                      ))}
+                    </div>
+                  ))}
+
+                  {selectedBaiThiIds.length > 0 && (
+                    <div style={{ background:'#f0fdf4', border:'1px solid #bbf7d0', borderRadius:8, padding:'10px 14px', marginBottom:12 }}>
+                      <strong style={{ color:'#15803d', fontSize:13 }}>
+                        Tổng phí: {Number(
+                          phiThiLaiData.filter(b => selectedBaiThiIds.includes(b.bai_thi_id))
+                            .reduce((s, b) => s + Number(b.phi_thi_lai || 0), 0)
+                        ).toLocaleString('vi-VN')} ₫ ({selectedBaiThiIds.length} bài)
+                      </strong>
+                    </div>
+                  )}
+
+                  <div className="form-group">
+                    <label>Phương thức thanh toán *</label>
+                    <select value={phuongThucTL} onChange={e => setPhuongThucTL(e.target.value)}>
+                      <option value="tien_mat">💵 Tiền mặt</option>
+                      <option value="chuyen_khoan">🏦 Chuyển khoản</option>
+                      <option value="vnpay">💳 VNPay</option>
+                      <option value="momo">📱 MoMo</option>
+                    </select>
+                  </div>
+                </>
+              )}
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-outline" onClick={() => setShowPhiThiLaiModal(false)}>Hủy</button>
+              {selectedBaiThiIds.length > 0 && (
+                <button className="btn btn-primary" onClick={handleThuPhiThiLai}>
+                  💳 Xác nhận thu phí ({selectedBaiThiIds.length} bài)
+                </button>
+              )}
             </div>
           </div>
         </div>
