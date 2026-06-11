@@ -37,6 +37,37 @@ class LichHocController extends Controller
             'xe_id'        => 'nullable|exists:xe,id',
         ]);
 
+        $lop      = LopHoc::with(['giangVienLyThuyet.user', 'giangVienThucHanh.user', 'xeLop.xe'])->find($request->lop_hoc_id);
+        $loaiBuoi = $request->loai_buoi;
+
+        // ── Kiểm tra trạng thái giảng viên ──────────────────────────────────
+        if ($loaiBuoi === 'ly_thuyet') {
+            $gvLT = $lop->giangVienLyThuyet;
+            if (!$gvLT) {
+                return response()->json(['success' => false, 'message' => 'Lớp này chưa có GV Lý thuyết. Vui lòng phân công giảng viên trước khi xếp lịch.'], 422);
+            }
+            if ($gvLT->trang_thai !== 'san_sang') {
+                $ttLabel = $gvLT->trang_thai === 'nghi_phep' ? 'đang nghỉ phép' : 'đang bị đình chỉ';
+                return response()->json(['success' => false, 'message' => "GV Lý thuyết ({$gvLT->user->ho_ten}) {$ttLabel}. Vui lòng phân công giảng viên khác trước khi xếp lịch."], 422);
+            }
+        } else { // thuc_hanh
+            $gvTH = $lop->giangVienThucHanh;
+            if (!$gvTH) {
+                return response()->json(['success' => false, 'message' => 'Lớp này chưa có GV Thực hành. Vui lòng phân công giảng viên trước khi xếp lịch.'], 422);
+            }
+            if ($gvTH->trang_thai !== 'san_sang') {
+                $ttLabel = $gvTH->trang_thai === 'nghi_phep' ? 'đang nghỉ phép' : 'đang bị đình chỉ';
+                return response()->json(['success' => false, 'message' => "GV Thực hành ({$gvTH->user->ho_ten}) {$ttLabel}. Vui lòng phân công giảng viên khác trước khi xếp lịch."], 422);
+            }
+
+            // ── Kiểm tra trạng thái xe thực hành của lớp ────────────────────
+            // Lấy xe từ xe_lop_hoc; nếu không có thì dùng xe_id được gửi lên
+            $xeError = $this->kiemTraXeThucHanh($lop, $request->xe_id);
+            if ($xeError) {
+                return response()->json(['success' => false, 'message' => $xeError], 422);
+            }
+        }
+
         $lichHoc = LichHoc::create($request->all());
         return response()->json(['success' => true, 'message' => 'Tạo lịch học thành công', 'data' => $lichHoc], 201);
     }
@@ -45,8 +76,78 @@ class LichHocController extends Controller
     public function update(Request $request, $id)
     {
         $lichHoc = LichHoc::findOrFail($id);
+
+        $loaiBuoi   = $request->input('loai_buoi', $lichHoc->loai_buoi);
+        $lopHocId   = $request->input('lop_hoc_id', $lichHoc->lop_hoc_id);
+
+        $lop = LopHoc::with(['giangVienLyThuyet.user', 'giangVienThucHanh.user', 'xeLop.xe'])->find($lopHocId);
+
+        if ($loaiBuoi === 'ly_thuyet') {
+            $gvLT = $lop?->giangVienLyThuyet;
+            if ($gvLT && $gvLT->trang_thai !== 'san_sang') {
+                $ttLabel = $gvLT->trang_thai === 'nghi_phep' ? 'đang nghỉ phép' : 'đang bị đình chỉ';
+                return response()->json(['success' => false, 'message' => "GV Lý thuyết ({$gvLT->user->ho_ten}) {$ttLabel}. Vui lòng phân công giảng viên khác trước khi xếp lịch."], 422);
+            }
+        } else { // thuc_hanh
+            $gvTH = $lop?->giangVienThucHanh;
+            if ($gvTH && $gvTH->trang_thai !== 'san_sang') {
+                $ttLabel = $gvTH->trang_thai === 'nghi_phep' ? 'đang nghỉ phép' : 'đang bị đình chỉ';
+                return response()->json(['success' => false, 'message' => "GV Thực hành ({$gvTH->user->ho_ten}) {$ttLabel}. Vui lòng phân công giảng viên khác trước khi xếp lịch."], 422);
+            }
+
+            // ── Kiểm tra trạng thái xe thực hành của lớp ────────────────────
+            $xeId    = $request->has('xe_id') ? $request->xe_id : $lichHoc->xe_id;
+            $xeError = $this->kiemTraXeThucHanh($lop, $xeId);
+            if ($xeError) {
+                return response()->json(['success' => false, 'message' => $xeError], 422);
+            }
+        }
+
         $lichHoc->update($request->all());
         return response()->json(['success' => true, 'message' => 'Cập nhật thành công']);
+    }
+
+    /**
+     * Kiểm tra xe thực hành của lớp có đang ở trạng thái cho phép xếp lịch không.
+     *
+     * Logic: ưu tiên xe gán trực tiếp ($xeIdManual), sau đó xét tất cả xe
+     * trong xe_lop_hoc của lớp. Chỉ cần TẤT CẢ xe đều bị bảo trì/hỏng mới
+     * chặn — nếu còn ít nhất 1 xe sẵn sàng thì cho phép tạo lịch.
+     *
+     * @param  LopHoc|null  $lop
+     * @param  int|null     $xeIdManual  xe_id được gửi lên từ request (có thể null)
+     * @return string|null  null = OK, string = thông báo lỗi
+     */
+    private function kiemTraXeThucHanh(?LopHoc $lop, ?int $xeIdManual): ?string
+    {
+        $BAD_STATES  = ['bao_tri', 'hong'];
+        $STATE_LABEL = ['bao_tri' => 'đang bảo trì', 'hong' => 'đang hỏng'];
+
+        // ── Trường hợp 1: admin chỉ định xe cụ thể ──────────────────────────
+        if ($xeIdManual) {
+            $xe = Xe::find($xeIdManual);
+            if ($xe && in_array($xe->trang_thai, $BAD_STATES)) {
+                $label = $STATE_LABEL[$xe->trang_thai];
+                return "Xe {$xe->bien_so} ({$xe->hang_xe} {$xe->dong_xe}) {$label}. Vui lòng chọn xe khác hoặc sửa chữa xe trước khi xếp lịch.";
+            }
+            return null; // xe được chỉ định hợp lệ
+        }
+
+        // ── Trường hợp 2: xe phân qua xe_lop_hoc của lớp ───────────────────
+        if (!$lop) return null;
+
+        $xeLopList = $lop->xeLop->filter(fn($xl) => $xl->xe !== null);
+        if ($xeLopList->isEmpty()) return null; // chưa phân xe → không chặn
+
+        // Lấy danh sách xe đang bị bảo trì / hỏng
+        $xeXau = $xeLopList->filter(fn($xl) => in_array($xl->xe->trang_thai, $BAD_STATES));
+
+        // Nếu còn xe sẵn sàng (không phải tất cả đều hỏng) → cho phép
+        if ($xeXau->count() < $xeLopList->count()) return null;
+
+        // Tất cả xe của lớp đều bị bảo trì / hỏng → chặn
+        $danhSach = $xeXau->map(fn($xl) => "{$xl->xe->bien_so} ({$STATE_LABEL[$xl->xe->trang_thai]})")->implode(', ');
+        return "Tất cả xe thực hành của lớp hiện không thể sử dụng: {$danhSach}. Vui lòng kiểm tra lại trạng thái xe trước khi xếp lịch.";
     }
 
     // Admin: Xóa buổi học

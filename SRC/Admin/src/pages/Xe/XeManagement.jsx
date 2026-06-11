@@ -5,10 +5,9 @@ import { useAdmin } from '../../context/AdminContext'
 import './XeManagement.css'
 
 const TRANG_THAI_MAP = {
-  san_sang:     { label: '✅ Sẵn sàng',  cls: 'badge-success' },
-  dang_su_dung: { label: '🚗 Đang dùng', cls: 'badge-info' },
-  bao_tri:      { label: '🔧 Bảo trì',   cls: 'badge-warning' },
-  hong:         { label: '❌ Hỏng',       cls: 'badge-danger' },
+  san_sang: { label: '✅ Sẵn sàng', cls: 'badge-success' },
+  bao_tri:  { label: '🔧 Bảo trì',  cls: 'badge-warning' },
+  hong:     { label: '❌ Hỏng',      cls: 'badge-danger' },
 }
 const LOAI_XE_MAP = { so_san: 'Số sàn', so_tu_dong: 'Số tự động' }
 const MUC_DO_MAP  = {
@@ -42,6 +41,8 @@ const XeManagement = () => {
   const [form, setForm]             = useState(emptyForm)
   const [xuLyForm, setXuLyForm]     = useState({ trang_thai:'dang_xu_ly', ghi_chu_xu_ly:'' })
   const [filterTT, setFilterTT]     = useState('')
+  const [filterLoai, setFilterLoai] = useState('')
+  const [filterHang, setFilterHang] = useState('')
   const [filterBL, setFilterBL]     = useState('')
   const [searchXe, setSearchXe]     = useState('')
   const [searchBL, setSearchBL]     = useState('')
@@ -87,8 +88,9 @@ const XeManagement = () => {
 
   const openEdit = xe => {
     setEditItem(xe)
+    const { anh_xe, ...xeData } = xe   // tách anh_xe ra, không cho vào form state
     setForm({
-      ...emptyForm, ...xe,
+      ...emptyForm, ...xeData,
       ngay_dang_kiem:            xe.ngay_dang_kiem?.split('T')[0] || '',
       ngay_dang_kiem_tiep_theo:  xe.ngay_dang_kiem_tiep_theo?.split('T')[0] || '',
       ngay_bao_hiem:             xe.ngay_bao_hiem?.split('T')[0] || '',
@@ -103,7 +105,14 @@ const XeManagement = () => {
     try {
       const fd = new FormData()
       Object.entries(form).forEach(([k, v]) => { if (v !== '' && v !== null && v !== undefined) fd.append(k, v) })
-      if (anhFile) fd.append('anh_xe', anhFile)
+      if (anhFile) {
+        // Có file mới → upload
+        fd.append('anh_xe', anhFile)
+      } else if (editItem && !anhPreview) {
+        // Đang sửa, không có file mới, và ảnh đã bị xóa → báo backend xóa ảnh cũ
+        fd.append('remove_anh_xe', '1')
+      }
+      // Nếu đang sửa và anhPreview còn (ảnh cũ giữ nguyên) → không append gì → backend giữ ảnh cũ
 
       const res = editItem
         ? await axios.post(`${backendUrl}/api/admin/xe/${editItem.id}?_method=PUT`, fd,
@@ -164,7 +173,9 @@ const XeManagement = () => {
       xe.bien_so?.toLowerCase().includes(searchXe.toLowerCase()) ||
       xe.hang_xe?.toLowerCase().includes(searchXe.toLowerCase()) ||
       xe.dong_xe?.toLowerCase().includes(searchXe.toLowerCase())
-    return matchSearch
+    const matchLoai = !filterLoai || xe.loai_xe === filterLoai
+    const matchHang = !filterHang || xe.hang_bang === filterHang
+    return matchSearch && matchLoai && matchHang
   })
 
   const filteredBL = baoLoiList.filter(bl => {
@@ -215,12 +226,22 @@ const XeManagement = () => {
             <h3>🚗 Đội Xe ({filteredXe.length}{filterTT ? ` / ${xeList.length} tổng` : ''})</h3>
             <input className="search-input" style={{flex:1,minWidth:200}} placeholder="🔍 Tìm theo biển số, hãng xe, dòng xe..."
               value={searchXe} onChange={e => setSearchXe(e.target.value)} />
+            <select className="search-input" style={{maxWidth:160, borderColor: filterLoai ? '#0d47a1' : '', fontWeight: filterLoai ? 700 : 400}}
+              value={filterLoai} onChange={e => setFilterLoai(e.target.value)}>
+              <option value="">Tất cả loại</option>
+              {Object.entries(LOAI_XE_MAP).map(([k,v]) => <option key={k} value={k}>{v}</option>)}
+            </select>
+            <select className="search-input" style={{maxWidth:160, borderColor: filterHang ? '#0d47a1' : '', fontWeight: filterHang ? 700 : 400}}
+              value={filterHang} onChange={e => setFilterHang(e.target.value)}>
+              <option value="">Tất cả hạng</option>
+              {['A1','A','B1','B2','C1','C','D','E','CE'].map(h => <option key={h} value={h}>Hạng {h}</option>)}
+            </select>
             <select className="search-input" style={{maxWidth:200, borderColor: filterTT ? '#0d47a1' : '', fontWeight: filterTT ? 700 : 400}} value={filterTT} onChange={e=>setFilterTT(e.target.value)}>
               <option value="">Tất cả trạng thái</option>
               {Object.entries(TRANG_THAI_MAP).map(([k,v]) => <option key={k} value={k}>{v.label}</option>)}
             </select>
-            {filterTT && (
-              <button className="btn btn-outline btn-sm" onClick={() => setFilterTT('')}>✕ Bỏ lọc</button>
+            {(filterTT || filterLoai || filterHang || searchXe) && (
+              <button className="btn btn-outline btn-sm" onClick={() => { setFilterTT(''); setFilterLoai(''); setFilterHang(''); setSearchXe('') }}>✕ Bỏ lọc</button>
             )}
           </div>
           <div className="card-body" style={{padding:0}}>
@@ -387,7 +408,7 @@ const XeManagement = () => {
                       </div>
                       <div className="form-group"><label>Hạng bằng *</label>
                         <select value={form.hang_bang} onChange={e=>setForm({...form,hang_bang:e.target.value})}>
-                          {['A1','A2','B1','B2','C','D','E'].map(h => <option key={h} value={h}>Hạng {h}</option>)}
+                          {['A1','A','B1','B2','C1','C','D','E','CE'].map(h => <option key={h} value={h}>Hạng {h}</option>)}
                         </select>
                       </div>
                       <div className="form-group"><label>Màu xe</label>

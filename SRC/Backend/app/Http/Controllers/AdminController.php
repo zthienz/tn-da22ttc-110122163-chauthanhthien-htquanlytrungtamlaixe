@@ -1118,10 +1118,9 @@ class AdminController extends Controller
             ->toArray();
 
         $xeData = [
-            ['name' => 'Sẵn sàng',  'value' => $xeTheoTrangThai['san_sang']    ?? 0, 'color' => '#10b981'],
-            ['name' => 'Đang dùng', 'value' => $xeTheoTrangThai['dang_su_dung'] ?? 0, 'color' => '#3b82f6'],
-            ['name' => 'Bảo trì',   'value' => $xeTheoTrangThai['bao_tri']      ?? 0, 'color' => '#f59e0b'],
-            ['name' => 'Hỏng',      'value' => $xeTheoTrangThai['hong']         ?? 0, 'color' => '#ef4444'],
+            ['name' => 'Sẵn sàng', 'value' => $xeTheoTrangThai['san_sang'] ?? 0, 'color' => '#10b981'],
+            ['name' => 'Bảo trì',  'value' => $xeTheoTrangThai['bao_tri']  ?? 0, 'color' => '#f59e0b'],
+            ['name' => 'Hỏng',     'value' => $xeTheoTrangThai['hong']     ?? 0, 'color' => '#ef4444'],
         ];
 
         $tongXe     = array_sum(array_column($xeData, 'value'));

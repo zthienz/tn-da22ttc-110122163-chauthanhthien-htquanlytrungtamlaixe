@@ -6,6 +6,7 @@ use App\Models\Xe;
 use App\Models\BaoLoiXe;
 use App\Models\GiangVien;
 use App\Models\LichHoc;
+use App\Models\LopHoc;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -45,7 +46,7 @@ class XeController extends Controller
         $request->validate([
             'bien_so'    => 'required|string|max:20|unique:xe,bien_so',
             'hang_xe'    => 'required|string|max:50',
-            'hang_bang'  => 'required|in:A1,A2,B1,B2,C,D,E',
+            'hang_bang'  => 'required|in:A1,A,B1,B2,C1,C,D,E,CE',
             'loai_xe'    => 'required|in:so_san,so_tu_dong',
             'anh_xe'     => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
         ]);
@@ -75,14 +76,20 @@ class XeController extends Controller
         ]);
 
         $anhPath = $xe->anh_xe;
+
         if ($request->hasFile('anh_xe')) {
+            // Upload ảnh mới
             $file     = $request->file('anh_xe');
             $fileName = 'xe_' . preg_replace('/[^a-zA-Z0-9]/', '', $xe->bien_so) . '_' . time() . '.' . $file->getClientOriginalExtension();
             $file->move(public_path('uploads/xe'), $fileName);
             $anhPath = 'xe/' . $fileName;
+        } elseif ($request->input('remove_anh_xe') == '1') {
+            // Admin chủ động xóa ảnh
+            $anhPath = null;
         }
+        // else: giữ nguyên ảnh cũ ($anhPath = $xe->anh_xe)
 
-        $data = $request->except('anh_xe');
+        $data = $request->except(['anh_xe', 'remove_anh_xe']);
         $data['anh_xe'] = $anhPath;
 
         $xe->update($data);
@@ -93,9 +100,6 @@ class XeController extends Controller
     public function destroy($id)
     {
         $xe = Xe::findOrFail($id);
-        if ($xe->trang_thai === 'dang_su_dung') {
-            return response()->json(['success' => false, 'message' => 'Xe đang được sử dụng, không thể xóa'], 400);
-        }
         $xe->delete();
         return response()->json(['success' => true, 'message' => 'Đã xóa xe']);
     }
@@ -104,7 +108,7 @@ class XeController extends Controller
     public function capNhatTrangThai(Request $request, $id)
     {
         $request->validate([
-            'trang_thai' => 'required|in:san_sang,dang_su_dung,bao_tri,hong',
+            'trang_thai' => 'required|in:san_sang,bao_tri,hong',
         ]);
         $xe = Xe::findOrFail($id);
         $xe->update(['trang_thai' => $request->trang_thai]);
@@ -135,7 +139,7 @@ class XeController extends Controller
         // Nếu có xe_id mới, kiểm tra xe có sẵn sàng không
         if ($request->xe_id) {
             $xe = Xe::findOrFail($request->xe_id);
-            if (!in_array($xe->trang_thai, ['san_sang', 'dang_su_dung'])) {
+            if ($xe->trang_thai !== 'san_sang') {
                 return response()->json([
                     'success' => false,
                     'message' => "Xe {$xe->bien_so} đang ở trạng thái '{$xe->trang_thai}', không thể phân công",
@@ -162,7 +166,6 @@ class XeController extends Controller
 
         return response()->json(['success' => true, 'data' => $xe]);
     }
-
     // ═══════════════════════════════════════════════════════
     // ADMIN — Quản lý báo lỗi xe
     // ═══════════════════════════════════════════════════════
@@ -209,7 +212,7 @@ class XeController extends Controller
     // GIẢNG VIÊN — Xem xe & báo lỗi
     // ═══════════════════════════════════════════════════════
 
-    // Giảng viên xem xe được cấp cho buổi học trong tuần hiện tại và sắp tới
+    // Giảng viên xem xe được phân công trong các lớp thực hành của mình
     public function xeCuaToi(Request $request)
     {
         $user = $request->auth_user;
@@ -217,22 +220,50 @@ class XeController extends Controller
 
         if (!$gv) return response()->json(['success' => true, 'data' => []]);
 
-        // Lấy từ đầu tuần hiện tại (Thứ 2) để giảng viên thấy xe của cả tuần,
-        // kể cả các buổi đã qua trong tuần này
-        $dauTuan = now()->startOfWeek(\Carbon\Carbon::MONDAY)->toDateString();
-
-        $lichHoc = LichHoc::with(['xe', 'lopHoc'])
-            ->whereHas('lopHoc', fn($q) => $q
-                ->where('giang_vien_thuc_hanh_id', $gv->id)
-                ->orWhere('giang_vien_ly_thuyet_id', $gv->id))
-            ->where('loai_buoi', 'thuc_hanh')
-            ->whereNotNull('xe_id')
-            ->where('ngay_hoc', '>=', $dauTuan)
-            ->orderBy('ngay_hoc')->orderBy('gio_bat_dau')
-            ->limit(20)
+        // Lấy tất cả lớp học mà giảng viên này là giảng viên thực hành
+        $lopList = LopHoc::with([
+                'khoaHoc',
+                'xeLop.xe',   // xe gán qua bảng xe_lop_hoc
+                // Lấy thêm xe từ các buổi lịch học thực hành có xe_id
+                'lichHoc' => fn($q) => $q
+                    ->where('loai_buoi', 'thuc_hanh')
+                    ->whereNotNull('xe_id')
+                    ->with('xe')
+                    ->orderBy('ngay_hoc'),
+            ])
+            ->where('giang_vien_thuc_hanh_id', $gv->id)
+            ->whereIn('trang_thai', ['dang_hoc', 'sap_khai_giang'])
+            ->orderByDesc('ngay_khai_giang')
             ->get();
 
-        return response()->json(['success' => true, 'data' => $lichHoc]);
+        $result = $lopList->map(function ($lop) {
+            // Gom tất cả xe duy nhất: từ xe_lop_hoc + từ lich_hoc.xe_id
+            $xeMap = [];
+
+            foreach ($lop->xeLop as $xl) {
+                if ($xl->xe) {
+                    $xeMap[$xl->xe->id] = $xl->xe;
+                }
+            }
+            foreach ($lop->lichHoc as $lh) {
+                if ($lh->xe && !isset($xeMap[$lh->xe->id])) {
+                    $xeMap[$lh->xe->id] = $lh->xe;
+                }
+            }
+
+            return [
+                'lop_hoc_id'      => $lop->id,
+                'ten_lop'         => $lop->ten_lop,
+                'loai_bang'       => $lop->khoaHoc?->loai_bang,
+                'ten_khoa'        => $lop->khoaHoc?->ten_khoa,
+                'ngay_khai_giang' => $lop->ngay_khai_giang?->format('Y-m-d'),
+                'ngay_ket_thuc'   => $lop->ngay_ket_thuc?->format('Y-m-d'),
+                'trang_thai'      => $lop->trang_thai,
+                'xe_list'         => array_values($xeMap),
+            ];
+        })->filter(fn($l) => count($l['xe_list']) > 0)->values();
+
+        return response()->json(['success' => true, 'data' => $result]);
     }
 
     // Giảng viên báo lỗi xe

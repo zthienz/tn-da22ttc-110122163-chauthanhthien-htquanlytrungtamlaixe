@@ -15,10 +15,13 @@ const XLTT_MAP = {
   da_xu_ly:   { label: '✅ Đã xử lý',   cls: 'badge-success' },
 }
 const TT_XE_MAP = {
-  san_sang:     { label: '✅ Sẵn sàng',   cls: 'badge-success' },
-  dang_su_dung: { label: '🚗 Đang dùng', cls: 'badge-info'    },
-  bao_tri:      { label: '🔧 Bảo trì',   cls: 'badge-warning' },
-  hong:         { label: '❌ Hỏng',       cls: 'badge-danger'  },
+  san_sang: { label: '✅ Sẵn sàng', cls: 'badge-success' },
+  bao_tri:  { label: '🔧 Bảo trì',  cls: 'badge-warning' },
+  hong:     { label: '❌ Hỏng',      cls: 'badge-danger'  },
+}
+const TRANG_THAI_LOP = {
+  sap_khai_giang: { label: 'Sắp khai giảng', cls: 'badge-info'    },
+  dang_hoc:       { label: 'Đang học',        cls: 'badge-success' },
 }
 
 const emptyForm = { xe_id: '', lich_hoc_id: '', tieu_de: '', mo_ta: '', muc_do: 'nhe' }
@@ -26,7 +29,7 @@ const emptyForm = { xe_id: '', lich_hoc_id: '', tieu_de: '', mo_ta: '', muc_do: 
 const GVXe = () => {
   const { token, backendUrl } = useTeacher()
   const [tab, setTab]           = useState('xe')
-  const [xeList, setXeList]     = useState([])
+  const [xeList, setXeList]     = useState([])   // mảng lớp học, mỗi lớp có xe_list
   const [lichSu, setLichSu]     = useState([])
   const [loading, setLoading]   = useState(true)
   const [showModal, setShowModal] = useState(false)
@@ -52,11 +55,6 @@ const GVXe = () => {
 
   useEffect(() => { fetchXe(); fetchLichSu() }, [])
 
-  const openBaoLoi = (lich) => {
-    setForm({ ...emptyForm, xe_id: lich.xe?.id || '', lich_hoc_id: lich.id })
-    setShowModal(true)
-  }
-
   const handleSubmit = async e => {
     e.preventDefault()
     setSaving(true)
@@ -73,6 +71,9 @@ const GVXe = () => {
   }
 
   const choXuLyCount = lichSu.filter(b => b.trang_thai === 'cho_xu_ly').length
+
+  // Tổng số xe duy nhất qua tất cả lớp
+  const tongXe = xeList.reduce((acc, lop) => acc + (lop.xe_list?.length || 0), 0)
 
   return (
     <div className="gvxe-page">
@@ -97,43 +98,88 @@ const GVXe = () => {
       {/* Tab: Xe được cấp */}
       {tab === 'xe' && (
         <div className="card">
-          <div className="card-header"><h3>🚗 Xe Được Phân Công Cho Buổi Thực Hành</h3></div>
-          <div className="card-body" style={{ padding: 0 }}>
+          <div className="card-header">
+            <h3>🚗 Xe Được Phân Công Theo Lớp Thực Hành {tongXe > 0 && `(${tongXe} xe)`}</h3>
+          </div>
+          <div className="card-body" style={{ padding: xeList.length === 0 ? 0 : 16 }}>
             {loading ? <div className="loading-wrap"><div className="spinner" /></div> : (
               xeList.length === 0 ? (
                 <div className="empty-state" style={{ padding: '48px' }}>
                   <span>🚗</span>
                   <h3>Chưa có xe nào được phân công</h3>
-                  <p>Quản trị viên sẽ phân xe cho các buổi thực hành sắp tới</p>
+                  <p>Quản trị viên sẽ phân xe cho các lớp thực hành của bạn</p>
                 </div>
               ) : (
-                <div className="gvxe-list">
-                  {xeList.map(lich => (
-                    <div key={lich.id} className="gvxe-card">
-                      <div className="gvxe-date">
-                        <span className="gvxe-day">{new Date(lich.ngay_hoc).toLocaleDateString('vi-VN', { weekday: 'short' })}</span>
-                        <span className="gvxe-num">{new Date(lich.ngay_hoc).getDate()}</span>
-                        <span className="gvxe-month">{new Date(lich.ngay_hoc).toLocaleDateString('vi-VN', { month: 'short' })}</span>
-                      </div>
-                      <div className="gvxe-info">
-                        <div className="gvxe-lop">{lich.lop_hoc?.ten_lop} — {lich.gio_bat_dau?.slice(0, 5)}–{lich.gio_ket_thuc?.slice(0, 5)}</div>
-                        <div className="gvxe-xe-detail">
-                          <span className="gvxe-bien-so">🚗 {lich.xe?.bien_so}</span>
-                          <span className="gvxe-hang">{lich.xe?.hang_xe} {lich.xe?.dong_xe}</span>
-                          <span className="gvxe-loai">{lich.xe?.loai_xe === 'so_san' ? 'Số sàn' : 'Số tự động'}</span>
-                          <span className={`badge ${TT_XE_MAP[lich.xe?.trang_thai]?.cls || 'badge-gray'}`}>
-                            {TT_XE_MAP[lich.xe?.trang_thai]?.label || lich.xe?.trang_thai}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                  {xeList.map(lop => (
+                    <div key={lop.lop_hoc_id} className="gvxe-lop-block">
+
+                      {/* Header lớp */}
+                      <div className="gvxe-lop-header">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                          <span className="gvxe-lop-name">🏫 {lop.ten_lop}</span>
+                          {lop.loai_bang && (
+                            <span className="badge badge-info">Hạng {lop.loai_bang}</span>
+                          )}
+                          <span className={`badge ${TRANG_THAI_LOP[lop.trang_thai]?.cls || 'badge-gray'}`}>
+                            {TRANG_THAI_LOP[lop.trang_thai]?.label || lop.trang_thai}
                           </span>
                         </div>
-                        {lich.xe?.mau_xe && (
-                          <p style={{ fontSize: 12, color: '#718096', marginTop: 4 }}>
-                            Màu: {lich.xe.mau_xe} | Km: {lich.xe.so_km_hien_tai?.toLocaleString()} km
-                          </p>
+                        {lop.ngay_khai_giang && (
+                          <span style={{ fontSize: 12, color: '#718096' }}>
+                            {new Date(lop.ngay_khai_giang).toLocaleDateString('vi-VN')}
+                            {lop.ngay_ket_thuc && ` → ${new Date(lop.ngay_ket_thuc).toLocaleDateString('vi-VN')}`}
+                          </span>
                         )}
                       </div>
-                      <button className="btn btn-warning btn-sm" onClick={() => openBaoLoi(lich)}>
-                        ⚠️ Báo lỗi
-                      </button>
+
+                      {/* Danh sách xe của lớp */}
+                      <div className="gvxe-xe-grid">
+                        {lop.xe_list.map(xe => (
+                          <div key={xe.id} className="gvxe-xe-card">
+                            {/* Ảnh xe */}
+                            <div className="gvxe-xe-anh">
+                              {xe.anh_xe
+                                ? <img src={`/uploads/${xe.anh_xe}`} alt={xe.bien_so} className="gvxe-xe-img" />
+                                : <span style={{ fontSize: 36 }}>🚗</span>}
+                            </div>
+
+                            {/* Thông tin xe */}
+                            <div className="gvxe-info">
+                              <div className="gvxe-bien-so">{xe.bien_so}</div>
+                              <div className="gvxe-xe-detail">
+                                <span className="gvxe-hang">{xe.hang_xe} {xe.dong_xe}</span>
+                                <span className="gvxe-loai">
+                                  {xe.loai_xe === 'so_san' ? '⚙️ Số sàn' : '🔄 Số tự động'}
+                                </span>
+                                {xe.mau_xe && (
+                                  <span style={{ fontSize: 12, color: '#718096' }}>🎨 {xe.mau_xe}</span>
+                                )}
+                                {xe.so_km_hien_tai != null && (
+                                  <span style={{ fontSize: 12, color: '#718096' }}>
+                                    📏 {Number(xe.so_km_hien_tai).toLocaleString('vi-VN')} km
+                                  </span>
+                                )}
+                              </div>
+                              <div style={{ marginTop: 6, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                                <span className="badge badge-info">Hạng {xe.hang_bang}</span>
+                                <span className={`badge ${TT_XE_MAP[xe.trang_thai]?.cls || 'badge-gray'}`}>
+                                  {TT_XE_MAP[xe.trang_thai]?.label || xe.trang_thai}
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Nút báo lỗi */}
+                            <button
+                              className="btn btn-warning btn-sm"
+                              style={{ alignSelf: 'flex-start', marginTop: 4, flexShrink: 0 }}
+                              onClick={() => { setForm({ ...emptyForm, xe_id: xe.id }); setShowModal(true) }}
+                            >
+                              ⚠️ Báo lỗi
+                            </button>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -165,7 +211,9 @@ const GVXe = () => {
                       </td>
                       <td>
                         <p style={{ fontWeight: 600, fontSize: 13 }}>{bl.tieu_de}</p>
-                        <p style={{ fontSize: 11, color: '#718096', marginTop: 2 }}>{bl.mo_ta?.slice(0, 80)}{bl.mo_ta?.length > 80 ? '...' : ''}</p>
+                        <p style={{ fontSize: 11, color: '#718096', marginTop: 2 }}>
+                          {bl.mo_ta?.slice(0, 80)}{bl.mo_ta?.length > 80 ? '...' : ''}
+                        </p>
                       </td>
                       <td><span className={`badge ${MUC_DO_MAP[bl.muc_do]?.cls}`}>{MUC_DO_MAP[bl.muc_do]?.label}</span></td>
                       <td><span className={`badge ${XLTT_MAP[bl.trang_thai]?.cls}`}>{XLTT_MAP[bl.trang_thai]?.label}</span></td>
@@ -194,11 +242,13 @@ const GVXe = () => {
                   <label>Xe bị lỗi *</label>
                   <select value={form.xe_id} onChange={e => setForm({ ...form, xe_id: e.target.value })} required>
                     <option value="">-- Chọn xe --</option>
-                    {xeList.map(l => (
-                      <option key={l.xe?.id} value={l.xe?.id}>
-                        {l.xe?.bien_so} — {l.xe?.hang_xe} {l.xe?.dong_xe} ({new Date(l.ngay_hoc).toLocaleDateString('vi-VN')})
-                      </option>
-                    ))}
+                    {xeList.flatMap(lop =>
+                      lop.xe_list.map(xe => (
+                        <option key={`${lop.lop_hoc_id}-${xe.id}`} value={xe.id}>
+                          {xe.bien_so} — {xe.hang_xe} {xe.dong_xe} ({lop.ten_lop})
+                        </option>
+                      ))
+                    )}
                   </select>
                 </div>
                 <div className="form-group">

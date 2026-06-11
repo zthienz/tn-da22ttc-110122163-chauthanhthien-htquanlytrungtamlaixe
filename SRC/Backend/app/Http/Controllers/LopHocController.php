@@ -16,6 +16,7 @@ class LopHocController extends Controller
                 'khoaHoc',
                 'giangVienLyThuyet.user',
                 'giangVienThucHanh.user',
+                'xeLop.xe',  // xe thực hành phân cho lớp
             ])
             ->withCount('hocVienLop')
             ->when($request->trang_thai, fn($q) => $q->where('trang_thai', $request->trang_thai))
@@ -30,6 +31,7 @@ class LopHocController extends Controller
                 'giang_vien_thuc_hanh_id'  => $l->giang_vien_thuc_hanh_id,
                 'giang_vien_ly_thuyet'     => $l->giangVienLyThuyet,
                 'giang_vien_thuc_hanh'     => $l->giangVienThucHanh,
+                'xe_lop'                   => $l->xeLop,  // danh sách xe thực hành kèm trạng thái
                 'ngay_khai_giang'          => $l->ngay_khai_giang?->format('Y-m-d'),
                 'ngay_ket_thuc'            => $l->ngay_ket_thuc?->format('Y-m-d'),
                 'si_so_toi_da'             => $l->si_so_toi_da,

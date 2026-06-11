@@ -89,8 +89,9 @@ const LichHocManagement = () => {
   useEffect(() => {
     axios.get(`${backendUrl}/api/admin/lop-hoc`, { headers })
       .then(r => { if (r.data.success) setLopList(r.data.data) })
+    // Lấy toàn bộ xe (kể cả bảo trì/hỏng) để có thể hiển thị cảnh báo
     axios.get(`${backendUrl}/api/admin/xe`, { headers })
-      .then(r => { if (r.data.success) setXeList(r.data.data.filter(x => ['san_sang','dang_su_dung'].includes(x.trang_thai))) })
+      .then(r => { if (r.data.success) setXeList(r.data.data) })
   }, [])
 
   useEffect(() => { fetchLich() }, [fromDate, toDate, filterLop])
@@ -103,6 +104,56 @@ const LichHocManagement = () => {
     setEditingLich(null)
     setForm({ lop_hoc_id:'', ngay_hoc: ngayHoc, gio_bat_dau:'', gio_ket_thuc:'', loai_buoi:'ly_thuyet', dia_diem:'', noi_dung:'', xe_id:'' })
     setShowModal(true)
+  }
+
+  // Helper: kiểm tra cảnh báo GV theo lớp + loại buổi đang chọn
+  const getGvWarning = (lopHocId, loaiBuoi) => {
+    if (!lopHocId) return null
+    const lop = lopList.find(l => String(l.id) === String(lopHocId))
+    if (!lop) return null
+    const INACTIVE = ['nghi_phep', 'dinh_chi']
+    const ttLabel  = tt => tt === 'nghi_phep' ? 'đang nghỉ phép' : 'đang bị đình chỉ'
+    if (loaiBuoi === 'ly_thuyet') {
+      const gv = lop.giang_vien_ly_thuyet
+      if (!gv) return '⚠️ Lớp này chưa có GV Lý thuyết. Vui lòng phân công giảng viên trước.'
+      if (INACTIVE.includes(gv.trang_thai)) return `⚠️ GV Lý thuyết (${gv.user?.ho_ten}) ${ttLabel(gv.trang_thai)}. Vui lòng phân công giảng viên khác.`
+    } else {
+      const gv = lop.giang_vien_thuc_hanh
+      if (!gv) return '⚠️ Lớp này chưa có GV Thực hành. Vui lòng phân công giảng viên trước.'
+      if (INACTIVE.includes(gv.trang_thai)) return `⚠️ GV Thực hành (${gv.user?.ho_ten}) ${ttLabel(gv.trang_thai)}. Vui lòng phân công giảng viên khác.`
+    }
+    return null
+  }
+
+  // Helper: kiểm tra cảnh báo xe thực hành theo lớp + xe được chọn
+  const getXeWarning = (lopHocId, loaiBuoi, xeId) => {
+    if (loaiBuoi !== 'thuc_hanh') return null
+
+    const BAD_STATES  = ['bao_tri', 'hong']
+    const STATE_LABEL = { bao_tri: 'đang bảo trì', hong: 'đang hỏng' }
+
+    // Trường hợp 1: admin chọn xe cụ thể trong form
+    if (xeId) {
+      const xe = xeList.find(x => String(x.id) === String(xeId))
+      if (xe && BAD_STATES.includes(xe.trang_thai)) {
+        return `⚠️ Xe ${xe.bien_so} (${xe.hang_xe} ${xe.dong_xe}) ${STATE_LABEL[xe.trang_thai]}. Vui lòng chọn xe khác hoặc sửa chữa xe trước khi xếp lịch.`
+      }
+      return null
+    }
+
+    // Trường hợp 2: xe phân qua xe_lop_hoc của lớp (lop.xe_lop)
+    if (!lopHocId) return null
+    const lop     = lopList.find(l => String(l.id) === String(lopHocId))
+    const xeLop   = lop?.xe_lop ?? []   // mảng xe của lớp (từ API lop-hoc with xeLop)
+    if (!xeLop.length) return null
+
+    const xeXau   = xeLop.filter(xl => xl.xe && BAD_STATES.includes(xl.xe.trang_thai))
+    if (xeXau.length === 0) return null
+    if (xeXau.length < xeLop.length) return null  // còn xe tốt → chỉ cảnh báo nhẹ, không chặn
+
+    // Tất cả xe đều hỏng/bảo trì
+    const ds = xeXau.map(xl => `${xl.xe.bien_so} (${STATE_LABEL[xl.xe.trang_thai]})`).join(', ')
+    return `⚠️ Tất cả xe thực hành của lớp hiện không thể sử dụng: ${ds}. Vui lòng kiểm tra lại trạng thái xe trước khi xếp lịch.`
   }
 
   const openEdit = lh => {
@@ -368,10 +419,18 @@ const LichHocManagement = () => {
             <form onSubmit={handleSave}>
               <div className="modal-body">
                 <div className="form-group"><label>Lớp học *</label>
-                  <select value={form.lop_hoc_id} onChange={e=>setForm({...form,lop_hoc_id:e.target.value})} required>
+                  <select value={form.lop_hoc_id} onChange={e=>setForm({...form,lop_hoc_id:e.target.value,xe_id:''})} required>
                     <option value="">-- Chọn lớp --</option>
                     {lopList.map(l => <option key={l.id} value={l.id}>{l.ten_lop}</option>)}
                   </select>
+                  {(() => {
+                    const warn = getGvWarning(form.lop_hoc_id, form.loai_buoi)
+                    return warn ? (
+                      <div style={{marginTop:6,padding:'8px 12px',background:'#fef3c7',border:'1px solid #f59e0b',borderRadius:6,fontSize:13,color:'#92400e'}}>
+                        {warn}
+                      </div>
+                    ) : null
+                  })()}
                 </div>
                 <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
                   <div className="form-group"><label>Ngày học *</label>
@@ -393,14 +452,35 @@ const LichHocManagement = () => {
                 <div className="form-group"><label>Địa điểm</label>
                   <input value={form.dia_diem} onChange={e=>setForm({...form,dia_diem:e.target.value})} placeholder="VD: Phòng 101, Sân tập A" />
                 </div>
-                {form.loai_buoi === 'thuc_hanh' && (
-                  <div className="form-group"><label>🚗 Phân xe thực hành</label>
-                    <select value={form.xe_id} onChange={e=>setForm({...form,xe_id:e.target.value})}>
-                      <option value="">-- Chưa phân xe --</option>
-                      {xeList.map(x => <option key={x.id} value={x.id}>{x.bien_so} — {x.hang_xe} {x.dong_xe} (Hạng {x.hang_bang})</option>)}
-                    </select>
-                  </div>
-                )}
+                {form.loai_buoi === 'thuc_hanh' && (() => {
+                  // Tìm loại bằng của lớp đang chọn
+                  const lopChon   = lopList.find(l => String(l.id) === String(form.lop_hoc_id))
+                  const loaiBang  = lopChon?.khoa_hoc?.loai_bang || ''
+                  // Lọc xe: chỉ còn sẵn sàng, theo hạng bằng
+                  const xeFiltered = xeList.filter(x =>
+                    x.trang_thai === 'san_sang' &&
+                    (loaiBang ? x.hang_bang === loaiBang : true)
+                  )
+                  const xeWarning = getXeWarning(form.lop_hoc_id, form.loai_buoi, form.xe_id)
+                  return (
+                    <div className="form-group">
+                      <label>🚗 Phân xe thực hành {loaiBang && <span style={{fontWeight:400,color:'#6b7280',fontSize:12}}>(Hạng {loaiBang})</span>}</label>
+                      <select value={form.xe_id} onChange={e=>setForm({...form,xe_id:e.target.value})}>
+                        <option value="">-- Chưa phân xe --</option>
+                        {xeFiltered.length === 0 ? (
+                          <option disabled>Không có xe phù hợp cho hạng {loaiBang}</option>
+                        ) : (
+                          xeFiltered.map(x => <option key={x.id} value={x.id}>{x.bien_so} — {x.hang_xe} {x.dong_xe} (Hạng {x.hang_bang})</option>)
+                        )}
+                      </select>
+                      {xeWarning && (
+                        <div style={{marginTop:6,padding:'8px 12px',background:'#fef3c7',border:'1px solid #f59e0b',borderRadius:6,fontSize:13,color:'#92400e'}}>
+                          {xeWarning}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })()}
                 <div className="form-group"><label>Nội dung buổi học</label>
                   <textarea rows={2} value={form.noi_dung} onChange={e=>setForm({...form,noi_dung:e.target.value})}
                     style={{width:'100%',padding:'8px 12px',border:'1px solid #e2e8f0',borderRadius:8,resize:'vertical'}} />
@@ -408,7 +488,14 @@ const LichHocManagement = () => {
               </div>
               <div className="modal-footer">
                 <button type="button" className="btn btn-outline" onClick={() => setShowModal(false)}>Hủy</button>
-                <button type="submit" className="btn btn-primary">{editingLich ? '💾 Cập nhật' : '➕ Tạo buổi học'}</button>
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  disabled={!!getGvWarning(form.lop_hoc_id, form.loai_buoi) || !!getXeWarning(form.lop_hoc_id, form.loai_buoi, form.xe_id)}
+                  title={getGvWarning(form.lop_hoc_id, form.loai_buoi) || getXeWarning(form.lop_hoc_id, form.loai_buoi, form.xe_id) || ''}
+                >
+                  {editingLich ? '💾 Cập nhật' : '➕ Tạo buổi học'}
+                </button>
               </div>
             </form>
           </div>
