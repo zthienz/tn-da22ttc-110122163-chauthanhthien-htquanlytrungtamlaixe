@@ -1,0 +1,719 @@
+﻿================================================================================
+CHƯƠNG 3: HIỆN THỰC HÓA NGHIÊN CỨU
+================================================================================
+
+3.1 Mô tả bài toán
+────────────────────────────────────────────────────────────────────────────────
+
+Trong bối cảnh chuyển đổi số đang diễn ra mạnh mẽ tại Việt Nam, các trung
+tâm đào tạo lái xe đang đứng trước áp lực phải hiện đại hóa phương thức quản
+lý để đáp ứng yêu cầu ngày càng cao về chất lượng dịch vụ và hiệu quả vận
+hành. Tuy nhiên, thực tế cho thấy nhiều trung tâm lái xe hiện nay vẫn đang
+quản lý hồ sơ học viên bằng giấy tờ thủ công, theo dõi lịch học qua bảng tính
+Excel, điểm danh bằng sổ ghi tay và thông báo kết quả thi qua điện thoại. Cách
+tiếp cận này không chỉ tiêu tốn nhiều nhân lực mà còn tiềm ẩn nguy cơ sai sót,
+thất thoát thông tin và khó tra cứu khi cần.
+
+Bên cạnh đó, theo quy định của Bộ Giao thông Vận tải, mỗi học viên phải
+tích lũy đủ số giờ lý thuyết và số km thực hành theo từng hạng bằng trước khi
+được xếp lịch thi. Việc theo dõi và kiểm soát các điều kiện này một cách chính
+xác cho hàng chục, thậm chí hàng trăm học viên cùng lúc là bài toán thực sự
+khó nếu không có một hệ thống hỗ trợ chuyên biệt. Không những vậy, học viên
+cũng không có kênh chính thức để theo dõi tiến độ học tập, lịch thi hay kết
+quả của mình một cách chủ động, dẫn đến nhiều cuộc gọi thắc mắc không cần
+thiết cho nhân viên văn phòng.
+
+Bài toán đặt ra trong đề tài là xây dựng một hệ thống web quản lý đào tạo
+toàn diện cho trung tâm lái xe, với các yêu cầu cụ thể như sau:
+
+  - Hệ thống cho phép tiếp nhận hồ sơ học viên qua hai kênh: đăng ký trực
+    tuyến trên trang quảng bá và đăng ký tại văn phòng. Toàn bộ thông tin học
+    viên được lưu trữ tập trung, dễ tra cứu và cập nhật.
+
+  - Hệ thống quản lý các loại bằng lái theo đúng quy định (A1, A, B1, B2, C1,
+    C, D, E, CE) với đặc tả về số buổi lý thuyết tối thiểu, số km thực hành
+    tối thiểu và học phí tương ứng. Từ đó tạo các khóa học đào tạo theo tháng
+    và tổ chức lớp học, phân công giảng viên cho từng lớp.
+
+  - Quản lý lịch học theo từng lớp với giao diện thời khóa biểu tuần trực quan.
+    Giảng viên thực hiện điểm danh sau mỗi buổi, ghi nhận km thực hành của
+    từng học viên. Hệ thống tự động cộng dồn và kiểm tra điều kiện dự thi.
+
+  - Quản lý đội xe tập lái theo trạng thái, ghi nhận báo lỗi từ giảng viên và
+    kiểm soát ràng buộc khi xếp lịch học (không cho phép xếp lịch khi xe hỏng
+    hoặc khi giảng viên nghỉ phép).
+
+  - Ghi nhận và theo dõi học phí của từng học viên, hỗ trợ nhiều phương thức
+    thanh toán và lưu lịch sử đầy đủ.
+
+  - Tổ chức thi, xếp học viên đủ điều kiện vào kỳ thi, nhập kết quả từng bài
+    thi và cấp chứng chỉ tốt nghiệp cho học viên đạt yêu cầu.
+
+  - Xây dựng cổng thông tin học viên cho phép học viên tự tra cứu lịch học,
+    tiến độ học tập, kết quả thi và lịch sử đóng học phí thông qua đăng nhập
+    bằng số CCCD và ngày sinh.
+
+  - Cung cấp giao diện Giảng viên để thực hiện điểm danh, xem lịch dạy và
+    báo cáo lỗi xe sau buổi thực hành.
+
+  - Cung cấp Dashboard thống kê cho Quản trị viên với các chỉ số tổng quan:
+    số hồ sơ theo trạng thái, doanh thu học phí, tình trạng đội xe, số lớp
+    đang hoạt động.
+
+Tóm lại, bài toán không chỉ đơn thuần là số hóa một quy trình hành chính,
+mà còn yêu cầu người thực hiện phải hiểu rõ nghiệp vụ đào tạo lái xe theo
+quy định pháp luật, thiết kế luồng xử lý dữ liệu nhất quán từ Frontend đến
+Backend, đảm bảo tính chính xác của các ràng buộc nghiệp vụ và phân quyền
+truy cập phù hợp với ba nhóm người dùng: Quản trị viên, Giảng viên và Học
+viên. Đây là một bài toán thực tiễn, có tính ứng dụng cao và phù hợp với định
+hướng phát triển phần mềm quản lý trong thời đại số hiện nay.
+
+
+3.2 Đặc tả bài toán
+────────────────────────────────────────────────────────────────────────────────
+
+Dựa trên bài toán đã mô tả trong phần trên, hệ thống quản lý đào tạo trung
+tâm lái xe được xây dựng nhằm đáp ứng nhu cầu thực tế của cả Quản trị viên,
+Giảng viên và Học viên. Để đảm bảo tính khả thi và hiệu quả triển khai, hệ
+thống được đặc tả thông qua các yêu cầu chức năng và phi chức năng như sau:
+
+3.2.1 Yêu cầu chức năng
+────────────────────────────────────────────────────────────────────────────────
+
+Hệ thống chia các chức năng theo ba nhóm đối tượng chính: Quản trị viên
+(Admin), Giảng viên và Học viên.
+
+Đối với Quản trị viên (Admin):
+
+  - Quản trị viên có thể truy cập vào hệ thống thông qua một giao diện đăng
+    nhập riêng dành cho Admin, được bảo vệ bằng cơ chế xác thực JWT.
+
+  - Trong giao diện quản trị, Admin có quyền quản lý toàn bộ danh mục loại
+    bằng lái (A1, A, B1, B2, C1, C, D, E, CE) với đầy đủ thông tin: học phí,
+    số buổi lý thuyết tối thiểu, số km thực hành tối thiểu, sĩ số tối đa và
+    mô tả hiển thị trên trang quảng bá.
+
+  - Hệ thống cho phép Admin tạo các khóa học đào tạo theo tháng, tổ chức lớp
+    học, phân công Giảng viên lý thuyết và Giảng viên thực hành, xếp học viên
+    vào lớp khi đã đóng đủ học phí.
+
+  - Admin quản lý lịch học theo từng lớp, xem thời khóa biểu tuần, tạo và
+    chỉnh sửa buổi học (lý thuyết hoặc thực hành). Hệ thống tự động kiểm tra
+    ràng buộc: không cho phép xếp lịch khi Giảng viên đang nghỉ phép hoặc bị
+    đình chỉ, không cho phép xếp lịch thực hành khi tất cả xe của lớp đang
+    bảo trì hoặc hỏng.
+
+  - Admin quản lý đội xe tập lái: thêm xe mới, cập nhật trạng thái (sẵn sàng,
+    bảo trì, hỏng), theo dõi lịch sử km, xử lý báo lỗi xe từ Giảng viên.
+
+  - Hệ thống cho phép Admin ghi nhận và quản lý học phí của từng học viên,
+    theo dõi tình trạng đóng học phí và lịch sử thanh toán.
+
+  - Admin tổ chức thi, xếp học viên đủ điều kiện vào kỳ thi (tốt nghiệp nội
+    bộ hoặc sát hạch BCA), nhập điểm từng bài thi và cấp chứng chỉ tốt nghiệp
+    cho học viên đạt yêu cầu.
+
+  - Ngoài ra, Admin có thể quản lý Giảng viên trên hệ thống: xem thông tin,
+    cập nhật trạng thái và theo dõi lịch dạy. Hệ thống còn cung cấp Dashboard
+    thống kê tổng quan về số hồ sơ, doanh thu học phí 7 ngày, tình trạng đội
+    xe và số lớp đang hoạt động, hỗ trợ ra quyết định quản trị hiệu quả.
+
+Đối với Giảng viên:
+
+  - Giảng viên đăng nhập bằng tài khoản riêng và chỉ có quyền truy cập các
+    chức năng liên quan đến lớp dạy của mình.
+
+  - Hệ thống cho phép Giảng viên xem danh sách lớp học đang phụ trách, lịch
+    dạy theo ngày và theo tuần, danh sách học viên trong lớp cùng tiến độ học
+    tập của từng người.
+
+  - Giảng viên thực hiện điểm danh sau mỗi buổi học. Với buổi thực hành, ghi
+    nhận thêm số km từng học viên chạy được trong buổi đó. Hệ thống tự động
+    cộng dồn và cập nhật tiến độ học viên.
+
+  - Giảng viên có thể xem danh sách xe tập lái được phân công cho lớp và báo
+    lỗi xe sau buổi thực hành với mức độ: nhẹ, trung bình hoặc nghiêm trọng.
+
+Đối với Học viên:
+
+  - Học viên có thể đăng ký hồ sơ trực tuyến trên trang quảng bá của trung tâm
+    bằng cách điền thông tin cá nhân, chọn hạng bằng và tải ảnh thẻ.
+
+  - Sau khi được Admin phân lớp, Học viên đăng nhập vào cổng thông tin bằng
+    số CCCD và ngày sinh để tra cứu: lịch học sắp tới, tiến độ tích lũy (số
+    buổi lý thuyết đã học, số km thực hành đã chạy), điều kiện dự thi, kết
+    quả thi và lịch sử đóng học phí.
+
+  - Học viên có thể cập nhật thông tin cá nhân và đổi mật khẩu tài khoản.
+
+
+3.2.2 Yêu cầu phi chức năng
+────────────────────────────────────────────────────────────────────────────────
+
+Bên cạnh các chức năng chính, hệ thống cần tuân thủ các yêu cầu phi chức
+năng để đảm bảo tính ổn định, bảo mật, mở rộng và thân thiện với người dùng:
+
+  - Hiệu năng: Hệ thống cần đảm bảo khả năng phản hồi nhanh, đặc biệt trong
+    các thao tác thường xuyên như tra cứu lịch học, điểm danh và xem tiến độ
+    học viên. Thời gian phản hồi của các API không vượt quá 500ms trong điều
+    kiện tải bình thường.
+
+  - Bảo mật: Tất cả thông tin cá nhân của học viên và dữ liệu vận hành của
+    trung tâm phải được bảo vệ. Hệ thống sử dụng JWT để quản lý phiên đăng
+    nhập, phân quyền theo ba vai trò (admin, giang_vien, hoc_vien) và áp dụng
+    các biện pháp ngăn chặn tấn công SQL Injection, XSS thông qua cơ chế
+    validation của Laravel.
+
+  - Đa nền tảng: Giao diện người dùng được thiết kế responsive, tương thích
+    tốt trên máy tính để bàn, máy tính bảng và điện thoại di động. Trải nghiệm
+    sử dụng được tối ưu cho cả Giảng viên điểm danh trên tablet và Học viên
+    tra cứu lịch học trên smartphone.
+
+  - Tính toàn vẹn dữ liệu: Hệ thống đảm bảo tính nhất quán thông qua các
+    ràng buộc nghiệp vụ được kiểm tra tại cả hai tầng Frontend (cảnh báo trực
+    quan) và Backend (từ chối request không hợp lệ). Ví dụ: không cho tạo lịch
+    học khi Giảng viên nghỉ phép, không cho xếp học viên thi khi chưa đủ điều
+    kiện.
+
+  - Khả năng mở rộng: Kiến trúc hệ thống được thiết kế theo mô hình
+    client-server với Backend API độc lập, cho phép dễ dàng tích hợp thêm
+    các ứng dụng Frontend mới trong tương lai (ứng dụng di động, màn hình
+    điểm danh tại lớp...) mà không cần thay đổi Backend. Cơ sở dữ liệu được
+    quản lý qua Migration, cho phép nâng cấp cấu trúc có kiểm soát.
+
+  - Khả năng bảo trì: Mã nguồn được tổ chức theo chuẩn Laravel (MVC,
+    Repository, Service) và React (Component, Hook, Context), đảm bảo dễ đọc,
+    dễ kiểm thử và dễ bảo trì về lâu dài.
+
+================================================================================
+[GHI CHÚ ĐỊNH DẠNG KHI CHUYỂN SANG WORD]
+  - Font: Times New Roman, cỡ 13
+  - Cách dòng: 1.5
+  - Lề: Trái 3.0 cm, Phải 2.0 cm, Trên 2.5 cm, Dưới 2.5 cm
+  - Tiêu đề chương: In hoa, đậm, cỡ 14, căn giữa
+  - Tiêu đề mục (3.x): Đậm, cỡ 13
+  - Tiêu đề mục con (3.x.x): Đậm, nghiêng, cỡ 13
+  - Footer: "GVHD: ThS. Lê Phong Dũ       SVTH: Châu Thanh Thiện"
+  - Gạch đầu dòng: dùng dấu gạch ngang (-) thụt vào 1.25 cm
+  - Ước lượng 3.1 + 3.2: khoảng 5-6 trang A4
+================================================================================
+
+
+3.3 Biểu đồ use case tổng quát
+────────────────────────────────────────────────────────────────────────────────
+
+[Hình 3.1 Biểu đồ use case tổng quát]
+
+Use Case tổng quát mô tả các chức năng chính của hệ thống quản lý đào tạo
+trung tâm lái xe với ba vai trò: Học viên, Giảng viên và Quản trị viên. Sơ đồ
+thể hiện actor Quản trị viên bên trái, Giảng viên và Học viên bên phải, các
+use case xếp thành cột ở giữa thể hiện rõ sự phân quyền giữa các vai trò.
+
+  - Quản trị viên có toàn quyền quản lý hệ thống, bao gồm: Quản lý xe tập
+    lái, Quản lý học phí, Quản lý thi và kết quả, Xem tiến độ học viên,
+    Dashboard thống kê, Điểm danh học viên, Quản lý hồ sơ học viên, Quản lý
+    loại bằng lái và khóa học, Quản lý lớp học, Quản lý lịch học, Đăng nhập
+    hệ thống.
+
+  - Giảng viên sau khi đăng nhập có thể thực hiện: Báo lỗi xe, Xem lịch dạy
+    và danh sách lớp. Ngoài ra, một số use case được dùng chung với Quản trị
+    viên như: Điểm danh học viên và Đăng nhập hệ thống.
+
+  - Học viên có thể: Xem kết quả thi và học phí, Đăng ký hồ sơ trực tuyến,
+    Xem lịch học và tiến độ, và Đăng nhập hệ thống.
+
+Sơ đồ thể hiện rõ sự phân quyền giữa các vai trò, đảm bảo tính bảo mật và
+hiệu quả trong việc vận hành hệ thống.
+
+
+3.3.1 Biểu đồ use case Quản trị viên
+────────────────────────────────────────────────────────────────────────────────
+
+[Hình 3.2 Biểu đồ use case Quản trị viên]
+
+Use Case này mô tả các chức năng của Quản trị viên trong hệ thống quản lý
+đào tạo trung tâm lái xe. Actor Quản trị viên đứng bên trái, use case "Đăng
+nhập" nằm ở trung tâm sơ đồ, các use case còn lại phân bố phía trên và dưới
+Đăng nhập. Tất cả các use case đều nối về Đăng nhập bằng quan hệ «include»
+(đường đứt nét), thể hiện yêu cầu xác thực trước khi thực hiện bất kỳ chức
+năng nào.
+
+Quản trị viên có thể thực hiện các chức năng sau:
+
+  - Quản lý hồ sơ học viên: tiếp nhận, duyệt và theo dõi trạng thái hồ sơ
+    từ lúc đăng ký đến khi cấp bằng.
+  - Quản lý giảng viên: xem thông tin, cập nhật trạng thái và theo dõi
+    lịch dạy của giảng viên.
+  - Quản lý bằng lái: quản lý danh mục các loại bằng lái (A1, A, B1, B2,
+    C1, C, D, E, CE) với đặc tả học phí, số buổi lý thuyết và số km tối thiểu.
+  - Quản lý khóa học: tạo các khóa đào tạo theo tháng gắn với từng hạng bằng.
+  - Quản lý lớp học: tổ chức lớp, phân công giảng viên và xếp học viên.
+  - Quản lý lịch học: lên thời khóa biểu tuần, tạo buổi học lý thuyết và
+    thực hành với kiểm tra ràng buộc tự động.
+  - Quản lý xe: theo dõi trạng thái đội xe tập lái và xử lý báo lỗi.
+  - Quản lý thi và kết quả: tổ chức kỳ thi, nhập điểm và cấp chứng chỉ.
+  - Thống kê: xem Dashboard tổng quan tình hình hoạt động trung tâm.
+
+Tất cả các chức năng quản trị đều yêu cầu thực hiện đăng nhập trước (quan
+hệ «include»), nhằm đảm bảo bảo mật và kiểm soát truy cập hệ thống hiệu quả.
+
+
+3.3.2 Biểu đồ use case Giảng viên
+────────────────────────────────────────────────────────────────────────────────
+
+[Hình 3.3 Biểu đồ use case Giảng viên]
+
+Use Case này mô tả các chức năng của Giảng viên trong hệ thống. Actor Giảng
+viên đứng bên trái, use case "Đăng nhập" nằm ở trung tâm. Các use case phân
+bố phía trên và dưới Đăng nhập, tất cả đều nối về Đăng nhập bằng quan hệ
+«include».
+
+Giảng viên có thể thực hiện các hành động sau:
+
+  - Xem lớp học và danh sách học viên: xem các lớp đang phụ trách và danh
+    sách học viên trong từng lớp.
+  - Xem thông tin cá nhân: xem và cập nhật hồ sơ giảng viên.
+  - Xem lịch dạy: xem thời khóa biểu theo ngày và theo tuần.
+  - Xem tiến độ học viên: theo dõi số buổi lý thuyết và số km thực hành
+    đã tích lũy của từng học viên trong lớp.
+  - Điểm danh học viên: ghi nhận sự có mặt của học viên sau mỗi buổi học.
+  - Ghi nhận km thực hành: ghi số km học viên chạy được trong buổi thực
+    hành — đây là chức năng mở rộng («extend») của Điểm danh, chỉ xuất hiện
+    trong các buổi thực hành.
+  - Báo lỗi xe: báo cáo sự cố xe tập lái sau buổi thực hành với mức độ
+    nhẹ, trung bình hoặc nghiêm trọng.
+
+Tất cả các chức năng đều yêu cầu đăng nhập trước (quan hệ «include»).
+
+
+3.3.3 Biểu đồ use case Học viên
+────────────────────────────────────────────────────────────────────────────────
+
+[Hình 3.4 Biểu đồ use case Học viên]
+
+Use Case này mô tả các chức năng của Học viên sau khi đăng nhập vào cổng
+thông tin. Actor Học viên đứng bên trái, use case "Đăng nhập" nằm ở trung
+tâm. Bốn use case phân bố đều phía trên và dưới Đăng nhập, tất cả đều nối
+về Đăng nhập bằng quan hệ «include».
+
+Học viên có thể thực hiện các hành động sau:
+
+  - Xem lịch học và thi: xem thời khóa biểu buổi học sắp tới và lịch thi
+    của lớp đang theo học.
+  - Xem tiến độ học: theo dõi số buổi lý thuyết đã học và số km thực hành
+    đã tích lũy so với yêu cầu của hạng bằng đang học.
+  - Xem học phí: tra cứu lịch sử đóng học phí và tình trạng công nợ.
+  - Xem kết quả thi: xem điểm và kết quả (đạt/không đạt) của các kỳ thi
+    đã tham dự.
+
+Tất cả bốn chức năng đều yêu cầu Học viên đăng nhập bằng số CCCD và ngày
+sinh trước khi truy cập (quan hệ «include»).
+
+
+3.4 Xây dựng hệ thống
+────────────────────────────────────────────────────────────────────────────────
+
+3.4.1 Cài đặt môi trường
+
+  - Frontend: React 19 + Vite 6 — bốn ứng dụng độc lập chạy trên cổng riêng:
+    Admin App (5173), User App (5175), Teacher App (5176), Frontend (5174).
+
+  - Backend: Laravel 12 + PHP 8.2 — theo mô hình RESTful API, xác thực bằng
+    JWT (tymon/jwt-auth 2.3), quản lý dữ liệu qua Eloquent ORM.
+
+  - Hệ quản trị cơ sở dữ liệu: MySQL (triển khai thực tế) / SQLite (phát
+    triển và kiểm thử cục bộ), quản lý cấu trúc qua Laravel Migration.
+
+
+3.4.2 Cơ sở dữ liệu
+
+Cơ sở dữ liệu của hệ thống gồm 15 bảng chính, được tổ chức thành năm nhóm:
+tài khoản, hồ sơ và học phí, đào tạo, thi cử và cấp bằng, xe tập lái. Bảng
+khoa_hoc đảm nhận hai vai trò nên được trình bày thành hai phần: cấu hình loại
+bằng lái (3.4.2.4) và khóa học đào tạo theo tháng (3.4.2.5).
+
+
+3.4.2.1 users (Tài khoản người dùng)
+
+Các trường chính:
+  - id: Định danh duy nhất (khóa chính, tự tăng).
+  - ho_ten: Họ tên đầy đủ của người dùng.
+  - email: Địa chỉ email duy nhất, dùng để đăng nhập.
+  - password: Mật khẩu đã được mã hóa bằng bcrypt.
+  - role: Vai trò trong hệ thống (admin, giang_vien, hoc_vien).
+  - so_dien_thoai: Số điện thoại liên hệ.
+  - hoat_dong: Trạng thái hoạt động của tài khoản (true/false).
+  - otp, otp_expires_at: Mã OTP và thời gian hết hạn dùng cho xác thực.
+  - tao_ngay, cap_nhat_ngay: Thời gian tạo và cập nhật.
+
+Liên kết: giang_vien, ho_so_hoc_vien
+
+Chức năng:
+  - Quản lý đăng nhập, đăng xuất và xác thực người dùng cho cả ba vai trò.
+  - Kiểm soát quyền truy cập vào các chức năng hệ thống thông qua cột role.
+  - Hỗ trợ khóa/mở tài khoản thông qua cột hoat_dong, ngăn người dùng bị
+    đình chỉ truy cập hệ thống.
+  - Làm cơ sở để tạo hồ sơ giảng viên (bảng giang_vien) và hồ sơ học viên
+    (bảng ho_so_hoc_vien) theo quan hệ 1-1.
+
+
+3.4.2.2 giang_vien (Hồ sơ giảng viên)
+
+Các trường chính:
+  - id: Định danh duy nhất.
+  - id_nguoi_dung: Khóa ngoại liên kết với bảng users.
+  - chuyen_mon: Chuyên môn giảng dạy (ly_thuyet, thuc_hanh, ca_hai).
+  - bang_cap: Văn bằng chuyên môn.
+  - nam_kinh_nghiem: Số năm kinh nghiệm giảng dạy.
+  - trang_thai: Trạng thái (san_sang, nghi_phep, dinh_chi).
+  - anh_dai_dien: Đường dẫn ảnh đại diện.
+  - ghi_chu: Ghi chú bổ sung.
+  - tao_ngay, cap_nhat_ngay: Thời gian tạo và cập nhật.
+
+Liên kết: users, lop_hoc, bao_loi_xe
+
+Chức năng:
+  - Lưu trữ thông tin chuyên môn của giảng viên, phục vụ việc phân công
+    vào lớp học lý thuyết và thực hành.
+  - Kiểm soát trạng thái hoạt động: hệ thống tự động ngăn xếp lịch học
+    khi giảng viên đang nghỉ phép hoặc bị đình chỉ.
+  - Là nguồn dữ liệu để Admin theo dõi lịch dạy và quản lý đội ngũ giảng
+    viên của trung tâm.
+
+
+3.4.2.3 ho_so_hoc_vien (Hồ sơ học viên)
+
+Các trường chính:
+  - id: Định danh duy nhất.
+  - id_nguoi_dung: Khóa ngoại liên kết với bảng users.
+  - khoa_hoc_id: Khóa ngoại liên kết với khóa học đăng ký.
+  - ho_ten, ngay_sinh, so_cccd, dia_chi, so_dien_thoai, email: Thông tin
+    cá nhân của học viên.
+  - anh_the: Đường dẫn ảnh thẻ học viên.
+  - nguon_dang_ky: Kênh đăng ký (online, offline).
+  - trang_thai_hoc_phi: Trạng thái đóng học phí (chua_dong, da_dong).
+  - hoc_phi_da_dong: Số tiền học phí đã đóng.
+  - trang_thai: Trạng thái tổng thể trong quy trình đào tạo (cho_dong_hoc_phi,
+    cho_mo_lop, dang_hoc, du_dieu_kien_thi_tn, hoan_thanh_tn, da_cap_bang...).
+  - tao_ngay, cap_nhat_ngay: Thời gian tạo và cập nhật.
+
+Liên kết: users, khoa_hoc, hoc_vien_lop, thanh_toan_hoc_phi, ket_qua_thi,
+          bang_lai_xe
+
+Chức năng:
+  - Là bảng trung tâm của toàn bộ quy trình đào tạo, lưu trữ toàn bộ
+    thông tin từ lúc học viên đăng ký đến khi được cấp bằng.
+  - Theo dõi vòng đời học viên qua các trạng thái, giúp Admin nắm bắt
+    tình trạng và thực hiện các thao tác phù hợp.
+  - Là nguồn dữ liệu để kiểm tra điều kiện xếp lịch thi và cấp bằng.
+
+
+3.4.2.4 khoa_hoc — Phần 1: Loại bằng lái (Bang_Lai_Config)
+
+Bảng khoa_hoc trong hệ thống đảm nhận đồng thời hai vai trò: lưu đặc tả
+chuẩn của từng hạng bằng lái và quản lý các khóa đào tạo mở theo tháng.
+Phần này mô tả nhóm trường thuộc cấu hình loại bằng lái.
+
+Các trường chính:
+  - id: Định danh duy nhất.
+  - loai_bang: Hạng bằng lái theo quy định (A1, A, B1, B2, C1, C, D, E, CE).
+  - hoc_phi: Học phí áp dụng cho hạng bằng này.
+  - so_buoi_ly_thuyet_toi_thieu: Số buổi lý thuyết tối thiểu học viên phải
+    tích lũy trước khi được xếp thi.
+  - so_km_toi_thieu: Số km thực hành tối thiểu theo quy định Bộ GTVT.
+  - si_so_toi_da: Sĩ số tối đa cho mỗi lớp học của hạng bằng này.
+  - so_hv_mo_lop: Số học viên tối thiểu để đủ điều kiện mở lớp.
+  - is_active: Trạng thái hiển thị trên trang quảng bá (true/false).
+  - mo_ta, doi_tuong, loai_xe_mo_ta, thoi_han_bang, yeu_cau_truoc,
+    quyen_lai_xe, quy_trinh_dao_tao, le_phi_sat_hach: Các trường nội dung
+    mô tả hạng bằng hiển thị cho học viên trên trang quảng bá.
+  - tao_ngay, cap_nhat_ngay: Thời gian tạo và cập nhật.
+
+Liên kết: ho_so_hoc_vien, lop_hoc, bai_thi, lich_thi
+
+Chức năng:
+  - Lưu trữ đặc tả kỹ thuật của từng hạng bằng lái theo quy định Bộ GTVT,
+    làm căn cứ để hệ thống tự động kiểm tra điều kiện dự thi của học viên.
+  - Là nguồn dữ liệu cấu hình gốc: khi tạo lớp học, hệ thống lấy ngưỡng
+    buổi lý thuyết và km tối thiểu từ đây để theo dõi tiến độ học viên.
+  - Cung cấp nội dung giới thiệu từng hạng bằng hiển thị trên trang quảng bá
+    của trung tâm, hỗ trợ học viên chọn hạng bằng khi đăng ký trực tuyến.
+
+
+3.4.2.5 khoa_hoc — Phần 2: Khóa học đào tạo (Khoa_Hoc_Dao_Tao)
+
+Phần này mô tả nhóm trường quản lý khóa học đào tạo mở theo tháng, được
+thêm vào bảng khoa_hoc để liên kết chặt chẽ với cấu hình hạng bằng.
+
+Các trường chính:
+  - id: Định danh duy nhất (dùng chung với phần cấu hình bằng lái).
+  - ma_khoa: Mã khóa tự động sinh theo quy tắc tháng/năm/hạng bằng
+    (VD: 062026B1), duy nhất trong hệ thống.
+  - thang, nam: Tháng và năm mở khóa đào tạo.
+  - hang_bang: Hạng bằng của khóa học (tham chiếu loai_bang).
+  - ten_khoa, ten_khoa_dao_tao: Tên khóa học hiển thị.
+  - trang_thai_khoa: Trạng thái tiến độ khóa học
+    (chuan_bi, dang_hoc, da_ket_thuc).
+  - tao_ngay, cap_nhat_ngay: Thời gian tạo và cập nhật.
+
+Liên kết: lop_hoc, bai_thi, lich_thi
+
+Chức năng:
+  - Quản lý các khóa đào tạo mở theo tháng, mỗi khóa gắn với một hạng bằng
+    và một khoảng thời gian cụ thể.
+  - Là đơn vị tổ chức đào tạo cấp cao nhất: từ một khóa học, Admin tạo các
+    lớp học, phân công giảng viên và xếp học viên vào lớp.
+  - Theo dõi vòng đời khóa học từ chuẩn bị đến kết thúc, hỗ trợ Admin
+    nắm bắt tiến độ tổng thể các khóa đang hoạt động.
+
+
+3.4.2.6 lop_hoc (Lớp học)
+
+Các trường chính:
+  - id: Định danh duy nhất.
+  - khoa_hoc_id: Khóa ngoại liên kết với khóa học.
+  - ten_lop: Tên lớp (VD: B2-03/2026-A).
+  - giang_vien_ly_thuyet_id: Khóa ngoại giảng viên lý thuyết.
+  - giang_vien_thuc_hanh_id: Khóa ngoại giảng viên thực hành.
+  - ngay_khai_giang, ngay_ket_thuc: Ngày khai giảng và kết thúc.
+  - si_so_toi_da: Sĩ số tối đa của lớp.
+  - trang_thai: Trạng thái lớp (chuan_bi, dang_hoc, da_ket_thuc).
+  - ghi_chu: Ghi chú bổ sung.
+  - tao_ngay, cap_nhat_ngay: Thời gian tạo và cập nhật.
+
+Liên kết: khoa_hoc, giang_vien, hoc_vien_lop, lich_hoc, xe_lop_hoc
+
+Chức năng:
+  - Tổ chức học viên theo lớp, phân công giảng viên lý thuyết và thực hành.
+  - Là đơn vị tổ chức đào tạo trực tiếp, liên kết lịch học, điểm danh và
+    xe tập lái.
+  - Theo dõi tiến độ cả lớp thông qua các buổi học đã được tạo.
+
+
+3.4.2.7 lich_hoc (Lịch học)
+
+Các trường chính:
+  - id: Định danh duy nhất.
+  - lop_hoc_id: Khóa ngoại liên kết lớp học.
+  - xe_id: Khóa ngoại liên kết xe tập lái (nullable, dành cho buổi thực hành).
+  - ngay_hoc: Ngày diễn ra buổi học.
+  - gio_bat_dau, gio_ket_thuc: Giờ bắt đầu và kết thúc.
+  - loai_buoi: Loại buổi học (ly_thuyet, thuc_hanh).
+  - dia_diem: Địa điểm tổ chức buổi học.
+  - noi_dung, ghi_chu: Nội dung và ghi chú bổ sung.
+  - tao_ngay, cap_nhat_ngay: Thời gian tạo và cập nhật.
+
+Liên kết: lop_hoc, xe, diem_danh
+
+Chức năng:
+  - Lưu thời khóa biểu theo từng lớp, hiển thị dạng lịch tuần trực quan.
+  - Kiểm soát ràng buộc: không tạo buổi học khi giảng viên nghỉ phép hoặc
+    tất cả xe của lớp đang bảo trì/hỏng.
+  - Là cơ sở để Giảng viên thực hiện điểm danh và ghi nhận km thực hành.
+
+
+3.4.2.8 diem_danh (Điểm danh)
+
+Các trường chính:
+  - id: Định danh duy nhất.
+  - lich_hoc_id: Khóa ngoại liên kết buổi học.
+  - ho_so_id: Khóa ngoại liên kết hồ sơ học viên.
+  - co_mat: Trạng thái có mặt (true/false).
+  - km_chay: Số km thực hành trong buổi (chỉ dùng cho buổi thực hành).
+  - ghi_chu: Lý do vắng hoặc ghi chú khác.
+  - tao_ngay, cap_nhat_ngay: Thời gian tạo và cập nhật.
+
+Liên kết: lich_hoc, ho_so_hoc_vien
+
+Chức năng:
+  - Ghi nhận sự có mặt của học viên sau mỗi buổi học.
+  - Tự động cộng dồn số buổi và số km vào bảng hoc_vien_lop sau mỗi lần
+    điểm danh, cập nhật tức thì tiến độ học viên.
+  - Dữ liệu km thực hành được dùng để tính toán tổng km đã chạy của xe
+    (phục vụ theo dõi odometer).
+
+
+3.4.2.9 thanh_toan_hoc_phi (Thanh toán học phí)
+
+Các trường chính:
+  - id: Định danh duy nhất.
+  - ho_so_id: Khóa ngoại liên kết hồ sơ học viên.
+  - so_tien: Số tiền thanh toán trong lần này.
+  - phuong_thuc: Phương thức thanh toán (tien_mat, chuyen_khoan, vnpay, momo).
+  - ma_giao_dich: Mã giao dịch ngân hàng hoặc cổng thanh toán.
+  - trang_thai: Trạng thái giao dịch (cho_xu_ly, thanh_cong, that_bai).
+  - nguoi_thu: Tên nhân viên thu tiền (với thanh toán trực tiếp).
+  - ghi_chu: Ghi chú bổ sung.
+  - ngay_thanh_toan: Thời điểm thực hiện thanh toán.
+  - tao_ngay, cap_nhat_ngay: Thời gian tạo và cập nhật.
+
+Liên kết: ho_so_hoc_vien
+
+Chức năng:
+  - Ghi nhận từng lần thu học phí với đầy đủ thông tin giao dịch.
+  - Hỗ trợ nhiều phương thức thanh toán: tiền mặt, chuyển khoản, VNPay,
+    MoMo; lưu mã giao dịch để đối chiếu khi cần.
+  - Là nguồn dữ liệu để học viên xem lịch sử đóng học phí trên cổng thông
+    tin cá nhân và Admin theo dõi doanh thu trên Dashboard.
+
+
+3.4.2.10 bai_thi (Bài thi)
+
+Các trường chính:
+  - id: Định danh duy nhất.
+  - khoa_hoc_id: Khóa ngoại liên kết khóa học.
+  - ten_bai_thi: Tên bài thi (VD: Lý thuyết, Sa hình, Đường trường...).
+  - loai: Loại bài thi (tot_nghiep, sat_hanh).
+  - diem_dat: Điểm tối thiểu để đạt bài thi.
+  - phi_thi_lai: Phí áp dụng nếu thi lại bài này.
+  - thu_tu: Thứ tự bài thi trong kỳ.
+  - tao_ngay, cap_nhat_ngay: Thời gian tạo và cập nhật.
+
+Liên kết: khoa_hoc, ket_qua_thi
+
+Chức năng:
+  - Định nghĩa cấu trúc các bài thi trong từng kỳ thi theo từng hạng bằng.
+  - Cung cấp ngưỡng điểm đạt và phí thi lại để hệ thống tự động đánh giá
+    kết quả và tính phí khi học viên thi lại.
+  - Là cơ sở để nhập điểm chi tiết từng bài cho học viên trong bảng ket_qua_thi.
+
+
+3.4.2.11 lich_thi (Lịch thi)
+
+Các trường chính:
+  - id: Định danh duy nhất.
+  - khoa_hoc_id: Khóa ngoại liên kết khóa học tương ứng.
+  - loai_thi: Loại kỳ thi (tot_nghiep, sat_hanh).
+  - ngay_thi, gio_thi: Ngày và giờ tổ chức thi.
+  - dia_diem: Địa điểm tổ chức.
+  - don_vi_to_chuc: Đơn vị tổ chức (thường là tên BCA với kỳ sát hạch).
+  - ghi_chu: Ghi chú bổ sung.
+  - tao_ngay, cap_nhat_ngay: Thời gian tạo và cập nhật.
+
+Liên kết: khoa_hoc, lich_thi_hoc_vien, ket_qua_thi
+
+Chức năng:
+  - Lưu thông tin các kỳ thi tốt nghiệp nội bộ và sát hạch BCA.
+  - Làm căn cứ để xếp học viên đủ điều kiện vào từng kỳ thi.
+  - Là nguồn dữ liệu để học viên xem lịch thi sắp tới trên cổng thông tin.
+
+
+3.4.2.12 ket_qua_thi (Kết quả thi)
+
+Các trường chính:
+  - id: Định danh duy nhất.
+  - ho_so_id: Khóa ngoại liên kết hồ sơ học viên.
+  - lich_thi_id: Khóa ngoại liên kết lịch thi.
+  - bai_thi_id: Khóa ngoại liên kết bài thi cụ thể (nullable).
+  - diem: Điểm số đạt được.
+  - ket_qua: Kết quả (dat, khong_dat, vang_mat).
+  - lan_thi: Lần thi thứ mấy (dùng cho thi lại).
+  - phi_thi_lai, da_thu_phi: Phí thi lại và trạng thái thu phí.
+  - nhan_xet: Nhận xét của giám khảo.
+  - tao_ngay, cap_nhat_ngay: Thời gian tạo và cập nhật.
+
+Liên kết: ho_so_hoc_vien, lich_thi, bai_thi
+
+Chức năng:
+  - Ghi nhận điểm từng bài thi cho từng học viên trong từng kỳ thi.
+  - Hỗ trợ thi lại với quản lý phí thi lại riêng biệt cho từng lần.
+  - Là nguồn dữ liệu để Admin đánh giá kết quả đào tạo và học viên tra
+    cứu điểm trên cổng thông tin cá nhân.
+
+
+3.4.2.13 bang_tot_nghiep (Chứng chỉ tốt nghiệp)
+
+Các trường chính:
+  - id: Định danh duy nhất.
+  - ho_so_id: Khóa ngoại liên kết hồ sơ học viên.
+  - so_bang: Số chứng chỉ tốt nghiệp (duy nhất).
+  - ngay_cap: Ngày cấp chứng chỉ.
+  - trang_thai: Trạng thái (da_cap, cap_lai).
+  - ghi_chu: Ghi chú bổ sung.
+  - tao_ngay, cap_nhat_ngay: Thời gian tạo và cập nhật.
+
+Liên kết: ho_so_hoc_vien
+
+Chức năng:
+  - Ghi nhận chứng chỉ tốt nghiệp nội bộ sau khi học viên hoàn thành
+    kỳ thi tốt nghiệp của trung tâm.
+  - Là điều kiện tiên quyết để học viên tiếp tục tham dự kỳ sát hạch BCA.
+  - Theo dõi trạng thái cấp chứng chỉ, hỗ trợ cấp lại khi cần thiết.
+
+
+3.4.2.14 bang_lai_xe (Bằng lái xe)
+
+Các trường chính:
+  - id: Định danh duy nhất.
+  - ho_so_id: Khóa ngoại liên kết hồ sơ học viên.
+  - so_bang_lai: Số bằng lái duy nhất.
+  - ho_ten_chu_bang, ngay_sinh_chu_bang, so_cccd_chu_bang: Thông tin chủ
+    bằng.
+  - loai_bang: Hạng bằng được cấp (A1, A2, B1, B2, C, D, E).
+  - ngay_cap, ngay_het_han: Ngày cấp và ngày hết hạn.
+  - co_quan_cap, dia_chi_co_quan_cap: Cơ quan cấp bằng.
+  - trang_thai: Trạng thái bằng (cho_cap, da_cap, cap_lai, thu_hoi).
+  - ngay_cap_thuc_te: Ngày trao bằng thực tế cho học viên.
+  - ghi_chu: Ghi chú bổ sung.
+  - tao_ngay, cap_nhat_ngay: Thời gian tạo và cập nhật.
+
+Liên kết: ho_so_hoc_vien
+
+Chức năng:
+  - Lưu đầy đủ thông tin bằng lái được cấp theo đúng quy định pháp luật.
+  - Theo dõi trạng thái bằng: chờ cấp, đã cấp, cấp lại hoặc thu hồi.
+  - Là bằng chứng pháp lý hoàn thành quy trình đào tạo của học viên.
+
+
+3.4.2.15 xe (Xe tập lái)
+
+Các trường chính:
+  - id: Định danh duy nhất.
+  - bien_so: Biển số xe (duy nhất).
+  - hang_xe, dong_xe: Hãng và dòng xe (Toyota Vios, Kia Morning...).
+  - nam_san_xuat: Năm sản xuất.
+  - loai_xe: Loại hộp số (so_san, so_tu_dong).
+  - hang_bang: Hạng bằng lái phù hợp (A1, A, B1, B2, C1, C, D, E, CE).
+  - mau_xe: Màu sắc xe.
+  - so_km_hien_tai: Số km hiện tại (odometer), tự động cộng dồn từ điểm danh.
+  - ngay_dang_kiem, ngay_dang_kiem_tiep_theo: Ngày đăng kiểm.
+  - ngay_bao_hiem: Hạn bảo hiểm xe.
+  - trang_thai: Trạng thái xe (san_sang, bao_tri, hong).
+  - anh_xe: Đường dẫn ảnh xe.
+  - ghi_chu: Ghi chú bổ sung.
+  - tao_ngay, cap_nhat_ngay: Thời gian tạo và cập nhật.
+
+Liên kết: lich_hoc, bao_loi_xe
+
+Chức năng:
+  - Quản lý toàn bộ đội xe tập lái của trung tâm theo hạng bằng tương ứng.
+  - Tự động theo dõi odometer: mỗi lần điểm danh thực hành cộng dồn km
+    vào xe, đảm bảo dữ liệu nhất quán.
+  - Kiểm soát ràng buộc xếp lịch: hệ thống cảnh báo và ngăn xếp lịch thực
+    hành khi tất cả xe của lớp đang bảo trì hoặc hỏng.
+
+
+3.4.2.16 bao_loi_xe (Báo lỗi xe)
+
+Các trường chính:
+  - id: Định danh duy nhất.
+  - xe_id: Khóa ngoại liên kết xe tập lái.
+  - giang_vien_id: Khóa ngoại liên kết giảng viên báo lỗi.
+  - lich_hoc_id: Khóa ngoại liên kết buổi học liên quan (nullable).
+  - tieu_de: Tiêu đề mô tả ngắn lỗi xe.
+  - mo_ta: Mô tả chi tiết sự cố.
+  - muc_do: Mức độ nghiêm trọng (nhe, trung_binh, nghiem_trong).
+  - trang_thai: Trạng thái xử lý (cho_xu_ly, dang_xu_ly, da_xu_ly).
+  - ghi_chu_xu_ly: Ghi chú kết quả xử lý.
+  - ngay_xu_ly: Thời điểm xử lý xong.
+  - tao_ngay, cap_nhat_ngay: Thời gian tạo và cập nhật.
+
+Liên kết: xe, giang_vien, lich_hoc
+
+Chức năng:
+  - Ghi nhận sự cố xe do Giảng viên báo cáo sau buổi thực hành, phân loại
+    theo mức độ để Admin ưu tiên xử lý.
+  - Là cơ sở để Admin cập nhật trạng thái xe (chuyển sang bao_tri hoặc hong)
+    khi phát sinh lỗi nghiêm trọng.
+  - Lưu lịch sử toàn bộ sự cố xe, hỗ trợ theo dõi chất lượng và bảo dưỡng
+    định kỳ đội xe tập lái.

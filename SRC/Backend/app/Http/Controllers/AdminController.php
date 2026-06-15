@@ -407,10 +407,16 @@ class AdminController extends Controller
             ->when($request->trang_thai, fn($q) => $q->where('trang_thai', $request->trang_thai))
             ->when(!$request->trang_thai, fn($q) => $q->whereNotIn('trang_thai', $trangThaiCapBang))
             ->when($request->search, fn($q) => $q
-                ->where('ho_ten', 'like', "%{$request->search}%")
-                ->orWhere('so_cccd', 'like', "%{$request->search}%")
-                ->orWhere('so_dien_thoai', 'like', "%{$request->search}%")
-            );
+                ->where(fn($q2) => $q2
+                    ->where('ho_ten', 'like', "%{$request->search}%")
+                    ->orWhere('so_cccd', 'like', "%{$request->search}%")
+                    ->orWhere('so_dien_thoai', 'like', "%{$request->search}%")
+                )
+            )
+            ->when($request->loai_bang, fn($q) => $q
+                ->whereHas('khoaHoc', fn($q2) => $q2->where('loai_bang', $request->loai_bang))
+            )
+            ->when($request->hoc_phi, fn($q) => $q->where('trang_thai_hoc_phi', $request->hoc_phi));
 
         $data = $query->latest()->paginate($request->per_page ?? 20);
 

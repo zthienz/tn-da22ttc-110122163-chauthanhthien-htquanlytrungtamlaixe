@@ -50,6 +50,8 @@ const HoSoManagement = () => {
   const [loading, setLoading]   = useState(true)
   const [search, setSearch]     = useState('')
   const [filterTT, setFilterTT] = useState('')
+  const [filterHang, setFilterHang]   = useState('')
+  const [filterHocPhi, setFilterHocPhi] = useState('')
   const [page, setPage]         = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [showModal, setShowModal]         = useState(false)
@@ -67,6 +69,7 @@ const HoSoManagement = () => {
   const [editingHoSo, setEditingHoSo] = useState(null)
   const [lopList, setLopList]   = useState([])
   const [stats, setStats]       = useState(null)
+  const [hangBangOptions, setHangBangOptions] = useState([])
 
   const headers = { Authorization: `Bearer ${token}` }
 
@@ -75,7 +78,7 @@ const HoSoManagement = () => {
     try {
       const res = await axios.get(`${backendUrl}/api/admin/ho-so`, {
         headers,
-        params: { search, trang_thai: filterTT, page, per_page: 15 }
+        params: { search, trang_thai: filterTT, loai_bang: filterHang, hoc_phi: filterHocPhi, page, per_page: 15 }
       })
       if (res.data.success) {
         setList(res.data.data)
@@ -110,8 +113,20 @@ const HoSoManagement = () => {
     finally { setViewLoading(false) }
   }
 
-  useEffect(() => { fetchList() }, [search, filterTT, page])
+  useEffect(() => { fetchList() }, [search, filterTT, filterHang, filterHocPhi, page])
   useEffect(() => { fetchStats() }, [])
+  useEffect(() => {
+    const fetchHangs = async () => {
+      try {
+        const res = await axios.get(`${backendUrl}/api/admin/khoa-hoc`, { headers })
+        if (res.data.success) {
+          const hangs = [...new Set(res.data.data.map(k => k.loai_bang).filter(Boolean))].sort()
+          setHangBangOptions(hangs)
+        }
+      } catch {}
+    }
+    fetchHangs()
+  }, [token])
 
   // Form tạo hồ sơ offline
   const [form, setForm] = useState({ ho_ten:'', ngay_sinh:'', so_cccd:'', khoa_hoc_id:'', so_dien_thoai:'', dia_chi:'', email:'' })
@@ -390,6 +405,19 @@ const HoSoManagement = () => {
       <div className="search-bar">
         <input className="search-input" placeholder="🔍 Tìm theo tên, CCCD, SĐT..."
           value={search} onChange={e => { setSearch(e.target.value); setPage(1) }} />
+        <select className="search-input" style={{maxWidth:160}} value={filterHang}
+          onChange={e => { setFilterHang(e.target.value); setPage(1) }}>
+          <option value="">Tất cả bằng lái</option>
+          {hangBangOptions.map(h => (
+            <option key={h} value={h}>Hạng {h}</option>
+          ))}
+        </select>
+        <select className="search-input" style={{maxWidth:160}} value={filterHocPhi}
+          onChange={e => { setFilterHocPhi(e.target.value); setPage(1) }}>
+          <option value="">Tất cả học phí</option>
+          <option value="da_dong">✅ Đã đóng</option>
+          <option value="chua_dong">❌ Chưa đóng</option>
+        </select>
         <select className="search-input" style={{maxWidth:200}} value={filterTT}
           onChange={e => { setFilterTT(e.target.value); setPage(1) }}>
           <option value="">Tất cả trạng thái</option>
@@ -408,7 +436,7 @@ const HoSoManagement = () => {
                 <thead>
                   <tr>
                     <th>#</th><th>Họ Tên</th><th>CCCD</th><th>SĐT</th>
-                    <th>Khóa Học</th><th>Học Phí</th><th>Trạng Thái</th>
+                    <th>Bằng Lái</th><th>Học Phí</th><th>Trạng Thái</th>
                     <th>Nguồn</th><th>Thao Tác</th>
                   </tr>
                 </thead>
@@ -423,7 +451,11 @@ const HoSoManagement = () => {
                         <td><strong>{hs.ho_ten}</strong></td>
                         <td><code style={{fontSize:12}}>{hs.so_cccd}</code></td>
                         <td>{hs.so_dien_thoai || '—'}</td>
-                        <td>{hs.khoa_hoc?.ten_khoa || '—'}</td>
+                        <td>
+                          {hs.khoa_hoc?.loai_bang
+                            ? <span className="badge badge-blue">Hạng {hs.khoa_hoc.loai_bang}</span>
+                            : <span style={{color:'#a0aec0'}}>—</span>}
+                        </td>
                         <td>
                           <span className={`badge ${hs.trang_thai_hoc_phi === 'da_dong' ? 'badge-success' : 'badge-danger'}`}>
                             {hs.trang_thai_hoc_phi === 'da_dong' ? '✅ Đã đóng' : '❌ Chưa đóng'}

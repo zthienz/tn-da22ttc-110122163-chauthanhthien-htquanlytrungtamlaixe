@@ -1,0 +1,76 @@
+@startuml usecase_02_admin
+
+skinparam backgroundColor #FFFFFF
+skinparam usecase {
+    BackgroundColor #DDEEFF
+    BorderColor #4A90D9
+    FontName Arial
+    FontSize 11
+}
+skinparam actor {
+    BackgroundColor #DDEEFF
+    BorderColor #4A90D9
+    FontName Arial
+    FontSize 11
+    FontStyle bold
+}
+skinparam ArrowColor #333333
+skinparam ArrowThickness 1.2
+skinparam dashed #4A90D9
+skinparam Shadowing false
+skinparam Padding 5
+skinparam NodeSep 40
+skinparam RankSep 60
+
+left to right direction
+
+actor "Quản trị" as Admin
+
+' ── Nhóm TRÊN Login (dùng together để xếp cùng hàng) ─────────────────────
+together {
+    usecase "Quản lý\ngiảng viên"       as UC_GV
+    usecase "Dashboard\nthống kê"       as UC_Dashboard
+    usecase "Quản lý hồ sơ\nhọc viên"  as UC_HoSo
+    usecase "Quản lý\nkhóa học"         as UC_KhoaHoc
+}
+
+' ── TRUNG TÂM ─────────────────────────────────────────────────────────────
+usecase "Đăng nhập" as UC_Login
+
+' ── Nhóm DƯỚI Login ──────────────────────────────────────────────────────
+together {
+    usecase "Quản lý\nlớp học"          as UC_LopHoc
+    usecase "Quản lý\nlịch học"         as UC_LichHoc
+    usecase "Quản lý\nxe tập lái"       as UC_Xe
+    usecase "Quản lý\nhọc phí"          as UC_HocPhi
+    usecase "Quản lý thi\n& kết quả"    as UC_Thi
+}
+
+' ── Ép Login nằm giữa ────────────────────────────────────────────────────
+UC_KhoaHoc -[hidden]-> UC_Login
+UC_Login   -[hidden]-> UC_LichHoc
+
+' ── Actor → Use Case (mũi tên liền thẳng) ────────────────────────────────
+Admin --> UC_GV
+Admin --> UC_Dashboard
+Admin --> UC_HoSo
+Admin --> UC_KhoaHoc
+Admin --> UC_Login
+Admin --> UC_LopHoc
+Admin --> UC_LichHoc
+Admin --> UC_Xe
+Admin --> UC_HocPhi
+Admin --> UC_Thi
+
+' ── <<include>> đường đứt nét → tất cả chỉ vào Login ────────────────────
+UC_GV        .> UC_Login : <<include>>
+UC_Dashboard .> UC_Login : <<include>>
+UC_HoSo      .> UC_Login : <<include>>
+UC_KhoaHoc   .> UC_Login : <<include>>
+UC_LopHoc    .> UC_Login : <<include>>
+UC_LichHoc   .> UC_Login : <<include>>
+UC_Xe        .> UC_Login : <<include>>
+UC_HocPhi    .> UC_Login : <<include>>
+UC_Thi       .> UC_Login : <<include>>
+
+@enduml

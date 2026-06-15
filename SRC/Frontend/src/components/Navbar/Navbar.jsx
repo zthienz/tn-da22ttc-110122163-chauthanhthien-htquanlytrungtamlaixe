@@ -1,10 +1,34 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { NavLink, Link } from 'react-router-dom'
+import axios from 'axios'
 import './Navbar.css'
 
+// Mapping loai_bang → label hiển thị trong dropdown
+const BANG_LABEL = {
+  A1: 'Hạng A1 — Xe máy dưới 125cc',
+  A:  'Hạng A — Xe máy trên 125cc',
+  B1: 'Hạng B1 — Ô tô số tự động',
+  B2: 'Hạng B2 — Ô tô số sàn',
+  C1: 'Hạng C1 — Xe tải nhẹ',
+  C:  'Hạng C — Xe tải nặng',
+  D:  'Hạng D — Xe khách 9-30 chỗ',
+  E:  'Hạng E — Xe khách trên 30 chỗ',
+  CE: 'Hạng CE — Xe đầu kéo',
+}
+
+// Các hạng nâng cấp bằng lái (hiển thị dưới nhãn phân cách)
+const NANG_HANG = ['D', 'E', 'CE']
+
 const Navbar = () => {
-  const [khoaOpen, setKhoaOpen] = useState(false)
-  const [menuOpen, setMenuOpen] = useState(false)
+  const [khoaOpen, setKhoaOpen]   = useState(false)
+  const [menuOpen, setMenuOpen]   = useState(false)
+  const [bangLais, setBangLais]   = useState([])
+
+  useEffect(() => {
+    axios.get('http://localhost:8000/api/khoa-hoc')
+      .then(res => { if (res.data.success) setBangLais(res.data.data) })
+      .catch(() => {}) // giữ dropdown rỗng nếu API lỗi
+  }, [])
 
   return (
     <>
@@ -46,17 +70,34 @@ const Navbar = () => {
               </span>
               {khoaOpen && (
                 <ul className="dropdown">
-                  <li><Link to="/khoa-hoc/a1" onClick={() => setKhoaOpen(false)}>Hạng A1 — Xe máy dưới 125cc</Link></li>
-                  <li><Link to="/khoa-hoc/a"  onClick={() => setKhoaOpen(false)}>Hạng A — Xe máy trên 125cc</Link></li>
-                  <li><Link to="/khoa-hoc/b1" onClick={() => setKhoaOpen(false)}>Hạng B1 — Ô tô số tự động</Link></li>
-                  <li><Link to="/khoa-hoc/b2" onClick={() => setKhoaOpen(false)}>Hạng B2 — Ô tô số sàn</Link></li>
-                  <li><Link to="/khoa-hoc/c1" onClick={() => setKhoaOpen(false)}>Hạng C1 — Xe tải nhẹ</Link></li>
-                  <li><Link to="/khoa-hoc/c"  onClick={() => setKhoaOpen(false)}>Hạng C — Xe tải nặng</Link></li>
-                  <li className="dropdown-group-label">Nâng hạng bằng lái</li>
-                  <li><Link to="/khoa-hoc/d"  onClick={() => setKhoaOpen(false)}>Hạng D — Xe khách 9-30 chỗ</Link></li>
-                  <li><Link to="/khoa-hoc/e"  onClick={() => setKhoaOpen(false)}>Hạng E — Xe khách trên 30 chỗ</Link></li>
-                  <li><Link to="/khoa-hoc/ce" onClick={() => setKhoaOpen(false)}>Hạng CE — Xe đầu kéo</Link></li>
-                  <li className="dropdown-divider"><Link to="/khoa-hoc" onClick={() => setKhoaOpen(false)}>Xem tất cả khóa học →</Link></li>
+                  {/* Nhóm hạng thường */}
+                  {bangLais
+                    .filter(k => !NANG_HANG.includes(k.loai_bang))
+                    .map(k => (
+                      <li key={k.id}>
+                        <Link to={`/khoa-hoc/${k.loai_bang.toLowerCase()}`} onClick={() => setKhoaOpen(false)}>
+                          {BANG_LABEL[k.loai_bang] || k.ten_khoa}
+                        </Link>
+                      </li>
+                    ))
+                  }
+                  {/* Nhóm nâng hạng — chỉ hiện nhãn nếu có ít nhất 1 hạng nâng cấp active */}
+                  {bangLais.some(k => NANG_HANG.includes(k.loai_bang)) && (
+                    <li className="dropdown-group-label">Nâng hạng bằng lái</li>
+                  )}
+                  {bangLais
+                    .filter(k => NANG_HANG.includes(k.loai_bang))
+                    .map(k => (
+                      <li key={k.id}>
+                        <Link to={`/khoa-hoc/${k.loai_bang.toLowerCase()}`} onClick={() => setKhoaOpen(false)}>
+                          {BANG_LABEL[k.loai_bang] || k.ten_khoa}
+                        </Link>
+                      </li>
+                    ))
+                  }
+                  <li className="dropdown-divider">
+                    <Link to="/khoa-hoc" onClick={() => setKhoaOpen(false)}>Xem tất cả khóa học →</Link>
+                  </li>
                 </ul>
               )}
             </li>

@@ -6,7 +6,6 @@ import './KhoaHocDaoTao.css'
 
 const THANG_LIST = [1,2,3,4,5,6,7,8,9,10,11,12]
 const NAM_LIST   = [2024,2025,2026,2027,2028]
-const HANG_BANG  = ['A1','A2','B1','B2','C','C1','D','E']
 
 const genMaKhoa = (thang, nam, hang) =>
   String(thang).padStart(2,'0') + String(nam) + hang
@@ -21,7 +20,7 @@ const emptyKhoa = {
   ten_khoa_dao_tao: '',
   thang: new Date().getMonth() + 1,
   nam: new Date().getFullYear(),
-  hang_bang: 'B1',
+  hang_bang: '',
   ghi_chu: ''
 }
 
@@ -31,6 +30,7 @@ const KhoaHocDaoTaoManagement = () => {
 
   const [khoaList, setKhoaList]     = useState([])
   const [loading, setLoading]       = useState(true)
+  const [hangBangList, setHangBangList] = useState([])
   const [filterHang, setFilterHang] = useState('')
   const [filterNam, setFilterNam]   = useState('')
   const [filterThang, setFilterThang] = useState('')
@@ -54,7 +54,7 @@ const KhoaHocDaoTaoManagement = () => {
   const [gvList, setGvList]             = useState([])
   const [lopForm, setLopForm]           = useState({
     ten_lop: '', giang_vien_ly_thuyet_id: '', giang_vien_thuc_hanh_id: '',
-    ngay_khai_giang: '', si_so_toi_da: 30, ghi_chu: ''
+    ngay_khai_giang: '', si_so_toi_da: 30, trang_thai: 'chuan_bi', ghi_chu: ''
   })
 
   // Modal phân học viên
@@ -69,6 +69,24 @@ const KhoaHocDaoTaoManagement = () => {
   const [targetLopXe, setTargetLopXe]         = useState(null)
   const [xeSanSang, setXeSanSang]             = useState([])
   const [xeSelectedIds, setXeSelectedIds]     = useState([])
+
+  // Fetch danh sách hạng bằng từ API (lấy từ bảng khoa_hoc)
+  useEffect(() => {
+    const fetchHangBang = async () => {
+      try {
+        const res = await axios.get(`${backendUrl}/api/admin/khoa-hoc`, { headers })
+        if (res.data.success) {
+          const hangs = [...new Set(res.data.data.map(k => k.loai_bang).filter(Boolean))]
+          hangs.sort()
+          setHangBangList(hangs)
+        }
+      } catch {
+        // fallback nếu API lỗi
+        setHangBangList(['A', 'A1', 'B1', 'B2', 'C', 'C1', 'CE', 'D', 'E'])
+      }
+    }
+    fetchHangBang()
+  }, [token])
 
   const fetchKhoa = useCallback(async () => {
     setLoading(true)
@@ -136,7 +154,7 @@ const KhoaHocDaoTaoManagement = () => {
 
   const openAddLop = () => {
     setEditingLop(null)
-    setLopForm({ ten_lop:'', giang_vien_ly_thuyet_id:'', giang_vien_thuc_hanh_id:'', ngay_khai_giang:'', si_so_toi_da:30, ghi_chu:'' })
+    setLopForm({ ten_lop:'', giang_vien_ly_thuyet_id:'', giang_vien_thuc_hanh_id:'', ngay_khai_giang:'', si_so_toi_da:30, trang_thai:'chuan_bi', ghi_chu:'' })
     fetchGv()
     setShowLopModal(true)
   }
@@ -149,6 +167,7 @@ const KhoaHocDaoTaoManagement = () => {
       giang_vien_thuc_hanh_id: lop.giang_vien_thuc_hanh_id || '',
       ngay_khai_giang: lop.ngay_khai_giang?.split('T')[0] || '',
       si_so_toi_da: lop.si_so_toi_da,
+      trang_thai: lop.trang_thai || 'chuan_bi',
       ghi_chu: lop.ghi_chu || '',
     })
     fetchGv()
@@ -288,7 +307,7 @@ const KhoaHocDaoTaoManagement = () => {
           value={searchKhoa} onChange={e => setSearchKhoa(e.target.value)} />
         <select className="search-input" style={{maxWidth:180}} value={filterHang} onChange={e => setFilterHang(e.target.value)}>
           <option value="">Tất cả hạng bằng</option>
-          {HANG_BANG.map(h => <option key={h} value={h}>Hạng {h}</option>)}
+          {hangBangList.map(h => <option key={h} value={h}>Hạng {h}</option>)}
         </select>
         <select className="search-input" style={{maxWidth:130}} value={filterThang} onChange={e => setFilterThang(e.target.value)}>
           <option value="">Tất cả tháng</option>
@@ -481,8 +500,9 @@ const KhoaHocDaoTaoManagement = () => {
                   </div>
                   <div className="form-group">
                     <label>Hạng bằng *</label>
-                    <select value={khoaForm.hang_bang} onChange={e => setKhoaForm({...khoaForm, hang_bang: e.target.value})}>
-                      {HANG_BANG.map(h => <option key={h} value={h}>Hạng {h}</option>)}
+                    <select value={khoaForm.hang_bang} onChange={e => setKhoaForm({...khoaForm, hang_bang: e.target.value})} required>
+                      <option value="">-- Chọn hạng bằng --</option>
+                      {hangBangList.map(h => <option key={h} value={h}>Hạng {h}</option>)}
                     </select>
                   </div>
                 </div>

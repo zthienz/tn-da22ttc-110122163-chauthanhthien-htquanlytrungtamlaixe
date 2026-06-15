@@ -1,0 +1,57 @@
+================================================================================
+LỜI MỞ ĐẦU
+================================================================================
+
+Trong bối cảnh chuyển đổi số đang diễn ra mạnh mẽ ở mọi lĩnh vực của đời
+sống kinh tế – xã hội, việc ứng dụng công nghệ thông tin vào quản lý và vận
+hành các cơ sở đào tạo đã trở thành một xu thế tất yếu. Các trung tâm đào tạo
+lái xe – một loại hình dịch vụ gắn liền với nhu cầu thiết thực và lâu dài của
+người dân – cũng không nằm ngoài xu hướng đó. Tuy nhiên, thực tế cho thấy nhiều
+trung tâm lái xe hiện nay vẫn đang quản lý hồ sơ học viên bằng giấy tờ thủ
+công, theo dõi lịch học qua bảng tính Excel, điểm danh bằng sổ ghi tay và thông
+báo kết quả thi qua điện thoại. Cách tiếp cận này không chỉ tiêu tốn nhiều nhân
+lực mà còn tiềm ẩn nguy cơ sai sót, thất thoát thông tin và khó tra cứu khi cần.
+
+Bên cạnh đó, quy định của Bộ Giao thông Vận tải về đào tạo lái xe đặt ra
+những yêu cầu nghiêm ngặt: mỗi học viên phải tích lũy đủ số giờ lý thuyết và
+số km thực hành theo từng hạng bằng trước khi được xếp lịch thi. Việc theo dõi
+và kiểm soát các điều kiện này một cách chính xác cho hàng chục, thậm chí hàng
+trăm học viên cùng lúc là bài toán thực sự khó nếu không có một hệ thống hỗ
+trợ chuyên biệt.
+
+Xuất phát từ thực tiễn đó, em lựa chọn đề tài "Xây dựng hệ thống quản lý
+đào tạo cho trung tâm lái xe" nhằm số hóa toàn bộ quy trình vận hành của một
+trung tâm lái xe, từ tiếp nhận hồ sơ, tổ chức lớp học, lên lịch thực hành,
+điểm danh, quản lý đội xe cho đến thu học phí, tổ chức thi và cấp chứng chỉ
+tốt nghiệp. Hệ thống được xây dựng trên nền tảng công nghệ hiện đại với Backend
+sử dụng Laravel 12 (PHP 8.2) theo mô hình RESTful API và bốn ứng dụng Frontend
+độc lập xây dựng bằng React 19 + Vite 6, đảm bảo giao diện trực quan, dễ sử
+dụng và có thể truy cập mọi lúc, mọi nơi.
+
+Thông qua đề tài này, em mong muốn vận dụng những kiến thức đã tích lũy
+trong quá trình học tập về lập trình web, thiết kế cơ sở dữ liệu, xây dựng API
+và bảo mật hệ thống vào một bài toán thực tiễn có giá trị ứng dụng cao. Đồng
+thời, đề tài cũng là cơ hội để em rèn luyện khả năng phân tích yêu cầu, thiết
+kế kiến trúc hệ thống và triển khai sản phẩm phần mềm theo đúng quy trình phát
+triển chuyên nghiệp.
+
+Dù đã cố gắng hoàn thành đề tài với tinh thần nghiêm túc và trách nhiệm,
+song do kiến thức và kinh nghiệm thực tiễn còn giới hạn, đồ án chắc chắn không
+tránh khỏi những thiếu sót. Em rất mong nhận được sự góp ý chân thành từ quý
+thầy cô và các bạn để em có thể rút kinh nghiệm và hoàn thiện hơn trong những
+dự án tiếp theo.
+
+Em xin chân thành cảm ơn!
+
+                                        Trà Vinh, tháng 6 năm 2026
+                                           Sinh viên thực hiện
+
+
+                                           Châu Thanh Thiện
+
+================================================================================
+[GHI CHÚ ĐỊNH DẠNG KHI CHUYỂN SANG WORD]
+  - Tiêu đề "LỜI MỞ ĐẦU": In hoa, đậm, cỡ 14, căn giữa
+  - Nội dung: Times New Roman 13, cách dòng 1.5, căn đều 2 lề
+  - Chữ ký: căn phải, in đậm tên
+================================================================================

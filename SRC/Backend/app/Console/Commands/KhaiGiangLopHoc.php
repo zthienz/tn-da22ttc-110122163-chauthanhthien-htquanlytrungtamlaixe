@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\HoSoHocVien;
+use App\Models\KhoaHoc;
 use App\Models\LopHoc;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
@@ -42,6 +43,10 @@ class KhaiGiangLopHoc extends Command
                 $soHV = HoSoHocVien::whereHas('hocVienLop', fn($q) => $q->where('lop_hoc_id', $lop->id))
                     ->where('trang_thai', 'chuan_bi_hoc')
                     ->update(['trang_thai' => 'dang_hoc']);
+
+                // Đồng bộ trạng thái khóa học
+                KhoaHoc::where('id', $lop->khoa_hoc_id)
+                    ->update(['trang_thai_khoa' => 'dang_hoc']);
 
                 DB::commit();
 

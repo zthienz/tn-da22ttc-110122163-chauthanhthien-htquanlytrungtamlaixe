@@ -22,8 +22,9 @@ const ThiManagement = () => {
     khoa_hoc_id: '', loai_thi: 'tot_nghiep', ngay_thi: '', gio_thi: '', dia_diem: '', don_vi_to_chuc: DON_VI_MAC_DINH
   })
   const [khoaList, setKhoaList] = useState([])
-  const [search, setSearch]     = useState('')
+  const [search, setSearch]         = useState('')
   const [filterLoai, setFilterLoai] = useState('')
+  const [filterBang, setFilterBang] = useState('')
   const headers = { Authorization: `Bearer ${token}` }
 
   // ── State cho modal thêm học viên vào lịch thi ──────────────────────────
@@ -212,7 +213,8 @@ const ThiManagement = () => {
       lt.dia_diem?.toLowerCase().includes(search.toLowerCase()) ||
       lt.don_vi_to_chuc?.toLowerCase().includes(search.toLowerCase())
     const matchLoai = !filterLoai || lt.loai_thi === filterLoai
-    return matchSearch && matchLoai
+    const matchBang = !filterBang || lt.khoa_hoc?.loai_bang === filterBang
+    return matchSearch && matchLoai && matchBang
   })
 
   // Lọc học viên đủ điều kiện theo search
@@ -269,13 +271,23 @@ const ThiManagement = () => {
 
       {/* Search bar */}
       <div className="search-bar">
-        <input className="search-input" placeholder="🔍 Tìm theo khóa học, địa điểm, đơn vị tổ chức..."
+        <input className="search-input" placeholder="🔍 Tìm theo loại bằng, địa điểm, đơn vị tổ chức..."
           value={search} onChange={e => setSearch(e.target.value)} />
+        <select className="search-input" style={{ maxWidth: 180, borderColor: filterBang ? '#0d47a1' : '', fontWeight: filterBang ? 700 : 400 }}
+          value={filterBang} onChange={e => setFilterBang(e.target.value)}>
+          <option value="">Tất cả loại bằng</option>
+          {['A1','A','B1','B2','C1','C','D','E','CE'].map(h => (
+            <option key={h} value={h}>Hạng {h}</option>
+          ))}
+        </select>
         <select className="search-input" style={{ maxWidth: 200 }} value={filterLoai} onChange={e => setFilterLoai(e.target.value)}>
           <option value="">Tất cả loại thi</option>
           <option value="tot_nghiep">🎓 Tốt nghiệp</option>
           <option value="sat_hanh">🏛️ Sát hạch (BCA)</option>
         </select>
+        {(filterBang || filterLoai || search) && (
+          <button className="btn btn-outline btn-sm" onClick={() => { setFilterBang(''); setFilterLoai(''); setSearch('') }}>✕ Bỏ lọc</button>
+        )}
       </div>
 
       {loading ? <div className="loading-wrap"><div className="spinner" /></div> : (
@@ -285,15 +297,15 @@ const ThiManagement = () => {
               <thead>
                 <tr>
                   <th>#</th><th>Ngày thi</th><th>Giờ</th><th>Loại thi</th>
-                  <th>Khóa học</th><th>Địa điểm</th>
+                  <th>Loại bằng lái</th><th>Địa điểm</th>
                   {tab === 'lich' && <th>Đơn vị tổ chức</th>}
                   <th>Thao tác</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredThi.length === 0 ? (
-                  <tr><td colSpan={8} style={{ textAlign: 'center', padding: '40px', color: '#a0aec0' }}>
-                    {search || filterLoai ? 'Không tìm thấy kết quả phù hợp' : 'Chưa có lịch thi nào'}
+                  <tr><td colSpan={9} style={{ textAlign: 'center', padding: '40px', color: '#a0aec0' }}>
+                    {search || filterLoai || filterBang ? 'Không tìm thấy kết quả phù hợp' : 'Chưa có lịch thi nào'}
                   </td></tr>
                 ) : filteredThi.map((lt, i) => {
                   const lm = LOAI_MAP[lt.loai_thi] || { text: lt.loai_thi, cls: 'badge-gray' }
@@ -303,7 +315,11 @@ const ThiManagement = () => {
                       <td><strong>{new Date(lt.ngay_thi).toLocaleDateString('vi-VN')}</strong></td>
                       <td>{lt.gio_thi?.slice(0, 5)}</td>
                       <td><span className={`badge ${lm.cls}`}>{lm.text}</span></td>
-                      <td>{lt.khoa_hoc?.ten_khoa || '—'}</td>
+                      <td>
+                        {lt.khoa_hoc?.loai_bang
+                          ? <span className="badge badge-info">Hạng {lt.khoa_hoc.loai_bang}</span>
+                          : '—'}
+                      </td>
                       <td>{lt.dia_diem || '—'}</td>
                       {tab === 'lich' && <td>{lt.don_vi_to_chuc || '—'}</td>}
                       <td>

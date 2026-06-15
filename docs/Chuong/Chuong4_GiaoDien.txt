@@ -1,0 +1,140 @@
+================================================================================
+CHƯƠNG 4: GIAO DIỆN HỆ THỐNG
+================================================================================
+
+Chương này trình bày giao diện người dùng của hệ thống quản lý đào tạo Trung
+Tâm Dạy Lái Xe Sao Việt, bao gồm trang quảng bá dành cho học viên và các giao
+diện quản trị dành cho Quản trị viên và Giảng viên. Mỗi giao diện được thiết
+kế phù hợp với vai trò và nhu cầu của từng nhóm người dùng, đảm bảo tính trực
+quan, dễ sử dụng và nhất quán về mặt thương hiệu.
+
+
+4.1 Trang quảng bá (Website công khai)
+────────────────────────────────────────────────────────────────────────────────
+
+Trang quảng bá là cổng thông tin công khai của Trung Tâm Dạy Lái Xe Sao Việt,
+hướng đến đối tượng học viên tiềm năng và học viên đang theo học. Trang được
+xây dựng bằng React + Vite, chạy độc lập trên cổng 5174, với màu sắc chủ đạo
+xanh dương – trắng – đỏ, nhất quán với nhận diện thương hiệu của trung tâm.
+
+
+4.1.1 Giao diện trang chủ
+────────────────────────────────────────────────────────────────────────────────
+
+[Hình 4.1 Giao diện trang chủ – phần Hero Banner]
+[Hình 4.2 Giao diện trang chủ – phần Giới thiệu trung tâm]
+[Hình 4.3 Giao diện trang chủ – phần Các khóa đào tạo]
+[Hình 4.4 Giao diện trang chủ – phần Thông tin hạng bằng lái]
+[Hình 4.5 Giao diện trang chủ – phần Thủ tục đăng ký]
+
+Trang chủ của hệ thống được thiết kế theo bố cục cuộn dọc (scroll layout),
+bao gồm nhiều phần nội dung sắp xếp theo thứ tự logic từ tổng quan đến chi
+tiết, giúp người dùng tiếp cận thông tin một cách tự nhiên và mạch lạc.
+
+Phần Hero Banner (đầu trang):
+
+  Phần trên cùng là một banner toàn màn hình với hình nền chụp từ trên cao
+  sân tập lái xe, tạo ấn tượng thị giác mạnh mẽ ngay khi vào trang. Tiêu đề
+  chính "TRUNG TÂM DẠY LÁI XE SAO VIỆT" được hiển thị nổi bật bằng chữ trắng
+  in đậm, kèm dòng mô tả ngắn về các hạng đào tạo (A1, A, B sổ sàn, B tự
+  động, C1, C). Phía dưới tiêu đề là danh sách bốn điểm nổi bật của trung tâm
+  được đánh dấu bằng biểu tượng tích xanh:
+
+    - Đào tạo A1, A, B1, B2, C1, C
+    - Thủ tục nhanh gọn
+    - Học 1 kèm 1, linh hoạt
+    - Học phí trọn gói, không phát sinh
+
+  Kết thúc phần banner là nút kêu gọi hành động (CTA) "Đăng ký tư vấn" màu
+  xanh dương nổi bật, dẫn học viên đến form đăng ký tư vấn hoặc trang đăng ký
+  hồ sơ trực tuyến.
+
+Phần Giới thiệu trung tâm:
+
+  Tiếp theo banner là phần giới thiệu tổng quan về trung tâm với bố cục chia
+  hai cột. Bên trái là hình ảnh thực tế của tòa nhà trung tâm cùng đội ngũ xe
+  tập lái và giảng viên, tạo cảm giác tin cậy và chuyên nghiệp. Bên phải là
+  đoạn văn giới thiệu lịch sử, phương châm hoạt động và cam kết chất lượng đào
+  tạo của Sao Việt tại TP.HCM.
+
+  Phía dưới phần giới thiệu có dòng chữ màu đỏ nổi bật: "Được Cấp Phép Đào
+  Tạo Chính Quy, Cam Kết Uy Tín & Minh Bạch", kèm theo hình ảnh các giấy phép
+  đào tạo và văn bản pháp lý của trung tâm do Sở Giao thông Vận tải cấp, nhằm
+  tăng tính tin cậy và minh bạch với người dùng.
+
+Phần Các khóa đào tạo:
+
+  Tiêu đề section "Các khóa đào tạo lái xe tại Trung Tâm SAO VIỆT" được đặt
+  ở giữa với màu xanh dương. Các khóa học được trình bày dạng thẻ (card) theo
+  lưới 3 cột, bao gồm sáu hạng bằng: A1, A, B1, B2, C1 và C (xe tải nặng).
+
+  Mỗi thẻ khóa học bao gồm:
+    - Hình ảnh minh họa thực tế của loại xe/môn học ở phần trên.
+    - Nhãn tên hạng bằng với màu sắc phân biệt theo từng loại: vàng (A1),
+      cam (A), xanh dương (B1), xanh lá (B2), xanh navy (C1), xanh đậm (C).
+    - Học phí in đỏ nổi bật, kèm dòng cam kết "Hồ sơ trọn gói không phát sinh".
+    - Danh sách thông tin chi tiết với biểu tượng tích: độ tuổi đăng ký,
+      thời điểm khai giảng, thời gian đào tạo, thời gian học và loại xe.
+    - Nút "XEM CHI TIẾT" màu đỏ dẫn đến trang chi tiết khóa học.
+    - Số hotline tư vấn phía dưới mỗi thẻ.
+
+  Cách trình bày dạng card giúp học viên dễ dàng so sánh các hạng bằng, lựa
+  chọn khóa học phù hợp với nhu cầu và điều kiện của bản thân.
+
+Phần Thông tin các hạng bằng lái:
+
+  Section này cung cấp kiến thức tổng hợp về quy định bằng lái xe hiện hành,
+  với tiêu đề "Thông tin về các bằng lái xe hạng A, B, C1, C" màu xanh dương
+  ở giữa. Nội dung được chia thành hai bảng song song:
+
+    - Bảng "Luật cũ trước 2025" với nền xanh dương, liệt kê các hạng A1, A,
+      B1, B2, C kèm mô tả phạm vi điều khiển theo quy định cũ.
+    - Bảng "Luật mới áp dụng từ 01/01/2025" với nền xanh lá, liệt kê các
+      hạng A1, A2, B số Tự Động, B Số Sàn, C1, C theo quy định mới nhất.
+
+  Mỗi hạng trong bảng có icon xe minh họa kèm mô tả ngắn gọn về phạm vi
+  điều khiển, giúp học viên nhanh chóng nắm bắt sự khác biệt giữa hai luật.
+
+  Phía dưới hai bảng là khung "Điều kiện học lái xe ô tô" nền xanh nhạt, liệt
+  kê bốn điều kiện cơ bản:
+    - Là công dân Việt Nam hoặc người nước ngoài đang làm việc và sinh sống
+      tại Việt Nam.
+    - Từ 18 tuổi đối với hạng A1, A, B1, B, C1.
+    - Đủ điều kiện sức khỏe theo quy định.
+    - Không yêu cầu về bằng cấp hay trình độ văn hóa.
+
+Phần Thủ tục đăng ký:
+
+  Phần cuối của trang chủ hướng dẫn thủ tục đăng ký học bằng lái xe với tiêu
+  đề "Thủ tục đăng ký học bằng lái xe tại Trung Tâm Lái Xe Sao Việt". Bố cục
+  chia hai cột:
+
+    - Bên trái là khung xanh nhạt liệt kê danh sách hồ sơ cần chuẩn bị (bốn
+      mục, đánh dấu tick xanh): giấy khám sức khỏe, 12 ảnh 3×4 nền xanh dương
+      đậm, photo các bằng lái hiện có (nếu có) và 2 bản photo CMND/CCCD.
+    - Bên phải là hình ảnh minh họa chuẩn ảnh thẻ hợp lệ và không hợp lệ,
+      gồm ảnh đúng quy cách và các ảnh sai (đeo kính, phông nền không phù hợp,
+      tóc che tai) được đánh dấu X đỏ, giúp học viên chuẩn bị hồ sơ chính
+      xác ngay từ đầu, tránh phải làm lại nhiều lần.
+
+Nhìn tổng thể, giao diện trang chủ được thiết kế rõ ràng, trực quan và đầy
+đủ thông tin. Màu sắc chủ đạo xanh dương – trắng – đỏ tạo sự chuyên nghiệp,
+nhất quán với nhận diện thương hiệu. Bố cục cuộn dọc giúp người dùng tiếp cận
+thông tin theo luồng tự nhiên: từ tổng quan thương hiệu, đến các khóa học, kiến
+thức về bằng lái và cuối cùng là hướng dẫn thủ tục đăng ký. Toàn bộ trang đáp
+ứng tốt trên cả màn hình máy tính và thiết bị di động nhờ thiết kế responsive.
+
+
+================================================================================
+[GHI CHÚ ĐỊNH DẠNG KHI CHUYỂN SANG WORD]
+  - Font: Times New Roman, cỡ 13
+  - Cách dòng: 1.5
+  - Lề: Trái 3.0 cm, Phải 2.0 cm, Trên 2.5 cm, Dưới 2.5 cm
+  - Tiêu đề chương: In hoa, đậm, cỡ 14, căn giữa
+  - Tiêu đề mục (4.x): Đậm, cỡ 13
+  - Tiêu đề mục con (4.x.x): Đậm, nghiêng, cỡ 13
+  - Chú thích hình: Căn giữa, nghiêng, cỡ 12 — ví dụ: "Hình 4.1 Giao diện trang chủ – phần Hero Banner"
+  - Footer: "GVHD: ThS. Lê Phong Dũ       SVTH: Châu Thanh Thiện"
+  - Gạch đầu dòng: dùng dấu gạch ngang (-) thụt vào 1.25 cm
+  - Ước lượng 4.1.1: khoảng 3–4 trang A4 (chưa tính hình ảnh)
+================================================================================
