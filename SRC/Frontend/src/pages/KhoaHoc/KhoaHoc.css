@@ -9,7 +9,7 @@
 .khoahoc-hero h1 { font-size: 32px; font-weight: 800; margin-bottom: 8px; }
 .khoahoc-hero p  { font-size: 16px; opacity: 0.9; }
 
-.khoahoc-content { padding: 48px 20px; }
+.khoahoc-content { padding: 40px 20px 48px; }
 
 .loading-wrap { display: flex; justify-content: center; padding: 60px; }
 .spinner {
@@ -23,8 +23,9 @@
 
 .kh-list-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 28px;
+  margin-top: 16px;
 }
 
 .kh-detail-card {
@@ -107,4 +108,5 @@
 .kh-detail-footer p { font-size: 13px; color: #333; }
 .kh-detail-footer strong { color: #e53935; }
 
-@media (max-width: 768px) { .kh-list-grid { grid-template-columns: 1fr; } }
+@media (max-width: 1024px) { .kh-list-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 768px)  { .kh-list-grid { grid-template-columns: 1fr; } }

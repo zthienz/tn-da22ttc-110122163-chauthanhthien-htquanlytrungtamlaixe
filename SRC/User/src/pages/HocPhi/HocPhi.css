@@ -4,17 +4,36 @@
 @keyframes spin { to { transform: rotate(360deg); } }
 
 .hp-empty {
-  background: #fff;
-  border-radius: 16px;
-  padding: 60px;
-  text-align: center;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  background: #fff; border-radius: 16px; padding: 60px;
+  text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
 .hp-empty span { font-size: 48px; display: block; margin-bottom: 12px; }
-.hp-empty h3 { font-size: 18px; font-weight: 700; color: #1a202c; margin-bottom: 6px; }
-.hp-empty p  { font-size: 14px; color: #718096; }
+.hp-empty h3   { font-size: 18px; font-weight: 700; color: #1a202c; margin-bottom: 6px; }
+.hp-empty p    { font-size: 14px; color: #718096; }
 
-.hp-list { display: flex; flex-direction: column; gap: 16px; }
+/* Tổng kết */
+.hp-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.hp-summary-item {
+  background: #fff;
+  border-radius: 14px;
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  border-left: 4px solid #e2e8f0;
+}
+.hp-summary-item.green { border-left-color: #10b981; }
+.hp-summary-item.blue  { border-left-color: #3b82f6; }
+.hp-summary-icon { font-size: 28px; }
+.hp-summary-item p      { font-size: 12px; color: #718096; margin: 0 0 3px; }
+.hp-summary-item strong { font-size: 18px; font-weight: 800; color: #1a202c; }
+
+/* Card khóa học */
 .hp-card {
   background: #fff;
   border-radius: 16px;
@@ -25,62 +44,38 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 20px;
-}
-.hp-card-header h4 { font-size: 16px; font-weight: 700; color: #1a202c; margin-bottom: 3px; }
-.hp-card-header p  { font-size: 13px; color: #718096; }
-
-.hp-amounts {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f0f4ff;
   margin-bottom: 16px;
 }
-.hp-amount-item {
-  background: #f8fafc;
-  border-radius: 10px;
-  padding: 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-.hp-amount-item span   { font-size: 12px; color: #718096; }
-.hp-amount-item strong { font-size: 16px; font-weight: 800; color: #1a202c; }
-.hp-amount-item strong.paid   { color: #10b981; }
-.hp-amount-item strong.remain { color: #ef4444; }
+.hp-card-header h4 { font-size: 16px; font-weight: 700; color: #1a202c; margin-bottom: 6px; }
 
-.hp-progress { margin-bottom: 12px; }
-.hp-progress-bar {
-  height: 10px;
-  background: #e2e8f0;
-  border-radius: 5px;
-  overflow: hidden;
-  margin-bottom: 6px;
-}
-.hp-progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #10b981, #34d399);
-  border-radius: 5px;
-  transition: width 0.8s ease;
-}
-.hp-progress span { font-size: 12px; color: #718096; font-weight: 600; }
-.hp-deadline { font-size: 13px; color: #f59e0b; font-weight: 600; margin-bottom: 16px; }
-
-.hp-history { border-top: 1px solid #e2e8f0; padding-top: 16px; }
-.hp-history h5 { font-size: 14px; font-weight: 700; color: #4a5568; margin-bottom: 10px; }
+/* Lịch sử */
+.hp-history h5 { font-size: 13px; font-weight: 700; color: #6b7280; text-transform: uppercase;
+  letter-spacing: .05em; margin-bottom: 12px; }
 .hp-history-item {
   display: flex;
+  justify-content: space-between;
   align-items: center;
   gap: 12px;
-  padding: 10px 0;
-  border-bottom: 1px solid #f0f0f0;
-  font-size: 13px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #f8fafc;
+  margin-bottom: 8px;
 }
-.hp-history-item:last-child { border-bottom: none; }
-.hhi-date   { color: #718096; min-width: 90px; }
-.hhi-method { color: #4a5568; flex: 1; text-transform: capitalize; }
-.hhi-amount { font-weight: 700; color: #10b981; }
+.hp-history-item:last-child { margin-bottom: 0; }
 
-@media (max-width: 560px) {
-  .hp-amounts { grid-template-columns: 1fr; }
+.hhi-left  { display: flex; align-items: center; gap: 12px; }
+.hhi-icon  { font-size: 22px; }
+.hhi-title { font-size: 14px; font-weight: 600; color: #1a202c; margin-bottom: 2px; }
+.hhi-meta  { font-size: 12px; color: #9ca3af; }
+
+.hhi-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.hhi-amount { font-size: 16px; font-weight: 800; color: #10b981; }
+.hhi-date   { font-size: 12px; color: #9ca3af; }
+
+@media (max-width: 640px) {
+  .hp-summary { grid-template-columns: 1fr; }
+  .hp-history-item { flex-direction: column; align-items: flex-start; }
+  .hhi-right { align-items: flex-start; }
 }

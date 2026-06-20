@@ -1,0 +1,137 @@
+================================================================================
+CHƯƠNG 5: KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN
+================================================================================
+
+
+5.1 Kết luận
+────────────────────────────────────────────────────────────────────────────────
+
+Đề tài Xây dựng hệ thống quản lý đào tạo lái xe Trung Tâm Sao Việt đã hoàn
+thành việc xây dựng một hệ thống quản lý toàn diện, bao phủ toàn bộ quy
+trình đào tạo từ khi học viên nộp hồ sơ đến khi nhận bằng lái chính thức.
+Hệ thống được xây dựng trên nền tảng công nghệ hiện đại gồm ReactJS (Vite),
+Laravel (PHP) và MySQL, triển khai theo kiến trúc client–server với giao tiếp
+qua RESTful API.
+
+Trong quá trình thực hiện, sinh viên đã áp dụng kiến thức nền tảng về lập
+trình web, thiết kế cơ sở dữ liệu quan hệ, xây dựng API bảo mật với JWT,
+xử lý luồng nghiệp vụ phức tạp và tối ưu giao diện người dùng (UI/UX). Bên
+cạnh đó, khả năng phân tích, thiết kế hệ thống cũng được rèn luyện thông qua
+việc xây dựng sơ đồ use-case, sơ đồ lớp, sơ đồ cơ sở dữ liệu và tổ chức
+kiến trúc phần mềm đa tầng.
+
+Hệ thống có thể được triển khai thực tế tại các trung tâm đào tạo lái xe,
+đặc biệt phù hợp với các đơn vị đang vận hành thủ công bằng giấy tờ hoặc
+bảng tính, giúp số hóa toàn bộ quy trình, tiết kiệm nhân lực và nâng cao
+chất lượng quản lý.
+
+
+5.2 Kết quả và đóng góp của đồ án
+────────────────────────────────────────────────────────────────────────────────
+
+-   Xây dựng thành công trang quảng bá công khai giúp học viên tiềm năng
+    tìm hiểu thông tin khóa học, đăng ký tư vấn và nộp hồ sơ trực tuyến.
+
+-   Xây dựng hệ thống quản trị đầy đủ với phân quyền ba vai trò: Quản trị
+    viên, Giảng viên và Học viên, mỗi vai trò có giao diện và chức năng
+    riêng biệt phù hợp với nhu cầu thực tế.
+
+-   Quản lý toàn bộ quy trình đào tạo theo luồng: tiếp nhận hồ sơ → thu học
+    phí → xếp lớp → lịch học → điểm danh → thi tốt nghiệp → thi sát hạch
+    → cấp bằng lái, với trạng thái học viên được cập nhật tự động ở mỗi
+    bước chuyển.
+
+-   Quản lý khóa học đào tạo theo tháng với khả năng phân lớp, phân công
+    giảng viên lý thuyết và thực hành, xếp học viên và phân xe thực hành
+    cho từng lớp.
+
+-   Xây dựng hệ thống lịch học và thời khóa biểu trực quan dạng lưới tuần,
+    hỗ trợ điểm danh từng buổi và theo dõi tiến độ học tập của học viên.
+
+-   Quản lý lịch thi tốt nghiệp và sát hạch, nhập kết quả từng bài thi,
+    tự động cập nhật trạng thái học viên và thu phí thi lại khi cần.
+
+-   Xây dựng trang cổng học viên cho phép học viên tra cứu lịch học, theo
+    dõi tiến độ, xem kết quả thi và lịch sử học phí sau khi đăng nhập.
+
+-   Xây dựng cổng giảng viên giúp giảng viên quản lý lớp được phân công,
+    xem thời khóa biểu cá nhân, thực hiện điểm danh và báo lỗi xe thực hành.
+
+-   Phát triển dashboard quản trị với biểu đồ doanh thu, thống kê học viên
+    theo trạng thái, kết quả thi và tình trạng xe được cập nhật theo thời
+    gian thực.
+
+-   Tích hợp tính năng xuất hóa đơn doanh thu dạng PDF theo bộ lọc tùy
+    chọn, hỗ trợ quản lý tài chính minh bạch.
+
+-   Giao diện hiện đại, responsive, nhất quán về thương hiệu trên cả bốn
+    ứng dụng: trang quảng bá, cổng quản trị, cổng giảng viên và cổng học viên.
+
+
+5.3 Hạn chế
+────────────────────────────────────────────────────────────────────────────────
+
+-   Hệ thống chưa tích hợp thanh toán học phí trực tuyến; học viên hiện
+    chỉ có thể đóng tiền trực tiếp tại trung tâm, quản trị viên ghi nhận
+    thủ công vào hệ thống.
+
+-   Chức năng thông báo tự động (email, SMS, push notification) chưa được
+    triển khai; học viên và giảng viên chưa nhận được cảnh báo khi có lịch
+    học mới, kết quả thi hoặc nhắc nhở hạn đóng học phí.
+
+-   Hệ thống chưa thực hiện xác thực hai lớp (2FA) cho tài khoản quản trị
+    viên và giảng viên, tiềm ẩn rủi ro bảo mật khi mật khẩu bị lộ.
+
+-   Chưa có cơ chế sao lưu và khôi phục dữ liệu tự động; việc backup hiện
+    phụ thuộc hoàn toàn vào quản trị viên hệ thống thực hiện thủ công.
+
+-   Báo cáo thống kê còn giới hạn ở dạng biểu đồ cơ bản; chưa hỗ trợ xuất
+    báo cáo tổng hợp theo kỳ (tháng, quý, năm) dưới dạng Excel hoặc PDF
+    đầy đủ.
+
+-   Hệ thống chưa có tính năng quản lý học phí hoàn trả khi học viên hủy
+    đăng ký hoặc có các trường hợp miễn giảm học phí đặc biệt.
+
+
+5.4 Hướng phát triển
+────────────────────────────────────────────────────────────────────────────────
+
+-   Tích hợp cổng thanh toán học phí trực tuyến phổ biến tại Việt Nam như
+    VNPay, MoMo hoặc ZaloPay, cho phép học viên đóng học phí và phí thi lại
+    trực tiếp qua ứng dụng mà không cần đến trung tâm.
+
+-   Phát triển hệ thống thông báo tự động qua email và Zalo OA để nhắc nhở
+    lịch học, kết quả thi, hạn nộp hồ sơ và các thông tin quan trọng cho
+    học viên và giảng viên.
+
+-   Xây dựng ứng dụng mobile (React Native hoặc Flutter) cho học viên và
+    giảng viên, giúp tra cứu lịch học, điểm danh và nhận thông báo mọi
+    lúc mọi nơi trên điện thoại.
+
+-   Tăng cường bảo mật hệ thống, bao gồm xác thực hai lớp (2FA), nhật ký
+    hoạt động (audit log) cho các thao tác nhạy cảm và cơ chế khóa tài
+    khoản sau nhiều lần đăng nhập sai.
+
+-   Mở rộng module báo cáo với khả năng xuất báo cáo doanh thu, tỷ lệ đậu
+    thi, hiệu suất giảng viên và tình hình học viên theo kỳ dưới dạng Excel
+    và PDF chi tiết.
+
+-   Triển khai hệ thống sao lưu dữ liệu tự động theo lịch định kỳ lên dịch
+    vụ lưu trữ đám mây (AWS S3, Google Cloud Storage) nhằm đảm bảo an toàn
+    dữ liệu và khả năng phục hồi khi sự cố xảy ra.
+
+-   Ứng dụng trí tuệ nhân tạo (AI) để phân tích tiến độ học tập, dự đoán
+    học viên có nguy cơ rớt thi và đề xuất lịch ôn luyện phù hợp, góp phần
+    nâng cao tỷ lệ đậu tốt nghiệp.
+
+
+================================================================================
+[GHI CHÚ ĐỊNH DẠNG KHI CHUYỂN SANG WORD]
+  - Font: Times New Roman, cỡ 13
+  - Cách dòng: 1.5
+  - Lề: Trái 3.0 cm, Phải 2.0 cm, Trên 2.5 cm, Dưới 2.5 cm
+  - Tiêu đề chương: In hoa, đậm, cỡ 14, căn giữa
+  - Tiêu đề mục (5.x): Đậm, cỡ 13
+  - Gạch đầu dòng: dùng dấu gạch ngang (-) thụt vào 1.25 cm
+  - Footer: "GVHD: ThS. Lê Phong Dũ       SVTH: Châu Thanh Thiện"
+================================================================================

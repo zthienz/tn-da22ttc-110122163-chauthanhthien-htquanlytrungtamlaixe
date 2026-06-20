@@ -21,108 +21,544 @@ xanh dương – trắng – đỏ, nhất quán với nhận diện thương hi
 4.1.1 Giao diện trang chủ
 ────────────────────────────────────────────────────────────────────────────────
 
-[Hình 4.1 Giao diện trang chủ – phần Hero Banner]
-[Hình 4.2 Giao diện trang chủ – phần Giới thiệu trung tâm]
-[Hình 4.3 Giao diện trang chủ – phần Các khóa đào tạo]
-[Hình 4.4 Giao diện trang chủ – phần Thông tin hạng bằng lái]
-[Hình 4.5 Giao diện trang chủ – phần Thủ tục đăng ký]
+[Hình 4.1 Giao diện trang chủ – phần Hero Banner và Giới thiệu trung tâm]
+[Hình 4.2 Giao diện trang chủ – phần Các khóa đào tạo]
+[Hình 4.3 Giao diện trang chủ – phần Thông tin hạng bằng lái]
+[Hình 4.4 Giao diện trang chủ – phần Thủ tục đăng ký]
 
-Trang chủ của hệ thống được thiết kế theo bố cục cuộn dọc (scroll layout),
-bao gồm nhiều phần nội dung sắp xếp theo thứ tự logic từ tổng quan đến chi
-tiết, giúp người dùng tiếp cận thông tin một cách tự nhiên và mạch lạc.
+Trang chủ được thiết kế theo bố cục cuộn dọc, gồm năm phần chính sắp xếp
+theo luồng thông tin tự nhiên từ tổng quan đến chi tiết.
 
-Phần Hero Banner (đầu trang):
+Phần đầu trang (Hero Banner) là banner toàn màn hình với hình nền sân tập
+lái nhìn từ trên cao, nổi bật tên trung tâm cùng bốn điểm mạnh (đào tạo
+nhiều hạng, thủ tục nhanh, học 1 kèm 1, học phí trọn gói) và nút "Đăng ký
+tư vấn" màu xanh dương. Tiếp theo là phần giới thiệu bố cục hai cột: hình
+ảnh thực tế của trung tâm bên trái, đoạn văn giới thiệu và cam kết chất
+lượng bên phải, kèm hình ảnh giấy phép đào tạo do Sở GTVT cấp.
 
-  Phần trên cùng là một banner toàn màn hình với hình nền chụp từ trên cao
-  sân tập lái xe, tạo ấn tượng thị giác mạnh mẽ ngay khi vào trang. Tiêu đề
-  chính "TRUNG TÂM DẠY LÁI XE SAO VIỆT" được hiển thị nổi bật bằng chữ trắng
-  in đậm, kèm dòng mô tả ngắn về các hạng đào tạo (A1, A, B sổ sàn, B tự
-  động, C1, C). Phía dưới tiêu đề là danh sách bốn điểm nổi bật của trung tâm
-  được đánh dấu bằng biểu tượng tích xanh:
+Phần khóa đào tạo trình bày sáu hạng bằng (A1, A, B1, B2, C1, C) dưới dạng
+thẻ card lưới 3 cột, mỗi thẻ gồm ảnh minh họa, học phí in đỏ, thông tin
+chi tiết (độ tuổi, thời gian học, loại xe) và nút "Xem chi tiết".
 
-    - Đào tạo A1, A, B1, B2, C1, C
-    - Thủ tục nhanh gọn
-    - Học 1 kèm 1, linh hoạt
-    - Học phí trọn gói, không phát sinh
+Phần thông tin hạng bằng so sánh song song Luật cũ trước 2025 (nền xanh
+dương) và Luật mới từ 01/01/2025 (nền xanh lá), kèm khung điều kiện học lái
+xe ô tô phía dưới.
 
-  Kết thúc phần banner là nút kêu gọi hành động (CTA) "Đăng ký tư vấn" màu
-  xanh dương nổi bật, dẫn học viên đến form đăng ký tư vấn hoặc trang đăng ký
-  hồ sơ trực tuyến.
+Phần thủ tục đăng ký hướng dẫn hồ sơ cần chuẩn bị (giấy khám sức khỏe,
+ảnh 3×4, photo CCCD) bên trái, và hình minh họa ảnh thẻ đúng/sai quy cách
+bên phải, giúp học viên chuẩn bị hồ sơ chính xác ngay từ đầu.
 
-Phần Giới thiệu trung tâm:
 
-  Tiếp theo banner là phần giới thiệu tổng quan về trung tâm với bố cục chia
-  hai cột. Bên trái là hình ảnh thực tế của tòa nhà trung tâm cùng đội ngũ xe
-  tập lái và giảng viên, tạo cảm giác tin cậy và chuyên nghiệp. Bên phải là
-  đoạn văn giới thiệu lịch sử, phương châm hoạt động và cam kết chất lượng đào
-  tạo của Sao Việt tại TP.HCM.
+4.1.2 Giao diện trang tất cả khóa học
+────────────────────────────────────────────────────────────────────────────────
 
-  Phía dưới phần giới thiệu có dòng chữ màu đỏ nổi bật: "Được Cấp Phép Đào
-  Tạo Chính Quy, Cam Kết Uy Tín & Minh Bạch", kèm theo hình ảnh các giấy phép
-  đào tạo và văn bản pháp lý của trung tâm do Sở Giao thông Vận tải cấp, nhằm
-  tăng tính tin cậy và minh bạch với người dùng.
+[Hình 4.5 Giao diện trang tất cả khóa học]
 
-Phần Các khóa đào tạo:
+Trang tất cả khóa học (đường dẫn /khoa-hoc) là trang liệt kê đầy đủ các
+chương trình đào tạo mà trung tâm cung cấp. Trang gồm hai phần chính:
 
-  Tiêu đề section "Các khóa đào tạo lái xe tại Trung Tâm SAO VIỆT" được đặt
-  ở giữa với màu xanh dương. Các khóa học được trình bày dạng thẻ (card) theo
-  lưới 3 cột, bao gồm sáu hạng bằng: A1, A, B1, B2, C1 và C (xe tải nặng).
+Phần Hero Banner ở đầu trang có nền gradient xanh dương đậm, hiển thị tiêu
+đề "Các Khóa Đào Tạo Lái Xe" cùng dòng mô tả ngắn về trung tâm. Phía dưới
+banner có một khoảng trắng tạo sự tách biệt trước khi vào nội dung chính.
 
-  Mỗi thẻ khóa học bao gồm:
-    - Hình ảnh minh họa thực tế của loại xe/môn học ở phần trên.
-    - Nhãn tên hạng bằng với màu sắc phân biệt theo từng loại: vàng (A1),
-      cam (A), xanh dương (B1), xanh lá (B2), xanh navy (C1), xanh đậm (C).
-    - Học phí in đỏ nổi bật, kèm dòng cam kết "Hồ sơ trọn gói không phát sinh".
-    - Danh sách thông tin chi tiết với biểu tượng tích: độ tuổi đăng ký,
-      thời điểm khai giảng, thời gian đào tạo, thời gian học và loại xe.
-    - Nút "XEM CHI TIẾT" màu đỏ dẫn đến trang chi tiết khóa học.
-    - Số hotline tư vấn phía dưới mỗi thẻ.
+Phần danh sách khóa học trình bày chín hạng bằng (A1, A, B1, B2, C1, C, D,
+E, CE) theo lưới ba cột. Mỗi thẻ khóa học gồm ảnh minh họa loại xe ở trên,
+nhãn tên hạng bằng với màu sắc riêng biệt, học phí in đỏ nổi bật kèm dòng
+cam kết "Hồ sơ trọn gói không phát sinh", danh sách thông tin chi tiết (độ
+tuổi, thời gian học, loại xe, số buổi lý thuyết, số km thực hành), nút "XEM
+CHI TIẾT" màu đỏ và số hotline tư vấn phía dưới. Bố cục lưới ba cột giúp
+học viên dễ dàng so sánh và lựa chọn hạng bằng phù hợp.
 
-  Cách trình bày dạng card giúp học viên dễ dàng so sánh các hạng bằng, lựa
-  chọn khóa học phù hợp với nhu cầu và điều kiện của bản thân.
 
-Phần Thông tin các hạng bằng lái:
+4.1.3 Giao diện trang chi tiết khóa học
+────────────────────────────────────────────────────────────────────────────────
 
-  Section này cung cấp kiến thức tổng hợp về quy định bằng lái xe hiện hành,
-  với tiêu đề "Thông tin về các bằng lái xe hạng A, B, C1, C" màu xanh dương
-  ở giữa. Nội dung được chia thành hai bảng song song:
+[Hình 4.6 Giao diện trang chi tiết khóa học – ví dụ hạng C1]
 
-    - Bảng "Luật cũ trước 2025" với nền xanh dương, liệt kê các hạng A1, A,
-      B1, B2, C kèm mô tả phạm vi điều khiển theo quy định cũ.
-    - Bảng "Luật mới áp dụng từ 01/01/2025" với nền xanh lá, liệt kê các
-      hạng A1, A2, B số Tự Động, B Số Sàn, C1, C theo quy định mới nhất.
+Trang chi tiết khóa học (đường dẫn /khoa-hoc/:hang) cung cấp đầy đủ thông
+tin về một hạng bằng cụ thể, giúp học viên nắm rõ chương trình trước khi
+đăng ký.
 
-  Mỗi hạng trong bảng có icon xe minh họa kèm mô tả ngắn gọn về phạm vi
-  điều khiển, giúp học viên nhanh chóng nắm bắt sự khác biệt giữa hai luật.
+Phần đầu trang có nền gradient xanh dương, bố cục hai cột: bên trái hiển
+thị nhãn hạng bằng, tên khóa học in đậm lớn, mô tả ngắn về loại xe, học
+phí trọn gói in vàng nổi bật và hai nút hành động "Đăng Ký Học Ngay" (nền
+trắng) và "0934 057 333" (nền xanh nhạt); bên phải là hình ảnh thực tế của
+loại xe đào tạo.
 
-  Phía dưới hai bảng là khung "Điều kiện học lái xe ô tô" nền xanh nhạt, liệt
-  kê bốn điều kiện cơ bản:
-    - Là công dân Việt Nam hoặc người nước ngoài đang làm việc và sinh sống
-      tại Việt Nam.
-    - Từ 18 tuổi đối với hạng A1, A, B1, B, C1.
-    - Đủ điều kiện sức khỏe theo quy định.
-    - Không yêu cầu về bằng cấp hay trình độ văn hóa.
+Phần thông tin tổng quan phía dưới hero trình bày sáu chỉ số dạng icon kèm
+nhãn: độ tuổi yêu cầu, loại xe, thời hạn bằng, yêu cầu trước, lý thuyết
+tối thiểu và số km thực hành tối thiểu, giúp học viên nhanh chóng nắm bắt
+điều kiện tham gia.
 
-Phần Thủ tục đăng ký:
+Phần nội dung chính được chia hai cột. Cột trái gồm hai khung: khung "Quyền
+lái xe được cấp" liệt kê các loại xe được phép điều khiển sau khi có bằng,
+và khung "Lệ phí sát hạch nhà nước (từ 01/01/2026)" trình bày bảng chi phí
+từng hạng mục thi (sát hạch lý thuyết, mô phỏng, thực hành trong hình, đường
+trường và lệ phí cấp bằng PET). Cột phải là khung "Quy trình đào tạo" liệt
+kê sáu bước tuần tự: nộp hồ sơ, học lý thuyết, học thực hành, thi tốt
+nghiệp, thi sát hạch và nhận bằng, mỗi bước đánh số thứ tự và mô tả ngắn.
 
-  Phần cuối của trang chủ hướng dẫn thủ tục đăng ký học bằng lái xe với tiêu
-  đề "Thủ tục đăng ký học bằng lái xe tại Trung Tâm Lái Xe Sao Việt". Bố cục
-  chia hai cột:
+Phía dưới là khung kêu gọi hành động nền xanh đậm với tiêu đề "Bắt đầu học
+ngay hôm nay!", hai nút "Đăng Ký Học Ngay" và "Gọi ngay: 0934 057 333".
 
-    - Bên trái là khung xanh nhạt liệt kê danh sách hồ sơ cần chuẩn bị (bốn
-      mục, đánh dấu tick xanh): giấy khám sức khỏe, 12 ảnh 3×4 nền xanh dương
-      đậm, photo các bằng lái hiện có (nếu có) và 2 bản photo CMND/CCCD.
-    - Bên phải là hình ảnh minh họa chuẩn ảnh thẻ hợp lệ và không hợp lệ,
-      gồm ảnh đúng quy cách và các ảnh sai (đeo kính, phông nền không phù hợp,
-      tóc che tai) được đánh dấu X đỏ, giúp học viên chuẩn bị hồ sơ chính
-      xác ngay từ đầu, tránh phải làm lại nhiều lần.
+Cuối trang là phần "Xem thêm các khóa học khác" hiển thị các hạng bằng còn
+lại dưới dạng thẻ nhỏ có ảnh và tên, cho phép học viên điều hướng nhanh
+sang khóa học khác mà không cần quay lại trang danh sách.
 
-Nhìn tổng thể, giao diện trang chủ được thiết kế rõ ràng, trực quan và đầy
-đủ thông tin. Màu sắc chủ đạo xanh dương – trắng – đỏ tạo sự chuyên nghiệp,
-nhất quán với nhận diện thương hiệu. Bố cục cuộn dọc giúp người dùng tiếp cận
-thông tin theo luồng tự nhiên: từ tổng quan thương hiệu, đến các khóa học, kiến
-thức về bằng lái và cuối cùng là hướng dẫn thủ tục đăng ký. Toàn bộ trang đáp
-ứng tốt trên cả màn hình máy tính và thiết bị di động nhờ thiết kế responsive.
+
+4.1.4 Giao diện form đăng ký học bằng lái
+────────────────────────────────────────────────────────────────────────────────
+
+[Hình 4.7 Giao diện form đăng ký học bằng lái xe]
+
+Form đăng ký (tiêu đề "Điền thông tin đăng ký") được bố cục hai cột, gồm
+các trường thông tin cá nhân và lựa chọn loại bằng.
+
+Cột trái là ô tải ảnh thẻ 3×4, hỗ trợ định dạng JPG/PNG tối đa 5MB, kèm
+ghi chú yêu cầu ảnh nền trắng, rõ mặt, không đội mũ. Cột phải gồm bốn
+trường bắt buộc: Họ và tên, Số điện thoại, Số CCCD, Ngày sinh; và hai
+trường tùy chọn: Email và Địa chỉ (Quận/Huyện/Tỉnh/TP).
+
+Phần "Loại bằng lái đăng ký" trình bày chín hạng bằng (A1, A, B1, B2, C1,
+C, D, E, CE) dạng lưới hai cột, mỗi ô gồm radio button, tên hạng, học phí
+in đỏ và độ tuổi tối thiểu. Khi chọn một hạng, hệ thống hiển thị ghi chú
+điều kiện tuổi tương ứng ngay bên dưới tiêu đề.
+
+Cuối form là ô "Ghi chú thêm" cho phép học viên nhập thời gian rảnh, câu
+hỏi hoặc yêu cầu đặc biệt, và nút "Đăng Ký Học Lái Xe" màu đỏ toàn chiều
+rộng để gửi hồ sơ.
+
+
+4.1.5 Giao diện trang liên hệ
+────────────────────────────────────────────────────────────────────────────────
+
+[Hình 4.8 Giao diện trang liên hệ]
+
+Trang liên hệ (đường dẫn /lien-he) giúp khách hàng gửi câu hỏi hoặc yêu
+cầu tư vấn trực tiếp đến trung tâm. Trang gồm phần hero banner nền xanh
+dương với tiêu đề "Liên Hệ" và dòng mô tả "Chúng tôi luôn sẵn sàng hỗ trợ
+bạn", tiếp theo là nội dung chính bố cục hai cột.
+
+Cột trái "Thông tin liên hệ" liệt kê bốn mục kèm icon: địa chỉ trụ sở
+chính, hotline tư vấn (in đỏ), email và giờ làm việc (Thứ 2 – Thứ 7:
+07:00–20:00, Chủ nhật: 08:00–17:00). Phía dưới là bản đồ Google Maps nhúng
+trực tiếp, hiển thị vị trí trung tâm và cho phép mở rộng trong Google Maps.
+
+Cột phải "Gửi tin nhắn cho chúng tôi" là form với các trường: Họ và tên
+(bắt buộc), Số điện thoại và Email (hai cột ngang, tùy chọn), Nội dung
+(bắt buộc). Form có kiểm tra hợp lệ phía client: số điện thoại phải đúng
+10 số bắt đầu bằng 0, email phải có dạng @gmail.com. Sau khi gửi thành
+công, form được thay thế bằng thông báo xác nhận màu xanh lá.
+
+
+4.2 Giao diện trang quản trị (Admin)
+────────────────────────────────────────────────────────────────────────────────
+
+Hệ thống quản trị được xây dựng bằng React + Vite, chạy trên cổng 5173,
+dành riêng cho Quản trị viên và Giảng viên. Giao diện gồm thanh điều hướng
+cố định bên trái với logo, thông tin vai trò và danh sách menu, kết hợp với
+khu vực nội dung chính ở giữa thay đổi theo từng trang.
+
+
+4.2.1 Trang Dashboard (Quản trị hệ thống)
+────────────────────────────────────────────────────────────────────────────────
+
+[Hình 4.9 Giao diện trang Dashboard quản trị]
+
+Trang Dashboard cung cấp cái nhìn tổng quan về toàn bộ hoạt động của trung
+tâm. Thanh điều hướng bên trái cho phép truy cập nhanh các chức năng: Hồ
+Sơ Học Viên, Bằng Lái, Khóa Học, Lớp Học, Lịch Học, Lịch Thi & Kết Quả,
+Cấp Bằng, Giảng Viên, Học Phí và Quản Lý Xe.
+
+Khu vực trung tâm hiển thị sáu thẻ chỉ số quan trọng: tổng hồ sơ, số học
+viên chờ mở lớp, đang học, tổng khóa học, lịch học hôm nay và doanh thu
+tháng. Phía dưới gồm bốn nhóm biểu đồ: biểu đồ doanh thu (lọc theo tháng,
+quý, năm), danh sách hoạt động gần đây, biểu đồ cột học viên đăng ký và
+hoàn thành 6 tháng gần nhất, và biểu đồ thanh ngang trạng thái học viên
+theo từng giai đoạn trong quy trình đào tạo.
+
+Hàng tiếp theo trình bày biểu đồ kết quả thi (đạt, không đạt, vắng mặt)
+lọc theo 7 ngày, 30 ngày hoặc 12 tháng, cùng hai mini card thống kê trạng
+thái khóa học và trạng thái lớp học. Hàng cuối tổng hợp tình trạng xe (tổng
+số, sẵn sàng, đang dùng kèm biểu đồ tròn), thống kê giảng viên theo chuyên
+môn (lý thuyết, thực hành, cả hai) và danh sách lịch thi sắp tới 30 ngày.
+
+Giao diện trực quan, sử dụng biểu đồ minh họa sinh động từ thư viện
+Recharts, giúp quản trị viên theo dõi và điều hành hoạt động đào tạo một
+cách nhanh chóng và hiệu quả.
+
+
+4.2.2 Trang quản lý hồ sơ học viên
+────────────────────────────────────────────────────────────────────────────────
+
+[Hình 4.10 Giao diện trang quản lý hồ sơ học viên]
+
+Trang Hồ Sơ Học Viên quản lý toàn bộ hồ sơ đăng ký học lái xe của trung
+tâm. Phía trên hiển thị sáu thẻ thống kê theo trạng thái: Chờ đóng HP, Chờ
+mở lớp, Đang học, Đủ ĐK thi TN, Chuẩn bị thi và Hoàn thành TN, giúp quản
+trị viên nắm nhanh phân bổ học viên trong từng giai đoạn.
+
+Bộ lọc gồm ô tìm kiếm theo tên, CCCD, SĐT và ba dropdown lọc theo hạng
+bằng lái, trạng thái học phí và trạng thái tổng thể. Danh sách học viên
+hiển thị dạng bảng với các cột: họ tên, CCCD, SĐT, hạng bằng, học phí (Đã
+đóng/Chưa đóng), trạng thái hiện tại và nguồn đăng ký (Online/Offline).
+
+Cột thao tác thay đổi linh hoạt theo từng trạng thái: học viên chưa đóng HP
+có nút "Thu HP", học viên chờ mở lớp có nút "Xếp lớp", các trường hợp còn
+lại chỉ có nút "Xem" và xóa. Nút "+ Thêm hồ sơ offline" ở góc trên phải
+cho phép tạo hồ sơ trực tiếp tại trung tâm.
+
+
+4.2.3 Trang quản lý bằng lái xe
+────────────────────────────────────────────────────────────────────────────────
+
+[Hình 4.11 Giao diện trang quản lý bằng lái xe]
+
+Trang Quản Lý Bằng Lái Xe quản lý danh mục các loại bằng lái và nội dung
+hiển thị trên website quảng bá. Ba thẻ thống kê đầu trang cho biết tổng số
+loại bằng, số đang hiển thị và số đã ẩn.
+
+Bảng danh sách gồm các cột: tên bằng lái, hạng, học phí, lý thuyết tối
+thiểu, km tối thiểu, sĩ số tối đa và trạng thái hiển thị. Mỗi hàng có ba
+nút thao tác: "Xem" để xem chi tiết và chỉnh sửa, "Ẩn/Hiện" để kiểm soát
+hiển thị trên trang quảng bá, và nút xóa. Bộ lọc gồm ô tìm kiếm theo tên
+hoặc hạng và dropdown lọc theo hạng bằng. Nút "+ Thêm loại bằng lái" ở góc
+trên phải cho phép bổ sung hạng bằng mới vào hệ thống.
+
+
+4.2.4 Trang quản lý khóa học đào tạo
+────────────────────────────────────────────────────────────────────────────────
+
+[Hình 4.12 Giao diện trang quản lý khóa học đào tạo]
+
+Trang Quản Lý Khóa Học Đào Tạo tạo và quản lý các khóa học theo tháng, bao
+gồm phân lớp, giảng viên, học viên và xe. Bốn thẻ thống kê đầu trang hiển
+thị tổng khóa học và số lượng theo từng trạng thái: Chuẩn bị, Đang học và
+Kết thúc.
+
+Bộ lọc gồm ô tìm kiếm theo tên hoặc mã khóa, và bốn dropdown lọc theo hạng
+bằng, tháng, năm và trạng thái. Bảng danh sách gồm các cột: mã khóa, tên
+khóa học, hạng, tháng/năm, số lớp (kèm số lớp đang học), trạng thái và thao
+tác. Trạng thái khóa học được đồng bộ tự động theo trạng thái các lớp bên
+trong. Mỗi hàng có nút "Xem" để mở chi tiết khóa học — nơi quản trị viên
+quản lý các lớp học, phân công giảng viên, xếp học viên và phân xe thực
+hành. Nút "+ Tạo khóa học" ở góc trên phải cho phép tạo khóa học mới theo
+tháng.
+
+
+4.2.5 Trang quản lý lớp học
+────────────────────────────────────────────────────────────────────────────────
+
+[Hình 4.14 Giao diện trang quản lý lớp học]
+
+Trang Lớp Học quản lý các lớp học và phân công giảng viên. Ba thẻ thống kê
+đầu trang hiển thị số lớp theo từng trạng thái: Chuẩn bị, Đang học và Kết
+thúc — click vào thẻ sẽ lọc bảng theo trạng thái tương ứng.
+
+Bộ lọc gồm ô tìm kiếm theo tên lớp, khóa học hoặc giảng viên, và ba
+dropdown lọc theo hạng bằng, tháng, năm kèm dropdown lọc trạng thái. Bảng
+danh sách gồm các cột: tên lớp, khóa học (kèm nhãn hạng bằng), GV lý
+thuyết, GV thực hành, ngày khai giảng, sĩ số và trạng thái. Mỗi hàng có
+nút "Xem" để mở chi tiết lớp và quản lý danh sách học viên, nút xóa để
+giải thể lớp. Nút "+ Tạo lớp học" ở góc trên phải cho phép tạo lớp mới và
+phân công giảng viên ngay khi tạo.
+
+
+4.2.6 Trang quản lý lịch học
+────────────────────────────────────────────────────────────────────────────────
+
+[Hình 4.13 Giao diện trang quản lý lịch học]
+
+Trang Lịch Học trình bày thời khóa biểu theo tuần, kết hợp hai chế độ xem
+song song. Phía trên là dropdown lọc theo lớp học và bộ điều hướng tuần
+(Tuần trước / Hôm nay / Tuần sau) kèm khoảng ngày đang xem.
+
+Phần đầu là bảng "Danh Sách Buổi Học Trong Tuần" liệt kê chi tiết từng buổi
+theo các cột: ngày, thứ, giờ, lớp học, loại (Lý thuyết hoặc Thực hành với
+màu sắc phân biệt), địa điểm, biển số xe và thao tác (điểm danh, sửa, xóa).
+
+Phía dưới là lịch dạng lưới tuần 7 cột (Thứ 2 đến Chủ nhật), trục dọc là
+khung giờ từ 07:00 đến 18:00. Mỗi buổi học hiển thị dưới dạng khối màu
+(xanh dương cho lý thuyết, xanh lá cho thực hành) đặt đúng vị trí thời
+gian, kèm tên lớp và địa điểm. Cột ngày hiện tại được tô đậm để dễ nhận
+biết. Nút "+ Tạo buổi học" ở góc trên phải cho phép tạo lịch học mới.
+
+
+4.2.7 Trang quản lý lịch thi và kết quả
+────────────────────────────────────────────────────────────────────────────────
+
+[Hình 4.17 Giao diện trang quản lý lịch thi và kết quả]
+
+Trang Thi & Kết Quả quản lý lịch thi tốt nghiệp và sát hạch. Trang có hai
+tab chuyển đổi: "Lịch Thi" và "Kết Quả", cùng nút "+ Tạo lịch thi" ở góc
+trên phải.
+
+Tab Lịch Thi hiển thị bảng danh sách với các cột: ngày thi, giờ, loại thi
+(Tốt nghiệp hoặc Sát hạch với màu phân biệt), loại bằng lái, địa điểm và
+đơn vị tổ chức. Bộ lọc gồm ô tìm kiếm theo loại bằng, địa điểm, đơn vị tổ
+chức và hai dropdown lọc theo loại bằng và loại thi. Mỗi hàng có bốn nút
+thao tác: "Xem" chi tiết lịch thi, "Học viên" để quản lý danh sách học viên
+dự thi, "Nhập KQ" để nhập kết quả từng bài thi cho từng học viên, nút sửa
+và nút xóa.
+
+
+4.2.8 Trang quản lý cấp bằng
+────────────────────────────────────────────────────────────────────────────────
+
+[Hình 4.18 Giao diện trang quản lý cấp bằng]
+
+Trang Quản Lý Cấp Bằng xét duyệt và cấp bằng tốt nghiệp và bằng lái xe cho
+học viên. Trang có hai tab: "Bằng Tốt Nghiệp" và "Bằng Lái Xe", kèm ô tìm
+kiếm theo tên, CCCD, số điện thoại và dropdown lọc theo trạng thái.
+
+Tab Bằng Tốt Nghiệp hiển thị danh sách học viên đã thi đậu tốt nghiệp với
+các cột: ảnh thẻ và họ tên, CCCD, khóa học, hạng bằng, kết quả thi TN (Đạt)
+và trạng thái bằng TN (Chờ cấp). Mỗi hàng có nút "Cấp bằng" để xác nhận
+cấp bằng tốt nghiệp, chuyển học viên sang giai đoạn tiếp theo trong quy
+trình. Tab Bằng Lái Xe hoạt động tương tự cho học viên đã đậu sát hạch và
+đang chờ nhận bằng lái chính thức.
+
+
+4.2.10 Trang quản lý học phí
+────────────────────────────────────────────────────────────────────────────────
+
+[Hình 4.20 Giao diện trang quản lý học phí]
+
+Trang Quản Lý Học Phí theo dõi toàn bộ lịch sử thu học phí và phí thi lại
+của trung tâm. Góc trên phải có hai nút: "Làm mới" để tải lại dữ liệu và
+"Xuất hóa đơn" để xuất PDF theo bộ lọc hiện tại.
+
+Bốn thẻ thống kê đầu trang hiển thị: tổng số giao dịch, tổng thu, tiền mặt
+và chuyển khoản — tự cập nhật theo bộ lọc đang áp dụng.
+
+Bộ lọc gồm ô tìm kiếm theo tên, CCCD, mã giao dịch và năm dropdown: hạng
+bằng, tháng, năm, phương thức thanh toán, khóa học và loại tiền (học phí /
+phí thi lại). Bảng danh sách gồm các cột: học viên, CCCD, khóa/bài thi,
+hạng bằng, số tiền, loại tiền (Học phí hoặc Phí thi lại với màu badge phân
+biệt), phương thức thanh toán, người thu và ngày thu. Nút 👁️ cuối mỗi hàng
+mở modal xem chi tiết giao dịch học phí.
+
+
+4.2.11 Trang quản lý xe
+────────────────────────────────────────────────────────────────────────────────
+
+[Hình 4.21 Giao diện trang quản lý xe]
+
+Trang Quản Lý Xe quản lý đội xe và theo dõi tình trạng từng xe. Năm thẻ
+thống kê đầu trang hiển thị: tổng xe, sẵn sàng, hỏng, bảo trì và chờ xử lý.
+
+Trang có hai tab: "Danh Sách Xe" và "Báo Lỗi". Tab Danh Sách Xe gồm bộ lọc
+tìm kiếm theo biển số, hãng xe, dòng xe và ba dropdown lọc theo loại hộp số,
+hạng bằng và trạng thái. Bảng liệt kê các cột: ảnh xe kèm biển số, hãng và
+dòng xe, loại hộp số, hạng bằng phù hợp và trạng thái hiện tại. Cột thao
+tác gồm nút "Xem" để xem chi tiết và chỉnh sửa, dropdown đổi trạng thái
+trực tiếp (Sẵn sàng, Bảo trì, Hỏng) và nút xóa. Nút "+ Thêm xe" ở góc trên
+phải cho phép thêm xe mới vào đội.
+
+
+4.2.12 Trang quản lý liên hệ
+────────────────────────────────────────────────────────────────────────────────
+
+[Hình 4.22 Giao diện trang quản lý liên hệ]
+
+Trang Quản Lý Liên Hệ hiển thị tin nhắn từ khách hàng gửi qua trang Liên
+Hệ. Góc trên phải có badge đếm số tin chưa xử lý. Bộ lọc gồm ô tìm kiếm
+theo tên, SĐT, email và dropdown lọc theo trạng thái.
+
+Bảng danh sách gồm các cột: họ tên, số điện thoại, email, nội dung tin nhắn
+(hiển thị tóm tắt), thời gian gửi và trạng thái (Chưa xử lý màu vàng, Đã
+xử lý màu xanh lá). Mỗi hàng có nút "Xem" để mở modal xem nội dung đầy đủ,
+thêm ghi chú xử lý và đánh dấu đã xử lý, cùng nút xóa.
+
+
+4.3 Giao diện cổng giảng viên
+────────────────────────────────────────────────────────────────────────────────
+
+Cổng giảng viên là giao diện riêng dành cho giảng viên, chạy cùng ứng dụng
+Admin nhưng hiển thị menu và nội dung khác biệt tùy theo vai trò. Thanh điều
+hướng bên trái gồm các mục: Tổng Quan, Thông Tin Cá Nhân, Lớp Của Tôi, Lịch
+Dạy, Điểm Danh và Xe & Báo Lỗi (chỉ hiển thị với giảng viên thực hành).
+
+
+4.3.1 Trang tổng quan giảng viên
+────────────────────────────────────────────────────────────────────────────────
+
+[Hình 4.23 Giao diện trang tổng quan giảng viên]
+
+Trang Tổng Quan hiển thị lời chào cá nhân hóa theo tên giảng viên kèm ngày
+tháng hiện tại. Bốn thẻ thống kê đầu trang cho biết: số lớp đang dạy, tổng
+học viên, tổng lớp được phân công và số buổi dạy hôm nay.
+
+Phần chính là thời khóa biểu tuần dạng lưới 7 cột (Thứ 2 đến Chủ nhật),
+trục dọc theo khung giờ từ 07:00 đến 18:00, với bộ điều hướng tuần và nút
+"Hôm nay". Mỗi buổi dạy hiển thị dưới dạng khối màu (xanh dương cho lý
+thuyết, xanh lá cho thực hành) đặt đúng vị trí thời gian, kèm tên lớp và
+loại buổi dạy. Phía dưới là khung "Lịch Dạy Hôm Nay" — nếu không có lịch
+thì hiển thị thông báo nghỉ ngơi, nếu có thì liệt kê các buổi kèm nút
+"Điểm danh". Cuối trang là bảng "Lớp Được Phân Công" liệt kê tên lớp, khóa
+học, số học viên, ngày khai giảng và trạng thái.
+
+
+4.3.2 Trang lớp đang dạy
+────────────────────────────────────────────────────────────────────────────────
+
+[Hình 4.24 Giao diện trang lớp đang dạy]
+
+Trang Lớp Đang Dạy hiển thị danh sách các lớp học được phân công cho giảng
+viên dưới dạng thẻ card lưới 3 cột. Mỗi thẻ gồm tên lớp, badge trạng thái
+(Đang học), tên khóa học, số học viên, ngày khai giảng và nhãn chuyên môn
+(Lý thuyết hoặc Thực hành). Giảng viên có thể nhấn vào thẻ để xem danh sách
+học viên trong lớp.
+
+
+4.3.3 Trang lịch dạy
+────────────────────────────────────────────────────────────────────────────────
+
+[Hình 4.25 Giao diện trang lịch dạy]
+
+Trang Lịch Dạy trình bày thời khóa biểu cá nhân theo tuần với bộ điều hướng
+Tuần trước / Hôm nay / Tuần sau và khoảng ngày đang xem.
+
+Phần trên là bảng "Danh Sách Buổi Dạy Trong Tuần" liệt kê từng buổi theo
+các cột: ngày, thứ, giờ, lớp học, loại (Lý thuyết hoặc Thực hành), địa
+điểm, biển số xe và nút "Điểm danh" để chuyển sang trang điểm danh buổi đó.
+
+Phần dưới là lịch dạng lưới tuần 7 cột theo khung giờ 07:00–18:00. Mỗi buổi
+dạy hiển thị dưới dạng khối màu (xanh dương cho lý thuyết, xanh lá cho thực
+hành) đúng vị trí thời gian, kèm tên lớp và địa điểm. Chú thích màu và gợi
+ý nhấn vào buổi để xem chi tiết hiển thị ở cuối trang.
+
+
+4.3.4 Trang báo lỗi xe
+────────────────────────────────────────────────────────────────────────────────
+
+[Hình 4.26 Giao diện trang báo lỗi xe]
+
+Trang Báo Lỗi Xe gồm hai tab: "Xe Được Cấp" và "Lịch Sử Báo Lỗi". Tab Xe
+Được Cấp liệt kê các xe phân công cho lớp thực hành của giảng viên, nhóm
+theo từng lớp. Mỗi xe hiển thị ảnh, biển số, hãng xe, màu sắc, số km, hạng
+bằng và trạng thái, kèm nút "Báo lỗi" màu vàng để gửi báo cáo sự cố. Nút
+"Báo lỗi xe" ở góc trên phải mở modal nhập mô tả lỗi cho xe bất kỳ trong
+đội. Tab Lịch Sử Báo Lỗi hiển thị danh sách các lần báo lỗi đã gửi kèm
+trạng thái xử lý từ admin.
+
+
+4.4 Giao diện cổng học viên
+────────────────────────────────────────────────────────────────────────────────
+
+Cổng học viên là giao diện dành riêng cho học viên đăng nhập bằng CCCD và
+ngày sinh. Giao diện không có thanh sidebar mà dùng thanh điều hướng ngang
+ở trên cùng với các mục: Tổng Quan, Lịch Học, Tiến Độ, Kết Quả Thi, Học
+Phí và Hồ Sơ.
+
+
+4.4.1 Trang tổng quan học viên
+────────────────────────────────────────────────────────────────────────────────
+
+[Hình 4.27 Giao diện trang tổng quan học viên]
+
+Trang tổng quan hiển thị banner chào mừng cá nhân hóa theo tên học viên kèm
+badge trạng thái hiện tại trong quy trình đào tạo. Sáu thẻ thống kê bên
+dưới cho biết: lịch học hôm nay, buổi học còn lại, km đã thực hành, kết quả
+thi gần nhất, trạng thái học phí và tiến độ lý thuyết. Phần cuối trang là
+khung "Lịch Học Hôm Nay" — hiển thị các buổi học trong ngày hoặc thông báo
+không có lịch học kèm icon nghỉ ngơi.
+
+
+4.4.2 Trang lịch học
+────────────────────────────────────────────────────────────────────────────────
+
+[Hình 4.28 Giao diện trang lịch học học viên]
+
+Trang Lịch Học theo dõi lịch học lý thuyết và thực hành của học viên. Phần
+trên hiển thị thẻ thông tin giảng viên lý thuyết và giảng viên thực hành
+(ảnh đại diện, tên, SĐT, hạng bằng, kinh nghiệm). Phần lịch là lưới tuần 7
+cột với bộ điều hướng Tuần trước / Hôm nay / Tuần sau. Mỗi buổi học hiển
+thị dạng khối màu (xanh dương cho lý thuyết, xanh lá cho thực hành) đúng vị
+trí giờ học, kèm loại buổi và địa điểm. Có thêm chế độ xem danh sách để
+chuyển đổi linh hoạt. Ngày hiện tại được tô đậm để dễ nhận biết.
+
+
+4.4.3 Trang tiến độ học tập
+────────────────────────────────────────────────────────────────────────────────
+
+[Hình 4.29 Giao diện trang tiến độ học tập]
+
+Trang Tiến Độ Học Tập gồm ba phần chính. Phần "Điều Kiện Dự Thi Tốt
+Nghiệp" liệt kê ba tiêu chí (đủ buổi lý thuyết, đủ km thực hành, đủ điều
+kiện dự thi TN) với badge Đạt/Chưa đạt và thông báo chúc mừng khi đủ điều
+kiện. Phần "Chi Tiết Tiến Độ" hiển thị thanh tiến trình cho từng chỉ số (số
+buổi lý thuyết và km thực hành) kèm phần trăm hoàn thành. Bốn thẻ tóm tắt
+phía dưới cho biết: buổi lý thuyết đã học, km đã chạy, buổi thực hành đã
+học và trạng thái điều kiện thi. Phần cuối là thông tin khóa học (hạng bằng,
+loại bằng, số buổi LT tối thiểu, số km tối thiểu).
+
+
+4.4.4 Trang kết quả thi
+────────────────────────────────────────────────────────────────────────────────
+
+[Hình 4.30 Giao diện trang kết quả thi]
+
+Trang Kết Quả Thi hiển thị điểm số và trạng thái từng bài thi tốt nghiệp
+và sát hạch. Kết quả được nhóm theo từng lần thi (ngày thi, địa điểm, kết
+quả tổng "Đậu tất cả"). Mỗi bài thi trong lần thi được liệt kê riêng với
+tên bài, lần thi, điểm số và badge Đạt/Không đạt. Học viên có thể theo dõi
+đầy đủ lịch sử các lần thi tốt nghiệp và sát hạch trên cùng một trang.
+
+
+4.4.5 Trang học phí
+────────────────────────────────────────────────────────────────────────────────
+
+[Hình 4.31 Giao diện trang học phí học viên]
+
+Trang Học Phí theo dõi trạng thái học phí và lịch sử thanh toán. Khung
+thông tin hiển thị hạng bằng, tổng học phí, số đã thanh toán, số còn lại và
+thanh tiến trình phần trăm đã đóng. Trạng thái giao dịch được hiển thị ở
+góc trên phải của khung.
+
+
+4.4.6 Trang hồ sơ cá nhân
+────────────────────────────────────────────────────────────────────────────────
+
+[Hình 4.32 Giao diện trang hồ sơ cá nhân học viên]
+
+Trang Hồ Sơ Cá Nhân gồm bố cục hai cột. Cột trái là card xanh dương hiển
+thị ảnh đại diện, họ tên, CCCD, trạng thái trong quy trình đào tạo và khóa
+học đang theo học kèm hạng bằng. Cột phải liệt kê đầy đủ thông tin cá nhân
+(họ tên, email, điện thoại, CCCD, ngày sinh, địa chỉ, ngày đăng ký, nguồn
+đăng ký). Nút "Chỉnh sửa" ở góc trên phải cho phép học viên cập nhật thông
+tin cá nhân.
+
+
+4.2.9 Trang quản lý giảng viên
+────────────────────────────────────────────────────────────────────────────────
+
+[Hình 4.19 Giao diện trang quản lý giảng viên]
+
+Trang Giảng Viên quản lý toàn bộ tài khoản giảng viên của trung tâm. Bốn
+thẻ thống kê đầu trang hiển thị: tổng giảng viên, số đang sẵn sàng, số nghỉ
+phép và số bị đình chỉ.
+
+Bộ lọc gồm ô tìm kiếm theo tên, email, số điện thoại và dropdown lọc theo
+chuyên môn. Bảng danh sách gồm các cột: ảnh đại diện và họ tên, email, SĐT,
+chuyên môn (Lý thuyết, Thực hành hoặc Cả hai với màu nhãn phân biệt), kinh
+nghiệm và trạng thái. Cột trạng thái dùng dropdown inline cho phép đổi trực
+tiếp giữa Sẵn sàng, Nghỉ phép và Đình chỉ mà không cần mở modal. Mỗi hàng
+có ba nút: "Xem" để xem và chỉnh sửa hồ sơ giảng viên, "Khóa" để vô hiệu
+hóa tài khoản và nút xóa. Nút "+ Thêm giảng viên" ở góc trên phải tạo tài
+khoản giảng viên mới kèm thông tin chuyên môn.
+[GHI CHÚ ĐỊNH DẠNG KHI CHUYỂN SANG WORD]
+  - Font: Times New Roman, cỡ 13
+  - Cách dòng: 1.5
+  - Lề: Trái 3.0 cm, Phải 2.0 cm, Trên 2.5 cm, Dưới 2.5 cm
+  - Tiêu đề chương: In hoa, đậm, cỡ 14, căn giữa
+  - Tiêu đề mục (4.x): Đậm, cỡ 13
+  - Tiêu đề mục con (4.x.x): Đậm, nghiêng, cỡ 13
+  - Chú thích hình: Căn giữa, nghiêng, cỡ 12 — ví dụ: "Hình 4.1 Giao diện trang chủ – phần Hero Banner"
+  - Footer: "GVHD: ThS. Lê Phong Dũ       SVTH: Châu Thanh Thiện"
+  - Gạch đầu dòng: dùng dấu gạch ngang (-) thụt vào 1.25 cm
+  - Ước lượng 4.1.1: khoảng 3–4 trang A4 (chưa tính hình ảnh)
+================================================================================
 
 
 ================================================================================
@@ -136,5 +572,4 @@ thức về bằng lái và cuối cùng là hướng dẫn thủ tục đăng k
   - Chú thích hình: Căn giữa, nghiêng, cỡ 12 — ví dụ: "Hình 4.1 Giao diện trang chủ – phần Hero Banner"
   - Footer: "GVHD: ThS. Lê Phong Dũ       SVTH: Châu Thanh Thiện"
   - Gạch đầu dòng: dùng dấu gạch ngang (-) thụt vào 1.25 cm
-  - Ước lượng 4.1.1: khoảng 3–4 trang A4 (chưa tính hình ảnh)
 ================================================================================

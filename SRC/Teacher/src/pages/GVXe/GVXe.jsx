@@ -78,7 +78,7 @@ const GVXe = () => {
   return (
     <div className="gvxe-page">
       <div className="page-header">
-        <div><h2>🚗 Xe Của Tôi</h2><p>Thông tin xe được cấp và báo lỗi xe</p></div>
+        <div><h2>🚗 Báo Lỗi Xe</h2><p>Thông tin xe được cấp và báo lỗi xe</p></div>
         <button className="btn btn-warning" onClick={() => { setForm(emptyForm); setShowModal(true) }}>
           ⚠️ Báo lỗi xe
         </button>

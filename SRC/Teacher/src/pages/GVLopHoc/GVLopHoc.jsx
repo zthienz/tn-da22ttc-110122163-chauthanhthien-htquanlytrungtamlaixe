@@ -37,7 +37,7 @@ const GVLopHoc = () => {
   return (
     <div className="gvlh-page">
       <div className="page-header">
-        <div><h2>🏫 Lớp Của Tôi</h2><p>Danh sách lớp học bạn được phân công giảng dạy</p></div>
+        <div><h2>🏫 Lớp Đang Dạy</h2><p>Danh sách lớp học bạn được phân công giảng dạy</p></div>
       </div>
 
       {loading ? <div className="loading-wrap"><div className="spinner" /></div> : (

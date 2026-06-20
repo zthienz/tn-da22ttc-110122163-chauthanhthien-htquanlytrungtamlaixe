@@ -15,19 +15,20 @@ const adminMenu = [
   { path: '/giang-vien', icon: '👨‍🏫', label: 'Giảng Viên' },
   { path: '/hoc-phi',    icon: '💰', label: 'Học Phí' },
   { path: '/xe',         icon: '🚗', label: 'Quản Lý Xe' },
+  { path: '/lien-he',   icon: '✉️', label: 'Liên Hệ' },
 ]
 
 // Menu cho GIẢNG VIÊN — động theo chuyen_mon
 const buildGiangVienMenu = (chuyenMon) => {
   const base = [
     { path: '/',          icon: '📊', label: 'Tổng Quan',         end: true },
-    { path: '/lop-cua-toi', icon: '🏫', label: 'Lớp Của Tôi' },
+    { path: '/lop-cua-toi', icon: '🏫', label: 'Lớp Đang Dạy' },
     { path: '/lich-day',  icon: '🗓️', label: 'Lịch Dạy' },
     { path: '/diem-danh', icon: '✅', label: 'Điểm Danh' },
   ]
   // Chỉ giảng viên thực hành hoặc cả hai mới có trang Xe & Báo Lỗi
   if (chuyenMon === 'thuc_hanh' || chuyenMon === 'ca_hai') {
-    base.push({ path: '/xe-cua-toi', icon: '🚗', label: 'Xe & Báo Lỗi' })
+    base.push({ path: '/xe-cua-toi', icon: '🚗', label: 'Báo Lỗi Xe' })
   }
   base.push({ path: '/thong-tin-ca-nhan', icon: '👤', label: 'Thông Tin Cá Nhân' })
   return base

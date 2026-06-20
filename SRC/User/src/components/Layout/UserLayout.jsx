@@ -21,14 +21,16 @@ const UserLayout = () => {
   const trangThai = hoSo?.trang_thai || 'cho_dong_hoc_phi'
 
   const trangThaiLabel = {
-    cho_dong_hoc_phi:      { text: 'Chờ đóng học phí', cls: 'badge-warning' },
-    cho_mo_lop:            { text: 'Chờ mở lớp',        cls: 'badge-info' },
-    dang_hoc:              { text: 'Đang học',           cls: 'badge-success' },
-    du_dieu_kien_thi_tn:   { text: 'Đủ ĐK thi TN',      cls: 'badge-blue' },
-    chuan_bi_thi:          { text: 'Chuẩn bị thi',       cls: 'badge-warning' },
-    hoan_thanh_tn:         { text: 'Hoàn thành TN',      cls: 'badge-success' },
-    da_cap_bang:           { text: 'Đã cấp bằng',        cls: 'badge-success' },
-  }[trangThai] || { text: trangThai, cls: 'badge-gray' }
+    cho_dong_hoc_phi:      { text: 'Chờ đóng học phí',     cls: 'badge-warning' },
+    chuan_bi_hoc:          { text: 'Chuẩn bị học',          cls: 'badge-info' },
+    cho_mo_lop:            { text: 'Chờ mở lớp',            cls: 'badge-info' },
+    dang_hoc:              { text: 'Đang học',               cls: 'badge-success' },
+    du_dieu_kien_thi_tn:   { text: 'Đủ điều kiện thi TN',   cls: 'badge-blue' },
+    chuan_bi_thi:          { text: 'Chuẩn bị thi',          cls: 'badge-warning' },
+    hoan_thanh_tn:         { text: 'Hoàn thành tốt nghiệp', cls: 'badge-success' },
+    du_dieu_kien_sat_hanh: { text: 'Đủ điều kiện sát hạch', cls: 'badge-blue' },
+    da_cap_bang:           { text: 'Đã cấp bằng lái',       cls: 'badge-success' },
+  }[trangThai] || { text: '—', cls: 'badge-gray' }
 
   return (
     <div className="ul-wrapper">

@@ -3,6 +3,7 @@ import axios from 'axios'
 import { toast } from 'react-toastify'
 import { useAdmin } from '../../context/AdminContext'
 import './GiangVienManagement.css'
+import '../KhoaHocDaoTao/KhoaHocDaoTao.css'
 
 const CM_MAP = {
   ly_thuyet: { text: '📖 Lý thuyết', cls: 'badge-info' },
@@ -209,10 +210,41 @@ const GiangVienManagement = () => {
         <button className="btn btn-primary" onClick={openAdd}>+ Thêm giảng viên</button>
       </div>
 
+      {/* ── THẺ THỐNG KÊ ── */}
+      <div className="khdt-stats" style={{gridTemplateColumns:'repeat(4,1fr)'}}>
+        <div className="khdt-stat-card">
+          <span className="khdt-stat-icon">👨‍🏫</span>
+          <div>
+            <p className="khdt-stat-value">{list.length}</p>
+            <p className="khdt-stat-label">Tổng giảng viên</p>
+          </div>
+        </div>
+        <div className="khdt-stat-card green">
+          <span className="khdt-stat-icon">✅</span>
+          <div>
+            <p className="khdt-stat-value">{list.filter(g => (g.trang_thai ?? 'san_sang') === 'san_sang').length}</p>
+            <p className="khdt-stat-label">Sẵn sàng</p>
+          </div>
+        </div>
+        <div className="khdt-stat-card" style={{borderLeft:'4px solid #f59e0b'}}>
+          <span className="khdt-stat-icon">🏖️</span>
+          <div>
+            <p className="khdt-stat-value">{list.filter(g => g.trang_thai === 'nghi_phep').length}</p>
+            <p className="khdt-stat-label">Nghỉ phép</p>
+          </div>
+        </div>
+        <div className="khdt-stat-card gray">
+          <span className="khdt-stat-icon">🚫</span>
+          <div>
+            <p className="khdt-stat-value">{list.filter(g => g.trang_thai === 'dinh_chi').length}</p>
+            <p className="khdt-stat-label">Đình chỉ</p>
+          </div>
+        </div>
+      </div>
+
       {/* ── SEARCH BAR ── */}
       <div className="search-bar">
-        <input className="search-input" placeholder="🔍 Tìm theo tên, email, số điện thoại..."
-          value={search} onChange={e => setSearch(e.target.value)} />
+        <input className="search-input" placeholder="🔍 Tìm theo tên, email, số điện thoại..."          value={search} onChange={e => setSearch(e.target.value)} />
         <select className="search-input" style={{maxWidth:200}} value={filterCM} onChange={e => setFilterCM(e.target.value)}>
           <option value="">Tất cả chuyên môn</option>
           <option value="ly_thuyet">📖 Lý thuyết</option>

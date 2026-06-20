@@ -540,19 +540,52 @@ số lớp đang hoạt động và tỉ lệ đạt yêu cầu của các kỳ 
   - Trích nguồn [1]-[12] đặt cuối câu giới thiệu, trước dấu chấm
 
 [DANH MỤC TÀI LIỆU THAM KHẢO CHƯƠNG 2]
-  [1]  PHP Group. (n.d.). PHP Manual. https://www.php.net/manual
-  [2]  Laravel. (n.d.). Laravel 12 Documentation. https://laravel.com/docs
-  [3]  tymon/jwt-auth. (n.d.). JWT Authentication for Laravel.
-       https://jwt-auth.readthedocs.io
-  [4]  MySQL. (n.d.). MySQL 8.0 Reference Manual. https://dev.mysql.com/doc
-  [5]  React. (n.d.). React Documentation. https://react.dev
-  [6]  Vite. (n.d.). Vite Documentation. https://vitejs.dev
-  [7]  React Router. (n.d.). React Router v7 Documentation.
-       https://reactrouter.com
-  [8]  Axios. (n.d.). Axios Documentation. https://axios-http.com/docs/intro
-  [9]  React Toastify. (n.d.). https://fkhadra.github.io/react-toastify
-  [10] Recharts. (n.d.). Recharts Documentation. https://recharts.org
-  [11] React Icons. (n.d.). https://react-icons.github.io/react-icons
-  [12] PHPMailer. (n.d.). PHPMailer Documentation.
+
+  [1]  PHP, "PHP là gì? Tổng quan về ngôn ngữ lập trình PHP":
+       https://www.php.net/manual/en/intro-whatis.php
+       Trích dẫn ngày 19/06/2026.
+
+  [2]  Laravel, "Laravel – The PHP Framework For Web Artisans":
+       https://laravel.com/docs
+       Trích dẫn ngày 19/06/2026.
+
+  [3]  JWT, "JSON Web Token Introduction":
+       https://jwt.io/introduction
+       Trích dẫn ngày 19/06/2026.
+
+  [4]  MySQL, "MySQL là gì?":
+       https://aws.amazon.com/vi/rds/mysql/what-is-mysql/
+       Trích dẫn ngày 19/06/2026.
+
+  [5]  ReactJS, "React – Thư viện JavaScript để xây dựng giao diện người dùng":
+       https://react.dev
+       Trích dẫn ngày 19/06/2026.
+
+  [6]  Vite, "Vite – Next Generation Frontend Tooling":
+       https://vitejs.dev/guide/
+       Trích dẫn ngày 19/06/2026.
+
+  [7]  React Router, "React Router v7 – Client-Side Routing for React":
+       https://reactrouter.com/start/library/installation
+       Trích dẫn ngày 19/06/2026.
+
+  [8]  Axios, "Axios – Promise based HTTP Client":
+       https://axios-http.com/docs/intro
+       Trích dẫn ngày 19/06/2026.
+
+  [9]  React Toastify, "React-Toastify – Toast Notification for React":
+       https://fkhadra.github.io/react-toastify/introduction
+       Trích dẫn ngày 19/06/2026.
+
+  [10] Recharts, "Recharts – Biểu đồ xây dựng trên React và D3.js":
+       https://recharts.org/en-US/
+       Trích dẫn ngày 19/06/2026.
+
+  [11] React Icons, "React Icons – SVG Icons cho React":
+       https://react-icons.github.io/react-icons
+       Trích dẫn ngày 19/06/2026.
+
+  [12] PHPMailer, "PHPMailer – Thư viện gửi email cho PHP":
        https://github.com/PHPMailer/PHPMailer
+       Trích dẫn ngày 19/06/2026.
 ================================================================================

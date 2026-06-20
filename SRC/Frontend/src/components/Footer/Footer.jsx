@@ -42,16 +42,6 @@ const Footer = () => (
         </ul>
       </div>
 
-      {/* Cột 3 — Thông tin khác */}
-      <div className="footer-col">
-        <h4>Thông tin khác</h4>
-        <ul>
-          <li><Link to="/on-thi">Ôn thi</Link></li>
-          <li><Link to="/lich-thi">Lịch thi</Link></li>
-          <li><Link to="/lien-he">Liên hệ</Link></li>
-        </ul>
-      </div>
-
       {/* Cột 4 — Bản đồ */}
       <div className="footer-col">
         <h4>Bản đồ</h4>

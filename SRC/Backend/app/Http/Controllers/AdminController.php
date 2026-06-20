@@ -286,7 +286,7 @@ class AdminController extends Controller
             'bai_thi_ids' => 'required|array|min:1',
             'bai_thi_ids.*' => 'required|exists:bai_thi,id',
             'lich_thi_id'  => 'required|exists:lich_thi,id',
-            'phuong_thuc'  => 'required|in:tien_mat,chuyen_khoan,vnpay,momo',
+            'phuong_thuc'  => 'required|in:tien_mat,chuyen_khoan',
             'ma_giao_dich' => 'nullable|string',
         ]);
 
@@ -557,7 +557,7 @@ class AdminController extends Controller
     {
         $request->validate([
             'so_tien'     => 'required|numeric|min:1',
-            'phuong_thuc' => 'required|in:tien_mat,chuyen_khoan,vnpay,momo',
+            'phuong_thuc' => 'required|in:tien_mat,chuyen_khoan',
         ]);
 
         $hoSo = HoSoHocVien::findOrFail($hoSoId);

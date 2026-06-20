@@ -192,28 +192,30 @@
 
 .hocphi-method-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr;
-  gap: 8px;
-  margin-top: 6px;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 8px;
 }
 .hocphi-method-btn {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: 4px;
-  padding: 12px 8px;
+  gap: 10px;
+  padding: 14px 20px;
   border: 2px solid #e2e8f0;
-  border-radius: 10px;
+  border-radius: 12px;
   cursor: pointer;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
-  color: #718096;
+  color: #4b5563;
   transition: all .2s;
   background: #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,.05);
 }
-.hocphi-method-btn span:first-child { font-size: 22px; }
-.hocphi-method-btn:hover { border-color: #0d47a1; color: #0d47a1; background: #eff6ff; }
-.hocphi-method-btn.active { border-color: #0d47a1; color: #0d47a1; background: #eff6ff; }
+.hocphi-method-btn span:first-child { font-size: 26px; flex-shrink: 0; }
+.hocphi-method-btn:hover  { border-color: #0d47a1; color: #0d47a1; background: #eff6ff; box-shadow: 0 2px 8px rgba(13,71,161,.12); }
+.hocphi-method-btn.active { border-color: #0d47a1; color: #0d47a1; background: #eff6ff; box-shadow: 0 2px 8px rgba(13,71,161,.15); }
+.hocphi-method-btn.active::after { content: '✓'; margin-left: auto; font-size: 16px; color: #0d47a1; font-weight: 800; }
 
 .hocphi-confirm-note {
   background: #f0fdf4;

@@ -269,38 +269,6 @@ const KhoaHocDaoTaoManagement = () => {
         </button>
       </div>
 
-      {/* ── STATS ── */}
-      <div className="khdt-stats">
-        <div className="khdt-stat-card">
-          <span className="khdt-stat-icon">📅</span>
-          <div>
-            <p className="khdt-stat-value">{khoaList.length}</p>
-            <p className="khdt-stat-label">Tổng khóa học</p>
-          </div>
-        </div>
-        <div className="khdt-stat-card blue">
-          <span className="khdt-stat-icon">🔵</span>
-          <div>
-            <p className="khdt-stat-value">{khoaList.filter(k => k.trang_thai === 'chuan_bi').length}</p>
-            <p className="khdt-stat-label">Chuẩn bị</p>
-          </div>
-        </div>
-        <div className="khdt-stat-card green">
-          <span className="khdt-stat-icon">🟢</span>
-          <div>
-            <p className="khdt-stat-value">{khoaList.filter(k => k.trang_thai === 'dang_hoc').length}</p>
-            <p className="khdt-stat-label">Đang học</p>
-          </div>
-        </div>
-        <div className="khdt-stat-card gray">
-          <span className="khdt-stat-icon">⚫</span>
-          <div>
-            <p className="khdt-stat-value">{khoaList.filter(k => k.trang_thai === 'da_ket_thuc').length}</p>
-            <p className="khdt-stat-label">Kết thúc</p>
-          </div>
-        </div>
-      </div>
-
       {/* ── BỘ LỌC ── */}
       <div className="search-bar">
         <input className="search-input" placeholder="🔍 Tìm theo tên khóa học, mã khóa..."
@@ -317,10 +285,6 @@ const KhoaHocDaoTaoManagement = () => {
           <option value="">Tất cả năm</option>
           {NAM_LIST.map(n => <option key={n} value={n}>{n}</option>)}
         </select>
-        <select className="search-input" style={{maxWidth:180}} value={filterTT} onChange={e => setFilterTT(e.target.value)}>
-          <option value="">Tất cả trạng thái</option>
-          {Object.entries(TRANG_THAI_MAP).map(([k,v]) => <option key={k} value={k}>{v.label}</option>)}
-        </select>
       </div>
 
       {/* ── BẢNG DỮ LIỆU ── */}
@@ -336,13 +300,12 @@ const KhoaHocDaoTaoManagement = () => {
                   <th>Hạng</th>
                   <th>Tháng / Năm</th>
                   <th>Số lớp</th>
-                  <th>Trạng thái</th>
                   <th>Thao tác</th>
                 </tr>
               </thead>
               <tbody>
                 {filtered.length === 0 ? (
-                  <tr><td colSpan={8} style={{textAlign:'center',padding:'40px',color:'#a0aec0'}}>Chưa có khóa học nào</td></tr>
+                  <tr><td colSpan={7} style={{textAlign:'center',padding:'40px',color:'#a0aec0'}}>Chưa có khóa học nào</td></tr>
                 ) : filtered.map((k, i) => {
                   const tt = TRANG_THAI_MAP[k.trang_thai] || { label: k.trang_thai, cls: 'badge-gray' }
                   return (
@@ -364,7 +327,6 @@ const KhoaHocDaoTaoManagement = () => {
                           )}
                         </div>
                       </td>
-                      <td><span className={`badge ${tt.cls}`}>{tt.label}</span></td>
                       <td>
                         <div className="action-cell">
                           <button className="btn btn-info btn-sm" onClick={() => fetchKhoaDetail(k)}>👁️ Xem</button>

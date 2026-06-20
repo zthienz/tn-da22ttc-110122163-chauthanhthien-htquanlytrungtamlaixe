@@ -19,9 +19,20 @@ const ThiManagement = () => {
   const DON_VI_MAC_DINH = 'Trung Tâm Lái Xe Ngôi Sao'
 
   const [form, setForm] = useState({
-    khoa_hoc_id: '', loai_thi: 'tot_nghiep', ngay_thi: '', gio_thi: '', dia_diem: '', don_vi_to_chuc: DON_VI_MAC_DINH
+    loai_bang: '', loai_thi: 'tot_nghiep', ngay_thi: '', gio_thi: '', dia_diem: '', don_vi_to_chuc: DON_VI_MAC_DINH
   })
   const [khoaList, setKhoaList] = useState([])
+
+  // Lấy khoa_hoc_id đại diện từ loai_bang (ưu tiên khóa đào tạo theo tháng, fallback khóa danh mục)
+  const getKhoaHocIdByLoaiBang = (loaiBang) => {
+    if (!loaiBang) return ''
+    // Tìm khóa đào tạo theo tháng (có ma_khoa) đang hoạt động
+    const khoaThang = khoaList.find(k => k.loai_bang === loaiBang && k.ma_khoa)
+    if (khoaThang) return khoaThang.id
+    // Fallback: khóa danh mục (không có ma_khoa)
+    const khoaDM = khoaList.find(k => k.loai_bang === loaiBang && !k.ma_khoa)
+    return khoaDM ? khoaDM.id : ''
+  }
   const [search, setSearch]         = useState('')
   const [filterLoai, setFilterLoai] = useState('')
   const [filterBang, setFilterBang] = useState('')
@@ -58,7 +69,7 @@ const ThiManagement = () => {
   const openEditThi = (lt) => {
     setEditingThi(lt)
     setForm({
-      khoa_hoc_id:    lt.khoa_hoc_id || '',
+      loai_bang:      lt.khoa_hoc?.loai_bang || '',
       loai_thi:       lt.loai_thi || 'tot_nghiep',
       ngay_thi:       lt.ngay_thi?.split('T')[0] || '',
       gio_thi:        lt.gio_thi?.slice(0, 5) || '',
@@ -70,10 +81,16 @@ const ThiManagement = () => {
 
   const handleTaoLichThi = async e => {
     e.preventDefault()
+    const khoa_hoc_id = getKhoaHocIdByLoaiBang(form.loai_bang)
+    if (!khoa_hoc_id) {
+      toast.error('Không tìm thấy khóa học cho hạng bằng này. Vui lòng tạo khóa học trước.')
+      return
+    }
+    const payload = { ...form, khoa_hoc_id }
     try {
       const res = editingThi
-        ? await axios.put(`${backendUrl}/api/admin/lich-thi/${editingThi.id}`, form, { headers })
-        : await axios.post(`${backendUrl}/api/admin/lich-thi`, form, { headers })
+        ? await axios.put(`${backendUrl}/api/admin/lich-thi/${editingThi.id}`, payload, { headers })
+        : await axios.post(`${backendUrl}/api/admin/lich-thi`, payload, { headers })
       if (res.data.success) {
         toast.success(editingThi ? 'Cập nhật lịch thi thành công!' : 'Tạo lịch thi thành công!')
         setShowModal(false)
@@ -258,7 +275,7 @@ const ThiManagement = () => {
         <div><h2>🏆 Thi & Kết Quả</h2><p>Quản lý lịch thi tốt nghiệp và sát hạch</p></div>
         <button className="btn btn-primary" onClick={() => {
           setEditingThi(null)
-          setForm({ khoa_hoc_id: '', loai_thi: 'tot_nghiep', ngay_thi: '', gio_thi: '', dia_diem: '', don_vi_to_chuc: DON_VI_MAC_DINH })
+          setForm({ loai_bang: '', loai_thi: 'tot_nghiep', ngay_thi: '', gio_thi: '', dia_diem: '', don_vi_to_chuc: DON_VI_MAC_DINH })
           setShowModal(true)
         }}>+ Tạo lịch thi</button>
       </div>
@@ -355,11 +372,22 @@ const ThiManagement = () => {
             <form onSubmit={handleTaoLichThi}>
               <div className="modal-body">
                 <div className="form-group">
-                  <label>Khóa học *</label>
-                  <select value={form.khoa_hoc_id} onChange={e => setForm({ ...form, khoa_hoc_id: e.target.value })} required>
-                    <option value="">-- Chọn khóa học --</option>
-                    {khoaList.map(k => <option key={k.id} value={k.id}>{k.ten_khoa} (Hạng {k.loai_bang})</option>)}
+                  <label>Loại bằng lái *</label>
+                  <select
+                    value={form.loai_bang}
+                    onChange={e => setForm({ ...form, loai_bang: e.target.value })}
+                    required
+                  >
+                    <option value="">-- Chọn loại bằng lái --</option>
+                    {['A1','A','B1','B2','C1','C','D','E','CE'].map(h => (
+                      <option key={h} value={h}>Bằng lái hạng {h}</option>
+                    ))}
                   </select>
+                  {form.loai_bang && !getKhoaHocIdByLoaiBang(form.loai_bang) && (
+                    <p style={{ color: '#dc2626', fontSize: 12, marginTop: 4 }}>
+                      ⚠️ Chưa có khóa học cho hạng {form.loai_bang}. Vui lòng tạo khóa học trước.
+                    </p>
+                  )}
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                   <div className="form-group">

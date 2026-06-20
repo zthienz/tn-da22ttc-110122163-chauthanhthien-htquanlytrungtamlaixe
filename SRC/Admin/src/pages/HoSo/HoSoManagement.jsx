@@ -743,8 +743,6 @@ const HoSoManagement = () => {
                     {[
                       { value:'tien_mat',    icon:'💵', label:'Tiền mặt' },
                       { value:'chuyen_khoan',icon:'🏦', label:'Chuyển khoản' },
-                      { value:'vnpay',       icon:'💳', label:'VNPay' },
-                      { value:'momo',        icon:'📱', label:'MoMo' },
                     ].map(m => (
                       <label key={m.value} className={`hocphi-method-btn ${hocPhiForm.phuong_thuc === m.value ? 'active' : ''}`}>
                         <input type="radio" name="phuong_thuc" value={m.value}
@@ -1132,8 +1130,6 @@ const HoSoManagement = () => {
                     <select value={phuongThucTL} onChange={e => setPhuongThucTL(e.target.value)}>
                       <option value="tien_mat">💵 Tiền mặt</option>
                       <option value="chuyen_khoan">🏦 Chuyển khoản</option>
-                      <option value="vnpay">💳 VNPay</option>
-                      <option value="momo">📱 MoMo</option>
                     </select>
                   </div>
                 </>

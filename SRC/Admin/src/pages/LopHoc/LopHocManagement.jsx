@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import axios from 'axios'
 import { toast } from 'react-toastify'
 import { useAdmin } from '../../context/AdminContext'
+import '../KhoaHocDaoTao/KhoaHocDaoTao.css'
 
 const TS_MAP   = { chuan_bi:'badge-info', dang_hoc:'badge-success', da_ket_thuc:'badge-gray' }
 const TS_LABEL = { chuan_bi:'Chuẩn bị', dang_hoc:'Đang học', da_ket_thuc:'Kết thúc' }
@@ -21,7 +22,10 @@ const LopHocManagement = () => {
   const [list, setList]         = useState([])
   const [loading, setLoading]   = useState(true)
   const [search, setSearch]     = useState('')
-  const [filterTT, setFilterTT] = useState('')
+  const [filterTT, setFilterTT]     = useState('')
+  const [filterBang, setFilterBang] = useState('')
+  const [filterThang, setFilterThang] = useState('')
+  const [filterNam, setFilterNam]   = useState('')
 
   // Modal tạo/sửa lớp
   const [showModal, setShowModal] = useState(false)
@@ -195,9 +199,17 @@ const LopHocManagement = () => {
       l.khoa_hoc?.ten_khoa?.toLowerCase().includes(search.toLowerCase()) ||
       l.giang_vien_ly_thuyet?.user?.ho_ten?.toLowerCase().includes(search.toLowerCase()) ||
       l.giang_vien_thuc_hanh?.user?.ho_ten?.toLowerCase().includes(search.toLowerCase())
-    const matchTT = !filterTT || l.trang_thai === filterTT
-    return matchSearch && matchTT
+    const matchTT    = !filterTT    || l.trang_thai === filterTT
+    const matchBang  = !filterBang  || l.khoa_hoc?.loai_bang === filterBang || l.khoa_hoc?.hang_bang === filterBang
+    const matchThang = !filterThang || String(l.khoa_hoc?.thang) === filterThang
+    const matchNam   = !filterNam   || String(l.khoa_hoc?.nam)   === filterNam
+    return matchSearch && matchTT && matchBang && matchThang && matchNam
   })
+
+  // Danh sách hạng bằng và tháng/năm từ dữ liệu hiện có
+  const hangList  = [...new Set(list.map(l => l.khoa_hoc?.loai_bang || l.khoa_hoc?.hang_bang).filter(Boolean))].sort()
+  const thangList = [...new Set(list.map(l => l.khoa_hoc?.thang).filter(Boolean))].sort((a,b) => a-b)
+  const namList   = [...new Set(list.map(l => l.khoa_hoc?.nam).filter(Boolean))].sort((a,b) => b-a)
 
   // Khóa học được chọn trong form (để lọc GV theo hạng)
   const selectedKhoa = khoaList.find(k => String(k.id) === String(form.khoa_hoc_id))
@@ -212,10 +224,57 @@ const LopHocManagement = () => {
         <button className="btn btn-primary" onClick={openAdd}>+ Tạo lớp học</button>
       </div>
 
+      {/* ── THẺ THỐNG KÊ ── */}
+      <div className="khdt-stats" style={{gridTemplateColumns:'repeat(4,1fr)'}}>
+        <div className="khdt-stat-card">
+          <span className="khdt-stat-icon">🏫</span>
+          <div>
+            <p className="khdt-stat-value">{list.length}</p>
+            <p className="khdt-stat-label">Tổng lớp học</p>
+          </div>
+        </div>
+        <div className="khdt-stat-card" onClick={() => setFilterTT(filterTT==='chuan_bi' ? '' : 'chuan_bi')}
+          style={{cursor:'pointer', outline: filterTT==='chuan_bi' ? '2px solid #2563eb' : 'none'}}>
+          <span className="khdt-stat-icon">🔵</span>
+          <div>
+            <p className="khdt-stat-value">{list.filter(l => l.trang_thai === 'chuan_bi').length}</p>
+            <p className="khdt-stat-label">Chuẩn bị</p>
+          </div>
+        </div>
+        <div className="khdt-stat-card green" onClick={() => setFilterTT(filterTT==='dang_hoc' ? '' : 'dang_hoc')}
+          style={{cursor:'pointer', outline: filterTT==='dang_hoc' ? '2px solid #16a34a' : 'none'}}>
+          <span className="khdt-stat-icon">🟢</span>
+          <div>
+            <p className="khdt-stat-value">{list.filter(l => l.trang_thai === 'dang_hoc').length}</p>
+            <p className="khdt-stat-label">Đang học</p>
+          </div>
+        </div>
+        <div className="khdt-stat-card gray" onClick={() => setFilterTT(filterTT==='da_ket_thuc' ? '' : 'da_ket_thuc')}
+          style={{cursor:'pointer', outline: filterTT==='da_ket_thuc' ? '2px solid #9ca3af' : 'none'}}>
+          <span className="khdt-stat-icon">⚫</span>
+          <div>
+            <p className="khdt-stat-value">{list.filter(l => l.trang_thai === 'da_ket_thuc').length}</p>
+            <p className="khdt-stat-label">Kết thúc</p>
+          </div>
+        </div>
+      </div>
+
       <div className="search-bar">
         <input className="search-input" placeholder="🔍 Tìm theo tên lớp, khóa học, giảng viên..."
           value={search} onChange={e => setSearch(e.target.value)} />
-        <select className="search-input" style={{maxWidth:180}} value={filterTT} onChange={e => setFilterTT(e.target.value)}>
+        <select className="search-input" style={{maxWidth:150}} value={filterBang} onChange={e => setFilterBang(e.target.value)}>
+          <option value="">Tất cả hạng</option>
+          {hangList.map(h => <option key={h} value={h}>Hạng {h}</option>)}
+        </select>
+        <select className="search-input" style={{maxWidth:130}} value={filterThang} onChange={e => setFilterThang(e.target.value)}>
+          <option value="">Tất cả tháng</option>
+          {thangList.map(t => <option key={t} value={t}>Tháng {t}</option>)}
+        </select>
+        <select className="search-input" style={{maxWidth:110}} value={filterNam} onChange={e => setFilterNam(e.target.value)}>
+          <option value="">Tất cả năm</option>
+          {namList.map(n => <option key={n} value={n}>{n}</option>)}
+        </select>
+        <select className="search-input" style={{maxWidth:160}} value={filterTT} onChange={e => setFilterTT(e.target.value)}>
           <option value="">Tất cả trạng thái</option>
           <option value="chuan_bi">Chuẩn bị</option>
           <option value="dang_hoc">Đang học</option>

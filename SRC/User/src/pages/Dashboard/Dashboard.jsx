@@ -39,13 +39,16 @@ const Dashboard = () => {
 
   const trangThaiMap = {
     cho_dong_hoc_phi:      { text: 'Chờ đóng học phí',    color: '#f59e0b', bg: '#fef3c7' },
+    chuan_bi_hoc:          { text: 'Chuẩn bị học',         color: '#3b82f6', bg: '#dbeafe' },
     cho_mo_lop:            { text: 'Chờ mở lớp',           color: '#3b82f6', bg: '#dbeafe' },
     dang_hoc:              { text: 'Đang học',              color: '#10b981', bg: '#d1fae5' },
     du_dieu_kien_thi_tn:   { text: 'Đủ điều kiện thi TN',  color: '#6366f1', bg: '#ede9fe' },
+    chuan_bi_thi:          { text: 'Chuẩn bị thi',         color: '#f59e0b', bg: '#fef3c7' },
     hoan_thanh_tn:         { text: 'Hoàn thành tốt nghiệp',color: '#10b981', bg: '#d1fae5' },
+    du_dieu_kien_sat_hanh: { text: 'Đủ điều kiện sát hạch',color: '#6366f1', bg: '#ede9fe' },
     da_cap_bang:           { text: 'Đã cấp bằng lái',      color: '#10b981', bg: '#d1fae5' },
   }
-  const ts = trangThaiMap[hoSo?.trang_thai] || { text: hoSo?.trang_thai || '—', color: '#6b7280', bg: '#f3f4f6' }
+  const ts = trangThaiMap[hoSo?.trang_thai] || { text: '—', color: '#6b7280', bg: '#f3f4f6' }
 
   return (
     <div className="dashboard">

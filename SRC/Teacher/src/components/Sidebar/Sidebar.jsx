@@ -5,9 +5,9 @@ import './Sidebar.css'
 const menu = [
   { path: '/',          icon: '📊', label: 'Tổng Quan',         end: true },
   { path: '/thong-tin', icon: '👤', label: 'Thông Tin Cá Nhân' },
-  { path: '/lop-hoc',   icon: '🏫', label: 'Lớp Của Tôi' },
+  { path: '/lop-hoc',   icon: '🏫', label: 'Lớp Đang Dạy' },
   { path: '/lich-hoc',  icon: '🗓️', label: 'Lịch Dạy' },
-  { path: '/xe',        icon: '🚗', label: 'Xe Của Tôi' },
+  { path: '/xe',        icon: '🚗', label: 'Báo Lỗi Xe' },
 ]
 
 const Sidebar = ({ collapsed, onToggle }) => {

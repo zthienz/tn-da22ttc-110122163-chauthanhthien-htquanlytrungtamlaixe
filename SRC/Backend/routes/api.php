@@ -15,6 +15,7 @@ use App\Http\Controllers\CapBangController;
 use App\Http\Controllers\GiangVienController;
 
 use App\Http\Controllers\XeController;
+use App\Http\Controllers\LienHeController;
 // ═══════════════════════════════════════════════════════
 
 // Đăng nhập học viên (CCCD + ngày sinh)
@@ -28,6 +29,9 @@ Route::get('/khoa-hoc',          [KhoaHocController::class, 'publicIndex']);
 
 // Đăng ký tư vấn từ trang quảng bá (tạo hồ sơ online)
 Route::post('/dang-ky-tu-van',   [DangKyController::class, 'dangKyTuVan']);
+
+// Liên hệ từ trang quảng bá (public)
+Route::post('/lien-he',          [LienHeController::class, 'store']);
 
 // ═══════════════════════════════════════════════════════
 // HỌC VIÊN (cần đăng nhập)
@@ -173,6 +177,11 @@ Route::middleware(['auth.jwt', 'role:admin|giang_vien'])->prefix('admin')->group
     // ── Báo lỗi xe (admin xem & xử lý) ─────────────────────────────────────
     Route::get('/bao-loi-xe',               [XeController::class, 'danhSachBaoLoi']);
     Route::patch('/bao-loi-xe/{id}/xu-ly',  [XeController::class, 'xuLyBaoLoi']);
+
+    // ── Liên hệ ─────────────────────────────────────────────────────────────
+    Route::get('/lien-he',                  [LienHeController::class, 'index']);
+    Route::patch('/lien-he/{id}/xu-ly',     [LienHeController::class, 'xuLy']);
+    Route::delete('/lien-he/{id}',          [LienHeController::class, 'destroy']);
 });
 
 // ═══════════════════════════════════════════════════════

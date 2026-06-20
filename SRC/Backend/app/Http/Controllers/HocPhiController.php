@@ -12,7 +12,9 @@ class HocPhiController extends Controller
     {
         $query = ThanhToanHocPhi::with([
                 'hoSo.khoaHoc',
+                'hoSo.hocVienLop.lopHoc.khoaHoc',
             ])
+            ->where('loai_phi', 'hoc_phi')
             ->when($request->phuong_thuc, fn($q) => $q->where('phuong_thuc', $request->phuong_thuc))
             ->when($request->search, function ($q) use ($request) {
                 $q->whereHas('hoSo', fn($s) =>
