@@ -1,0 +1,470 @@
+================================================================================
+NỘI DUNG SLIDE BÁO CÁO TỐT NGHIỆP
+XÂY DỰNG HỆ THỐNG QUẢN LÝ ĐÀO TẠO CHO TRUNG TÂM LÁI XE
+Sinh viên: Châu Thanh Thiện – MSSV: 110122163
+GVHD: ThS. Lê Phong Dũ
+================================================================================
+Tổng số slide: 20
+================================================================================
+
+
+────────────────────────────────────────────────────────────────────────────────
+SLIDE 1 – TRANG BÌA
+────────────────────────────────────────────────────────────────────────────────
+
+ĐẠI HỌC TRÀ VINH
+TRƯỜNG KỸ THUẬT VÀ CÔNG NGHỆ
+
+[Logo TVU]
+
+ĐỒ ÁN TỐT NGHIỆP
+
+XÂY DỰNG HỆ THỐNG
+QUẢN LÝ ĐÀO TẠO
+CHO TRUNG TÂM LÁI XE
+
+Giảng viên hướng dẫn : ThS. LÊ PHONG DŨ
+Sinh viên thực hiện  : CHÂU THANH THIỆN
+Mã số sinh viên      : 110122163
+Lớp                  : DA22TTC
+Khoá                 : 2022
+
+Trà Vinh, tháng 6 năm 2026
+
+
+────────────────────────────────────────────────────────────────────────────────
+SLIDE 2 – NỘI DUNG BÁO CÁO
+────────────────────────────────────────────────────────────────────────────────
+
+NỘI DUNG BÁO CÁO
+
+1. TỔNG QUAN
+
+2. THỰC HIỆN HÓA NGHIÊN CỨU
+
+3. KẾT QUẢ NGHIÊN CỨU
+
+4. KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN
+
+
+────────────────────────────────────────────────────────────────────────────────
+SLIDE 3 – SECTION DIVIDER: 1. TỔNG QUAN
+────────────────────────────────────────────────────────────────────────────────
+
+1. TỔNG QUAN
+
+[Hình minh họa – giữ theo phong cách slide mẫu]
+
+
+────────────────────────────────────────────────────────────────────────────────
+SLIDE 4 – 1.1 LÝ DO CHỌN ĐỀ TÀI
+────────────────────────────────────────────────────────────────────────────────
+
+1. TỔNG QUAN
+
+  1.1 Lý do chọn đề tài
+
+  • Khối lượng nghiệp vụ lớn: hồ sơ học viên, lịch học, xe tập lái,
+    điểm danh, thi cử → cần hiện đại hóa phương thức quản lý.
+
+  • Quy định Bộ GTVT phức tạp: phải theo dõi số giờ LT, số km TH
+    theo từng hạng bằng → khó đảm bảo chính xác bằng thủ công.
+
+  • Thực trạng: quản lý bằng giấy tờ, Excel, điểm danh tay →
+    học viên không có kênh tra cứu tiến độ, lịch thi, kết quả.
+
+
+────────────────────────────────────────────────────────────────────────────────
+SLIDE 5 – 1.2 MỤC TIÊU VÀ PHẠM VI ĐỀ TÀI
+────────────────────────────────────────────────────────────────────────────────
+
+1. TỔNG QUAN
+
+  1.2 Mục tiêu & Phạm vi đề tài
+
+  [Sơ đồ trung tâm: "Hệ thống QLĐT Trung tâm Lái xe Sao Việt"]
+
+  Nhánh 1 – Số hóa toàn bộ quy trình:
+    Hồ sơ → Học phí → Xếp lớp → Lịch học → Điểm danh
+    → Thi TN → Sát hạch → Cấp bằng
+
+  Nhánh 2 – 3 vai trò, phân quyền riêng biệt:
+    Quản trị viên | Giảng viên | Học viên
+
+  Nhánh 3 – 8 module chính:
+    (1) Hồ sơ học viên    (2) Khóa học & Lớp học
+    (3) Lịch học & Điểm danh  (4) Xe tập lái & Báo lỗi
+    (5) Học phí           (6) Thi & Kết quả
+    (7) Cổng học viên     (8) Dashboard thống kê
+
+  Phạm vi: Ứng dụng web | Hỗ trợ hạng bằng: A1, A, B1, B2, C1, C, D, E, CE
+
+
+────────────────────────────────────────────────────────────────────────────────
+SLIDE 6 – 1.3 CÔNG NGHỆ SỬ DỤNG
+────────────────────────────────────────────────────────────────────────────────
+
+1. TỔNG QUAN
+
+  1.3 Công nghệ sử dụng
+
+  [Logo 4 công nghệ hàng ngang]
+
+    React JS + Vite 6      Laravel 12 + PHP 8.2    MySQL         JWT
+    4 app Frontend độc lập  Backend RESTful API     16 bảng CSDL  Xác thực
+    chạy trên 4 cổng        Eloquent ORM / MVC                    3 vai trò
+
+  Kiến trúc: Client – Server 3 tầng
+    Quảng bá :5174 | Admin :5173 | Giảng viên :5176 | Học viên :5175
+
+
+────────────────────────────────────────────────────────────────────────────────
+SLIDE 7 – SECTION DIVIDER: 2. THỰC HIỆN HÓA NGHIÊN CỨU
+────────────────────────────────────────────────────────────────────────────────
+
+2. THỰC HIỆN HÓA NGHIÊN CỨU
+
+[Hình minh họa – giữ theo phong cách slide mẫu]
+
+
+────────────────────────────────────────────────────────────────────────────────
+SLIDE 8 – 2.1 BIỂU ĐỒ USE CASE TỔNG QUÁT
+────────────────────────────────────────────────────────────────────────────────
+
+2. THỰC HIỆN HÓA NGHIÊN CỨU
+
+  2.1 Biểu đồ Use Case tổng quát
+
+  [Hình 3.1 – Biểu đồ use case tổng quát]
+
+  3 tác nhân chính:
+  - Quản trị viên : Toàn quyền quản lý hệ thống
+  - Giảng viên   : Điểm danh, lịch dạy, báo lỗi xe
+  - Học viên     : Đăng ký hồ sơ, tra cứu lịch học, tiến độ, kết quả thi
+
+  → Tất cả chức năng yêu cầu đăng nhập trước (quan hệ «include»)
+
+
+────────────────────────────────────────────────────────────────────────────────
+SLIDE 9 – 2.2 USE CASE QUẢN TRỊ VIÊN & GIẢNG VIÊN
+────────────────────────────────────────────────────────────────────────────────
+
+2. THỰC HIỆN HÓA NGHIÊN CỨU
+
+  2.2 Use Case chi tiết
+
+  [Bố cục 2 cột]
+
+  Cột trái – Use Case Quản trị viên [Hình 3.2]:
+    - Quản lý hồ sơ học viên: tiếp nhận, duyệt, theo dõi trạng thái
+      từ lúc đăng ký đến khi cấp bằng.
+    - Quản lý giảng viên: xem thông tin, cập nhật trạng thái, lịch dạy.
+    - Quản lý bằng lái: danh mục A1, A, B1, B2, C1, C, D, E, CE.
+    - Quản lý khóa học, lớp học, lịch học với kiểm tra ràng buộc tự động.
+    - Quản lý xe: theo dõi trạng thái, xử lý báo lỗi.
+    - Quản lý thi & kết quả: tổ chức kỳ thi, nhập điểm, cấp chứng chỉ.
+    - Dashboard thống kê tổng quan hoạt động trung tâm.
+
+  Cột phải – Use Case Giảng viên [Hình 3.3]:
+    - Xem lớp học và danh sách học viên.
+    - Xem thông tin cá nhân, xem lịch dạy theo ngày/tuần.
+    - Xem tiến độ học viên (số buổi LT, số km TH đã tích lũy).
+    - Điểm danh học viên sau mỗi buổi học.
+    - Ghi nhận km thực hành (extend của Điểm danh – chỉ buổi TH).
+    - Báo lỗi xe với mức độ: nhẹ, trung bình, nghiêm trọng.
+
+
+────────────────────────────────────────────────────────────────────────────────
+SLIDE 10 – 2.3 CƠ SỞ DỮ LIỆU
+────────────────────────────────────────────────────────────────────────────────
+
+2. THỰC HIỆN HÓA NGHIÊN CỨU
+
+  2.3 Cơ sở dữ liệu
+
+  Tổng cộng: 16 bảng chính, tổ chức thành 5 nhóm
+
+  ┌─────────────────────────────────────────────────────────────────────┐
+  │ Nhóm 1 – Tài khoản      │ users, giang_vien                       │
+  ├─────────────────────────────────────────────────────────────────────┤
+  │ Nhóm 2 – Hồ sơ & Học phí│ ho_so_hoc_vien, thanh_toan_hoc_phi     │
+  ├─────────────────────────────────────────────────────────────────────┤
+  │ Nhóm 3 – Đào tạo        │ bang_lai (config), khoa_hoc, lop_hoc,  │
+  │                         │ hoc_vien_lop, lich_hoc, diem_danh       │
+  ├─────────────────────────────────────────────────────────────────────┤
+  │ Nhóm 4 – Thi cử & Cấp   │ bai_thi, lich_thi, lich_thi_hoc_vien, │
+  │         bằng            │ ket_qua_thi, bang_tot_nghiep,           │
+  │                         │ bang_lai_xe                             │
+  ├─────────────────────────────────────────────────────────────────────┤
+  │ Nhóm 5 – Xe tập lái     │ xe, bao_loi_xe                         │
+  └─────────────────────────────────────────────────────────────────────┘
+
+  Ràng buộc nghiệp vụ nổi bật:
+  - Không tạo lịch học khi giảng viên đang nghỉ phép hoặc bị đình chỉ.
+  - Không tạo buổi thực hành khi tất cả xe của lớp đang bảo trì/hỏng.
+  - Hệ thống tự động kiểm tra điều kiện dự thi trước khi xếp lịch thi.
+  - Số km thực hành tự động cộng dồn vào xe sau mỗi lần điểm danh.
+
+
+────────────────────────────────────────────────────────────────────────────────
+SLIDE 11 – SECTION DIVIDER: 3. KẾT QUẢ NGHIÊN CỨU
+────────────────────────────────────────────────────────────────────────────────
+
+3. KẾT QUẢ NGHIÊN CỨU
+
+[Hình minh họa – giữ theo phong cách slide mẫu]
+
+
+────────────────────────────────────────────────────────────────────────────────
+SLIDE 12 – 3.1 GIAO DIỆN TRANG QUẢNG BÁ (TRANG CHỦ & DANH SÁCH KHÓA HỌC)
+────────────────────────────────────────────────────────────────────────────────
+
+3. KẾT QUẢ NGHIÊN CỨU
+
+  3.1 Giao diện trang quảng bá
+
+  [Hình 4.1 – Trang chủ]  |  [Hình 4.2 – Trang khóa đào tạo]
+
+  Trang chủ (Hình 4.1):
+  - Banner toàn màn hình với hình nền sân tập lái, nổi bật tên trung tâm
+    cùng 4 điểm mạnh và nút "Đăng ký tư vấn".
+  - Phần giới thiệu 2 cột: hình ảnh trung tâm + cam kết chất lượng.
+  - Phần thông tin hạng bằng so sánh song song Luật cũ/Luật mới 2025.
+  - Phần thủ tục đăng ký: hướng dẫn hồ sơ cần chuẩn bị.
+
+  Trang các khóa đào tạo (Hình 4.2):
+  - Liệt kê 9 hạng bằng (A1, A, B1, B2, C1, C, D, E, CE) theo lưới 3 cột.
+  - Mỗi thẻ: ảnh minh họa, nhãn hạng bằng, học phí in đỏ, thông tin
+    chi tiết (độ tuổi, số buổi LT tối thiểu, số km TH tối thiểu),
+    nút "Xem chi tiết" và số hotline tư vấn.
+
+
+────────────────────────────────────────────────────────────────────────────────
+SLIDE 13 – 3.2 GIAO DIỆN TRANG QUẢNG BÁ (CHI TIẾT KHÓA & FORM ĐĂNG KÝ)
+────────────────────────────────────────────────────────────────────────────────
+
+3. KẾT QUẢ NGHIÊN CỨU
+
+  3.2 Giao diện trang quảng bá (tiếp)
+
+  [Hình 4.3 – Chi tiết khóa đào tạo]  |  [Hình 4.4 – Form đăng ký]
+
+  Trang chi tiết khóa đào tạo (Hình 4.3):
+  - Hiển thị đầy đủ: học phí trọn gói, độ tuổi, loại xe, thời hạn bằng,
+    yêu cầu trước, số buổi LT tối thiểu, số km TH tối thiểu.
+  - Quy trình đào tạo 6 bước tuần tự: Nộp hồ sơ → Học lý thuyết →
+    Học thực hành → Thi tốt nghiệp → Thi sát hạch → Nhận bằng.
+  - Phần "Xem thêm các khóa học khác" điều hướng nhanh.
+
+  Form đăng ký học bằng lái (Hình 4.4):
+  - Cột trái: ô tải ảnh thẻ 3×4 (JPG/PNG, tối đa 5MB).
+  - Cột phải: 4 trường bắt buộc (Họ tên, SĐT, CCCD, Ngày sinh)
+    + 2 trường tùy chọn (Email, Địa chỉ).
+  - Phần chọn loại bằng: lưới 2 cột, mỗi ô có tên hạng, học phí,
+    độ tuổi tối thiểu. Hệ thống hiển thị ghi chú điều kiện tuổi
+    tương ứng khi học viên chọn hạng bằng.
+
+
+────────────────────────────────────────────────────────────────────────────────
+SLIDE 14 – 3.3 GIAO DIỆN QUẢN TRỊ – DASHBOARD
+────────────────────────────────────────────────────────────────────────────────
+
+3. KẾT QUẢ NGHIÊN CỨU
+
+  3.3 Giao diện quản trị – Dashboard
+
+  [Hình 4.6 – Trang tổng quan Dashboard]
+
+  Thanh điều hướng bên trái:
+    Hồ Sơ HV | Bằng Lái | Khóa Học | Lớp Học | Lịch Học
+    Lịch Thi & Kết Quả | Cấp Bằng | Giảng Viên | Học Phí | Quản Lý Xe
+
+  6 thẻ chỉ số tổng quan:
+    Tổng hồ sơ | Chờ mở lớp | Đang học
+    Tổng khóa học | Lịch học hôm nay | Doanh thu tháng
+
+  Biểu đồ thống kê (dùng thư viện Recharts):
+    - Biểu đồ đường: doanh thu (lọc theo tháng/quý/năm)
+    - Biểu đồ cột: học viên đăng ký và hoàn thành 6 tháng gần nhất
+    - Biểu đồ thanh ngang: trạng thái học viên theo giai đoạn đào tạo
+    - Biểu đồ kết quả thi: đạt / không đạt / vắng mặt
+    - Biểu đồ tròn: tình trạng xe (sẵn sàng, bảo trì, hỏng)
+    - Thống kê giảng viên theo chuyên môn
+    - Danh sách lịch thi sắp tới 30 ngày
+    - Danh sách hoạt động gần đây
+
+
+────────────────────────────────────────────────────────────────────────────────
+SLIDE 15 – 3.4 GIAO DIỆN QUẢN TRỊ – NGHIỆP VỤ
+────────────────────────────────────────────────────────────────────────────────
+
+3. KẾT QUẢ NGHIÊN CỨU
+
+  3.4 Giao diện quản trị – Nghiệp vụ
+
+  [Hình 4.7 – Hồ sơ HV]  |  [Hình 4.11 – Lịch học]  |  [Hình 4.12 – Lịch thi]
+
+  Trang Hồ Sơ Học Viên (Hình 4.7):
+  - 6 thẻ thống kê theo trạng thái: Chờ đóng HP, Chờ mở lớp, Đang học,
+    Đủ ĐK thi TN, Chuẩn bị thi, Hoàn thành TN.
+  - Cột thao tác linh hoạt: "Thu HP" / "Xếp lớp" / "Xem" tùy trạng thái.
+
+  Trang Lịch Học (Hình 4.11):
+  - Thời khóa biểu tuần 7 cột (T2–CN), trục dọc theo khung giờ 07:00–18:00.
+  - Phân biệt màu: xanh dương (lý thuyết), xanh lá (thực hành).
+  - Danh sách buổi học kèm thao tác: Điểm danh / Sửa / Xóa.
+
+  Trang Lịch Thi & Kết Quả (Hình 4.12):
+  - 2 tab: "Lịch Thi" và "Kết Quả".
+  - Mỗi hàng có: Xem chi tiết | Quản lý học viên dự thi | Nhập KQ | Sửa | Xóa.
+  - Tự động kiểm tra điều kiện: đủ buổi LT, đủ km TH, không còn phí thi lại.
+
+
+────────────────────────────────────────────────────────────────────────────────
+SLIDE 16 – 3.5 GIAO DIỆN CỔNG GIẢNG VIÊN
+────────────────────────────────────────────────────────────────────────────────
+
+3. KẾT QUẢ NGHIÊN CỨU
+
+  3.5 Giao diện cổng giảng viên
+
+  [Hình 4.18 – Tổng quan GV]  |  [Hình 4.21 – Lịch dạy]  |  [Hình 4.22 – Báo lỗi xe]
+
+  Trang Tổng Quan Giảng Viên (Hình 4.18):
+  - Lời chào cá nhân hóa theo tên giảng viên kèm ngày tháng hiện tại.
+  - 4 thẻ thống kê: số lớp đang dạy, tổng học viên, tổng lớp được
+    phân công, số buổi dạy hôm nay.
+  - Thời khóa biểu tuần dạng lưới + khung lịch dạy hôm nay.
+  - Bảng lớp được phân công: tên lớp, khóa học, sĩ số, ngày khai giảng.
+
+  Trang Lịch Dạy (Hình 4.21):
+  - Bảng danh sách buổi dạy trong tuần kèm nút "Điểm danh" trực tiếp.
+  - Lịch dạng lưới tuần: khối màu phân biệt lý thuyết / thực hành.
+
+  Trang Báo Lỗi Xe (Hình 4.22):
+  - Tab "Xe Được Cấp": liệt kê xe theo từng lớp thực hành – ảnh, biển số,
+    hãng xe, màu sắc, số km, hạng bằng, trạng thái + nút "Báo lỗi".
+  - Tab "Lịch Sử Báo Lỗi": xem lại các lần báo lỗi đã gửi.
+
+
+────────────────────────────────────────────────────────────────────────────────
+SLIDE 17 – 3.6 GIAO DIỆN CỔNG HỌC VIÊN
+────────────────────────────────────────────────────────────────────────────────
+
+3. KẾT QUẢ NGHIÊN CỨU
+
+  3.6 Giao diện cổng học viên
+
+  [Hình 4.23 – Tổng quan HV]  |  [Hình 4.25 – Tiến độ]  |  [Hình 4.26 – KQ thi]
+
+  Trang Tổng Quan Học Viên (Hình 4.23):
+  - Lời chào cá nhân hóa kèm badge trạng thái trong quy trình đào tạo.
+  - 6 thẻ thống kê: Lịch học hôm nay | Buổi học còn lại | Km đã TH
+    | Kết quả thi gần nhất | Trạng thái học phí | Tiến độ lý thuyết.
+  - Đăng nhập bằng số CCCD và ngày sinh (không cần tài khoản riêng).
+
+  Trang Tiến Độ Học Tập (Hình 4.25):
+  - Phần "Điều kiện dự thi tốt nghiệp": Đủ buổi LT | Đủ km TH | Đủ ĐK.
+  - Thanh tiến trình với % hoàn thành cho từng chỉ số.
+  - Thông báo chúc mừng khi học viên đủ điều kiện dự thi.
+
+  Trang Kết Quả Thi (Hình 4.26):
+  - Kết quả nhóm theo từng lần thi (ngày thi, địa điểm, kết quả tổng).
+  - Từng bài thi: tên bài, lần thi, điểm số, badge Đạt/Không đạt.
+  - Xem đầy đủ lịch sử thi tốt nghiệp và sát hạch trong 1 trang.
+
+
+────────────────────────────────────────────────────────────────────────────────
+SLIDE 18 – SECTION DIVIDER: 4. KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN
+────────────────────────────────────────────────────────────────────────────────
+
+4. KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN
+
+[Hình minh họa – giữ theo phong cách slide mẫu]
+
+
+────────────────────────────────────────────────────────────────────────────────
+SLIDE 19 – 4.1 KẾT LUẬN & 4.2 HƯỚNG PHÁT TRIỂN
+────────────────────────────────────────────────────────────────────────────────
+
+4. KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN
+
+  4.1 Kết luận
+
+  Đề tài đã hoàn thành xây dựng thành công hệ thống quản lý toàn diện
+  cho Trung Tâm Lái Xe Sao Việt, bao phủ toàn bộ quy trình đào tạo từ
+  khi học viên nộp hồ sơ đến khi nhận bằng lái chính thức.
+
+  Hệ thống được xây dựng trên nền tảng công nghệ hiện đại:
+  ReactJS (Vite) + Laravel (PHP) + MySQL, triển khai theo kiến trúc
+  client–server với giao tiếp qua RESTful API.
+
+  Hệ thống có thể triển khai thực tế tại các trung tâm đào tạo lái xe,
+  đặc biệt phù hợp các đơn vị đang vận hành thủ công bằng giấy tờ hoặc
+  bảng tính, giúp số hóa toàn bộ quy trình, tiết kiệm nhân lực và nâng
+  cao chất lượng quản lý.
+
+  4.2 Hướng phát triển
+
+  • Tích hợp thêm nhiều cổng thanh toán nội địa: VNPay, Momo, ZaloPay.
+
+  • Phát triển hệ thống thông báo tự động qua email và Zalo OA (lịch học
+    mới, kết quả thi, nhắc đóng học phí).
+
+  • Phát triển ứng dụng mobile sử dụng React Native hoặc Flutter.
+
+  • Tăng cường bảo mật: xác thực hai lớp (2FA), mã hóa dữ liệu nhạy cảm,
+    cơ chế sao lưu tự động lên cloud.
+
+  • Mở rộng báo cáo thống kê: xuất Excel/PDF theo ngày/tháng/năm.
+
+  • Ứng dụng AI/ML để phân tích tiến độ học tập, dự đoán học viên có
+    nguy cơ rớt thi và đề xuất lịch ôn luyện phù hợp.
+
+
+────────────────────────────────────────────────────────────────────────────────
+SLIDE 20 – CẢM ƠN
+────────────────────────────────────────────────────────────────────────────────
+
+CẢM ƠN THẦY CÔ
+VÀ CÁC BẠN ĐÃ
+LẮNG NGHE
+
+
+================================================================================
+GHI CHÚ KHI LÀM SLIDE
+================================================================================
+
+1. Tên GVHD   : ThS. Lê Phong Dũ (KHÔNG phải TS.)
+2. Địa điểm   : Trà Vinh (KHÔNG phải Vĩnh Long như slide mẫu)
+3. Thời gian  : tháng 6 năm 2026
+4. Lớp        : DA22TTC | Khoá: 2022 | MSSV: 110122163
+
+Hình ảnh cần chụp/chèn từ hệ thống thực tế:
+  - Hình 3.1  : Biểu đồ use case tổng quát
+  - Hình 3.2  : Biểu đồ use case quản trị viên
+  - Hình 3.3  : Biểu đồ use case giảng viên
+  - Hình 4.1  : Trang chủ quảng bá
+  - Hình 4.2  : Trang khóa đào tạo
+  - Hình 4.3  : Trang chi tiết khóa đào tạo
+  - Hình 4.4  : Form đăng ký học bằng lái
+  - Hình 4.6  : Trang Dashboard quản trị
+  - Hình 4.7  : Trang quản lý hồ sơ học viên
+  - Hình 4.11 : Trang quản lý lịch học
+  - Hình 4.12 : Trang quản lý lịch thi và kết quả
+  - Hình 4.18 : Trang tổng quan giảng viên
+  - Hình 4.21 : Trang lịch dạy
+  - Hình 4.22 : Trang báo lỗi xe
+  - Hình 4.23 : Trang tổng quan học viên
+  - Hình 4.25 : Trang tiến độ học tập
+  - Hình 4.26 : Trang kết quả thi
+
+Màu sắc chủ đạo gợi ý (theo nhận diện thương hiệu Sao Việt):
+  - Nền slide : Trắng hoặc xám nhạt (gradient như slide mẫu)
+  - Tiêu đề  : Xanh dương đậm (#1e3a5f hoặc tương đương)
+  - Bullet    : Xanh dương vừa
+  - Nhấn mạnh: Đỏ hoặc cam (màu thương hiệu Sao Việt)
+
+================================================================================
+END OF FILE
+================================================================================
