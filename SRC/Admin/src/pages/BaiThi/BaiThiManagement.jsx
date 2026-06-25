@@ -104,11 +104,11 @@ const BaiThiManagement = () => {
             <td style={{ textAlign: 'center' }}><span className="bt-score bt-score-max">{Number(b.diem_toi_da)} điểm</span></td>
             <td style={{ textAlign: 'center' }}><span className="bt-score bt-score-pass">≥ {Number(b.diem_dat)} điểm</span></td>
             <td style={{ textAlign: 'center' }}><span className="bt-percent">{b.diem_toi_da > 0 ? Math.round((b.diem_dat / b.diem_toi_da) * 100) : 0}%</span></td>
-            <td style={{ textAlign: 'right' }}>{Number(b.phi_thi_lai) > 0 ? <span className="bt-fee">{Number(b.phi_thi_lai).toLocaleString('vi-VN')} d</span> : <span style={{ color: '#9ca3af' }}>-</span>}</td>
+            <td style={{ textAlign: 'right' }}>{Number(b.phi_thi_lai) > 0 ? <span className="bt-fee">{Number(b.phi_thi_lai).toLocaleString('vi-VN')} đ</span> : <span style={{ color: '#9ca3af' }}>-</span>}</td>
             <td style={{ textAlign: 'center' }}>
               <div className="action-cell" style={{ justifyContent: 'center' }}>
-                <button className="btn btn-warning btn-sm" onClick={() => openEdit(b)}>Edit</button>
-                <button className="btn btn-danger btn-sm" onClick={() => handleDelete(b)}>Xoa</button>
+                <button className="btn btn-warning btn-sm" onClick={() => openEdit(b)}>Sửa</button>
+                <button className="btn btn-danger btn-sm" onClick={() => handleDelete(b)}>Xóa</button>
               </div>
             </td>
           </tr>
@@ -124,10 +124,10 @@ const BaiThiManagement = () => {
         <button className="btn btn-primary" onClick={() => openAdd()}>+ Thêm bài thi</button>
       </div>
       <div className="bt-stats">
-        <div className="bt-stat-card"><div><p className="bt-stat-value">{totalBaiThi}</p><p className="bt-stat-label">Tong bai thi</p></div></div>
-        <div className="bt-stat-card blue"><div><p className="bt-stat-value">{grouped.length}</p><p className="bt-stat-label">Hang bang co cau hinh</p></div></div>
-        <div className="bt-stat-card green"><div><p className="bt-stat-value">{grouped.reduce((a, g) => a + (g.tot_nghiep?.length || 0), 0)}</p><p className="bt-stat-label">Bai �� Tốt Nghiệp</p></div></div>
-        <div className="bt-stat-card purple"><div><p className="bt-stat-value">{grouped.reduce((a, g) => a + (g.sat_hanh?.length || 0), 0)}</p><p className="bt-stat-label">Bai sat hanh</p></div></div>
+        <div className="bt-stat-card"><div><p className="bt-stat-value">{totalBaiThi}</p><p className="bt-stat-label">Tổng bài thi</p></div></div>
+        <div className="bt-stat-card blue"><div><p className="bt-stat-value">{grouped.length}</p><p className="bt-stat-label">Hạng bằng có cấu hình</p></div></div>
+        <div className="bt-stat-card green"><div><p className="bt-stat-value">{grouped.reduce((a, g) => a + (g.tot_nghiep?.length || 0), 0)}</p><p className="bt-stat-label">Bài Tốt Nghiệp</p></div></div>
+        <div className="bt-stat-card purple"><div><p className="bt-stat-value">{grouped.reduce((a, g) => a + (g.sat_hanh?.length || 0), 0)}</p><p className="bt-stat-label">Bài Sát Hạch</p></div></div>
       </div>
       <div className="search-bar">
         <select className="search-input" style={{ maxWidth: 200 }} value={filterLoaiBang} onChange={e => setFilterLoaiBang(e.target.value)}>
@@ -144,18 +144,18 @@ const BaiThiManagement = () => {
               <span style={{ color: '#374151', fontWeight: 600 }}>{group.ten_khoa}</span>
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
-              <button className="btn btn-success btn-sm" onClick={() => openAdd(group.khoa_hoc_id, 'tot_nghiep')}>+ Bai TN</button>
-              <button className="btn btn-sm bt-btn-sh" onClick={() => openAdd(group.khoa_hoc_id, 'sat_hanh')}>+ Bai SH</button>
+              <button className="btn btn-success btn-sm" onClick={() => openAdd(group.khoa_hoc_id, 'tot_nghiep')}>+ Bài TN</button>
+              <button className="btn btn-sm bt-btn-sh" onClick={() => openAdd(group.khoa_hoc_id, 'sat_hanh')}>+ Bài SH</button>
             </div>
           </div>
           <div className="bt-group-body">
             <div className="bt-loai-section">
-              <div className="bt-loai-title bt-loai-tn">�� Tốt Nghiệp</div>
-              {!group.tot_nghiep?.length ? <div className="bt-empty-loai">Chua co bai thi �� Tốt Nghiệp cho Hạng {group.loai_bang}</div> : renderTable(group.tot_nghiep)}
+              <div className="bt-loai-title bt-loai-tn">🎓 Tốt Nghiệp</div>
+              {!group.tot_nghiep?.length ? <div className="bt-empty-loai">Chưa có bài thi Tốt Nghiệp cho Hạng {group.loai_bang}</div> : renderTable(group.tot_nghiep)}
             </div>
             <div className="bt-loai-section" style={{ marginTop: 16 }}>
               <div className="bt-loai-title bt-loai-sh">🏛️ Sát Hạch (BCA)</div>
-              {!group.sat_hanh?.length ? <div className="bt-empty-loai">Chua co bai thi sat hanh cho Hạng {group.loai_bang}</div> : renderTable(group.sat_hanh)}
+              {!group.sat_hanh?.length ? <div className="bt-empty-loai">Chưa có bài thi Sát Hạch cho Hạng {group.loai_bang}</div> : renderTable(group.sat_hanh)}
             </div>
           </div>
         </div>
@@ -170,7 +170,7 @@ const BaiThiManagement = () => {
             <form onSubmit={handleSave}>
               <div className="modal-body">
                 <div className="form-group">
-                  <label>Hang bang lai *</label>
+                  <label>Hạng bằng lái *</label>
                   <select value={form.khoa_hoc_id} onChange={e => f({ khoa_hoc_id: e.target.value })} required disabled={!!editing}>
                     <option value="">-- Chọn hạng bằng --</option>
                     {khoaList.map(k => <option key={k.id} value={String(k.id)}>Hạng {k.loai_bang} - {k.ten_khoa}</option>)}
@@ -182,14 +182,14 @@ const BaiThiManagement = () => {
                     <input value={form.ten_bai_thi} onChange={e => f({ ten_bai_thi: e.target.value })} required placeholder="VD: Ly tHủyet, Mo phong, Sa hinh, Duong truong" />
                   </div>
                   <div className="form-group">
-                    <label>Loai thi *</label>
+                    <label>Loại thi *</label>
                     <select value={form.loai} onChange={e => f({ loai: e.target.value })} required>
-                      <option value="tot_nghiep">�� Tốt Nghiệp</option>
+                      <option value="tot_nghiep">🎓 Tốt Nghiệp</option>
                       <option value="sat_hanh">Sát hạch (BCA)</option>
                     </select>
                   </div>
                   <div className="form-group">
-                    <label>Thu tu</label>
+                    <label>Thứ tự</label>
                     <input type="number" min="1" value={form.thu_tu} onChange={e => f({ thu_tu: e.target.value })} />
                   </div>
                   <div className="form-group">
@@ -198,11 +198,11 @@ const BaiThiManagement = () => {
                     <p style={{ fontSize: 11, color: '#6b7280', marginTop: 3 }}>LT A1/A:25 | LT B1/B2:30 | LT C1:35 | LT C:40 | LT D/E/CE:45 | Mo phong:50 | Sa hinh/Duong truong:100</p>
                   </div>
                   <div className="form-group">
-                    <label>Điểm đạt toi thieu *</label>
+                    <label>Điểm đạt tối thiểu *</label>
                     <input type="number" step="0.01" min="0" value={form.diem_dat} onChange={e => f({ điểm_dat: e.target.value })} required placeholder="VD: 27, 35, 80" />
                     {form.diem_dat && form.diem_toi_da && (
                       parseFloat(form.diem_dat) > parseFloat(form.diem_toi_da)
-                        ? <p style={{ fontSize: 12, color: '#dc2626', marginTop: 3, fontWeight: 600 }}>Điểm đạt khong the lon hon Điểm tối đa!</p>
+                        ? <p style={{ fontSize: 12, color: '#dc2626', marginTop: 3, fontWeight: 600 }}>Điểm đạt không thể lớn hơn điểm tối đa!</p>
                         : <p style={{ fontSize: 12, color: '#16a34a', marginTop: 3 }}>Tỷ lệ đạt: {Math.round((form.diem_dat / form.diem_toi_da) * 100)}%</p>
                     )}
                   </div>
@@ -216,7 +216,7 @@ const BaiThiManagement = () => {
                     <strong style={{ color: '#1e40af' }}>Preview:</strong>{' '}
                     <strong>{form.ten_bai_thi}</strong>{' '}&mdash;{' '}
                     <span style={{ color: '#0369a1' }}>Đạt ≥ {form.diem_dat}/{form.diem_toi_da} điểm</span>
-                    {Number(form.phi_thi_lai) > 0 && <span style={{ color: '#dc2626', marginLeft: 8 }}>| Phí: {Number(form.phi_thi_lai).toLocaleString('vi-VN')} d</span>}
+                    {Number(form.phi_thi_lai) > 0 && <span style={{ color: '#dc2626', marginLeft: 8 }}>| Phí: {Number(form.phi_thi_lai).toLocaleString('vi-VN')} đ</span>}
                   </div>
                 )}
               </div>
