@@ -192,6 +192,24 @@ const ThiManagement = () => {
   }
 
   const handleSaveKQ = async () => {
+    // Validate: kiem tra diem nhap khong vuot qua diem toi da
+    for (const hv of kqData) {
+      for (const b of baiThiList) {
+        if (hv.bai_thi_da_dat?.includes(b.id)) continue
+        const entry = hv.diem_theo?.[b.id] || {}
+        const diem = entry.diem
+        const diemToiDa = b.diem_toi_da ?? 100
+        if (diem !== null && diem !== undefined && diem > diemToiDa) {
+          toast.error(hv.ho_ten + ' - ' + b.ten_bai_thi + ': Diem ' + diem + ' vuot qua diem toi da ' + diemToiDa + '!')
+          return
+        }
+        if (diem !== null && diem !== undefined && diem < 0) {
+          toast.error(hv.ho_ten + ' - ' + b.ten_bai_thi + ': Diem khong duoc am!')
+          return
+        }
+      }
+    }
+
     // Chỉ gửi bài thi mà học viên CHƯA đậu từ lần trước
     const payload = []
     kqData.forEach(hv => {
@@ -788,7 +806,10 @@ const ThiManagement = () => {
                                       }}
                                       onChange={e => {
                                         const val  = e.target.value
-                                        const d    = val === '' ? null : parseFloat(val)
+                                        let d = val === '' ? null : parseFloat(val)
+                                        const diemToiDa = b.diem_toi_da ?? 100
+                                        if (d !== null && d > diemToiDa) d = diemToiDa
+                                        if (d !== null && d < 0) d = 0
                                         const auto = d === null ? null : (d >= b.diem_dat ? 'dat' : 'khong_dat')
                                         setKqData(prev => prev.map((x, j) => j !== i ? x : {
                                           ...x,
