@@ -198,12 +198,13 @@ const ThiManagement = () => {
         if (hv.bai_thi_da_dat?.includes(b.id)) continue
         const entry = hv.diem_theo?.[b.id] || {}
         const diem = entry.diem
-        const diemToiDa = b.diem_toi_da ?? 100
-        if (diem !== null && diem !== undefined && diem > diemToiDa) {
+        const diemToiDa = parseFloat(b.diem_toi_da ?? 100)
+        const diemNum = parseFloat(diem)
+        if (diem !== null && diem !== undefined && !isNaN(diemNum) && diemNum > diemToiDa) {
           toast.error(hv.ho_ten + ' - ' + b.ten_bai_thi + ': Diem ' + diem + ' vuot qua diem toi da ' + diemToiDa + '!')
           return
         }
-        if (diem !== null && diem !== undefined && diem < 0) {
+        if (diem !== null && diem !== undefined && !isNaN(diemNum) && diemNum < 0) {
           toast.error(hv.ho_ten + ' - ' + b.ten_bai_thi + ': Diem khong duoc am!')
           return
         }
@@ -807,7 +808,7 @@ const ThiManagement = () => {
                                       onChange={e => {
                                         const val  = e.target.value
                                         let d = val === '' ? null : parseFloat(val)
-                                        const diemToiDa = b.diem_toi_da ?? 100
+                                          const diemToiDa = parseFloat(b.diem_toi_da ?? 100)
                                         if (d !== null && d > diemToiDa) d = diemToiDa
                                         if (d !== null && d < 0) d = 0
                                         const auto = d === null ? null : (d >= b.diem_dat ? 'dat' : 'khong_dat')
