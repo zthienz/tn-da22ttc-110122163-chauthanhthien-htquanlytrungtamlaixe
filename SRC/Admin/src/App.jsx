@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
+﻿import { Routes, Route, Navigate } from 'react-router-dom'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { AdminProvider, useAdmin } from './context/AdminContext'
@@ -19,6 +19,7 @@ import XeManagement from './pages/Xe/XeManagement'
 
 import CapBangManagement from './pages/CapBang/CapBangManagement'
 import LienHeManagement from './pages/LienHe/LienHeManagement'
+import BaiThiManagement from './pages/BaiThi/BaiThiManagement'
 
 // Giảng viên pages
 import GVThongTin from './pages/GiangVien/GVThongTin'
@@ -60,6 +61,7 @@ const AppRoutes = () => {
         <Route path="hoc-phi"    element={<ProtectedRoute adminOnly><HocPhiManagement /></ProtectedRoute>} />
         <Route path="xe"         element={<ProtectedRoute adminOnly><XeManagement /></ProtectedRoute>} />
         <Route path="lien-he"   element={<ProtectedRoute adminOnly><LienHeManagement /></ProtectedRoute>} />
+        <Route path="bai-thi"        element={<ProtectedRoute adminOnly><BaiThiManagement /></ProtectedRoute>} />
 
         {/* ── GIẢNG VIÊN ONLY ── */}
         <Route path="thong-tin-ca-nhan" element={<GVThongTin />} />

@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+﻿import { useEffect, useState, useCallback } from 'react'
 import axios from 'axios'
 import { toast } from 'react-toastify'
 import { useAdmin } from '../../context/AdminContext'
@@ -9,7 +9,6 @@ const ThiManagement = () => {
   const [lichThi, setLichThi]   = useState([])
   const [lopList, setLopList]   = useState([])
   const [loading, setLoading]   = useState(true)
-  const [tab, setTab]           = useState('lich')
   const [showModal, setShowModal]   = useState(false)
   const [showKQModal, setShowKQModal] = useState(false)
   const [viewItem, setViewItem]     = useState(null)
@@ -272,20 +271,13 @@ const ThiManagement = () => {
   return (
     <div className="thi-page">
       <div className="page-header">
-        <div><h2>🏆 Thi & Kết Quả</h2><p>Quản lý lịch thi tốt nghiệp và sát hạch</p></div>
+        <div><h2>🏆 Lịch Thi</h2><p>Quản lý lịch thi tốt nghiệp và sát hạch</p></div>
         <button className="btn btn-primary" onClick={() => {
           setEditingThi(null)
           setForm({ loai_bang: '', loai_thi: 'tot_nghiep', ngay_thi: '', gio_thi: '', dia_diem: '', don_vi_to_chuc: DON_VI_MAC_DINH })
           setShowModal(true)
         }}>+ Tạo lịch thi</button>
       </div>
-
-      {/* Tabs */}
-      <div className="thi-tabs">
-        <button className={`thi-tab ${tab === 'lich' ? 'active' : ''}`} onClick={() => setTab('lich')}>📅 Lịch Thi</button>
-        <button className={`thi-tab ${tab === 'ket_qua' ? 'active' : ''}`} onClick={() => setTab('ket_qua')}>📊 Kết Quả</button>
-      </div>
-
       {/* Search bar */}
       <div className="search-bar">
         <input className="search-input" placeholder="🔍 Tìm theo loại bằng, địa điểm, đơn vị tổ chức..."
@@ -315,7 +307,7 @@ const ThiManagement = () => {
                 <tr>
                   <th>#</th><th>Ngày thi</th><th>Giờ</th><th>Loại thi</th>
                   <th>Loại bằng lái</th><th>Địa điểm</th>
-                  {tab === 'lich' && <th>Đơn vị tổ chức</th>}
+                  <th>Đơn vị tổ chức</th>
                   <th>Thao tác</th>
                 </tr>
               </thead>
@@ -338,7 +330,7 @@ const ThiManagement = () => {
                           : '—'}
                       </td>
                       <td>{lt.dia_diem || '—'}</td>
-                      {tab === 'lich' && <td>{lt.don_vi_to_chuc || '—'}</td>}
+                      <td>{lt.don_vi_to_chuc || '—'}</td>
                       <td>
                         <div className="action-cell">
                           <button className="btn btn-info btn-sm" onClick={() => setViewItem(lt)}>👁️ Xem</button>
@@ -685,7 +677,7 @@ const ThiManagement = () => {
               </div>
               <button className="modal-close" onClick={() => setShowKQModal(false)}>✕</button>
             </div>
-            <div className="modal-body" style={{ maxHeight: '65vh', overflowY: 'auto' }}>
+            <div className="modal-body" style={{ maxHeight: '78vh', overflowY: 'auto' }}>
               {kqData.length === 0 ? (
                 <div className="empty-state">
                   <span>📋</span>
@@ -713,13 +705,13 @@ const ThiManagement = () => {
                       }}>
                         <strong style={{ color: '#0369a1' }}>{b.ten_bai_thi}</strong>
                         <span style={{ color: '#64748b', marginLeft: 6 }}>
-                          Đạt ≥ {b.diem_dat} điểm
+                          Đạt ≥ {b.diem_dat}/{b.diem_toi_da ?? 100} điểm
                         </span>
                       </div>
                     ))}
                   </div>
 
-                  <table className="data-table kq-table">
+                  <div className="kq-table-wrapper"><table className="data-table kq-table" style={{ minWidth: 900 }}>
                     <thead>
                       <tr>
                         <th style={{ minWidth: 40 }}>#</th>
@@ -729,7 +721,7 @@ const ThiManagement = () => {
                           <th key={b.id} style={{ minWidth: 140, textAlign: 'center' }}>
                             {b.ten_bai_thi}
                             <div style={{ fontSize: 10, fontWeight: 400, color: '#94a3b8' }}>
-                              Đạt ≥ {b.diem_dat}đ
+                              Đạt ≥ {b.diem_dat}/{b.diem_toi_da ?? 100}đ
                             </div>
                           </th>
                         ))}
@@ -785,7 +777,7 @@ const ThiManagement = () => {
                                   <div style={{ display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'center' }}>
                                     <input
                                       type="number"
-                                      step="0.1" min="0" max="100"
+                                      step="0.1" min="0" max={b.diem_toi_da ?? 100}
                                       placeholder="Điểm"
                                       value={diem}
                                       style={{
@@ -852,7 +844,7 @@ const ThiManagement = () => {
                         )
                       })}
                     </tbody>
-                  </table>
+                  </table></div>
                 </>
               )}
             </div>

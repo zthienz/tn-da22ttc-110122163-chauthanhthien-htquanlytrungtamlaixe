@@ -16,6 +16,7 @@ use App\Http\Controllers\GiangVienController;
 
 use App\Http\Controllers\XeController;
 use App\Http\Controllers\LienHeController;
+use App\Http\Controllers\BaiThiController;
 // ═══════════════════════════════════════════════════════
 
 // Đăng nhập học viên (CCCD + ngày sinh)
@@ -140,7 +141,12 @@ Route::middleware(['auth.jwt', 'role:admin|giang_vien'])->prefix('admin')->group
     Route::delete('/lich-thi/{id}/hoc-vien/{hoSoId}',           [ThiController::class, 'xoaHocVienKhoiLich']);
     Route::post('/chung-chi',                                   [ThiController::class, 'capChungChi']);
 
-    // ── Học phí ─────────────────────────────────────────────────────────────
+    // ── Bài thi (cấu hình điểm đạt, điểm tối đa theo hạng bằng) ────────────
+    Route::get('/bai-thi',                                      [BaiThiController::class, 'index']);
+    Route::get('/bai-thi/by-loai-bang',                         [BaiThiController::class, 'byLoaiBang']);
+    Route::post('/bai-thi',                                     [BaiThiController::class, 'store']);
+    Route::put('/bai-thi/{id}',                                 [BaiThiController::class, 'update']);
+    Route::delete('/bai-thi/{id}',                              [BaiThiController::class, 'destroy']);    // ── Học phí ─────────────────────────────────────────────────────────────
     Route::get('/hoc-phi',                         [HocPhiController::class, 'index']);
     Route::get('/phi-thi-lai',                     [AdminController::class, 'danhSachPhiThiLai']);
     Route::get('/ho-so/{id}/phi-thi-lai-chua-thu', [AdminController::class, 'phiThiLaiChuaThu']);

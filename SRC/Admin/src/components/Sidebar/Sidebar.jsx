@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom'
+﻿import { NavLink } from 'react-router-dom'
 import { useAdmin } from '../../context/AdminContext'
 import './Sidebar.css'
 
@@ -11,6 +11,7 @@ const adminMenu = [
   { path: '/lop-hoc',    icon: '🏫', label: 'Lớp Học' },
   { path: '/lich-hoc',   icon: '🗓️', label: 'Lịch Học' },
   { path: '/thi',        icon: '🏆', label: 'Lịch Thi & Kết Quả' },
+  { path: '/bai-thi',    icon: '📋', label: 'Cấu Hình Bài Thi' },
   { path: '/cap-bang',   icon: '🎓', label: 'Cấp Bằng' },
   { path: '/giang-vien', icon: '👨‍🏫', label: 'Giảng Viên' },
   { path: '/hoc-phi',    icon: '💰', label: 'Học Phí' },

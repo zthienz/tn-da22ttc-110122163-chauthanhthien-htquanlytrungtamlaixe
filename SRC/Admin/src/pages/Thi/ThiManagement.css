@@ -3,8 +3,18 @@
 .thi-tab { padding:8px 20px;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;background:transparent;color:#718096;transition:all .2s; }
 .thi-tab.active { background:#0d47a1;color:#fff; }
 
-/* Modal XL */
-.modal.modal-xl { width: min(960px, 95vw); }
+/* Modal XL – cửa sổ nhập kết quả thi */
+.modal.modal-xl {
+  width: min(1280px, 96vw);
+  max-width: 1280px !important;
+}
+
+/* Bọc bảng nhập KQ cho phép cuộn ngang */
+.kq-table-wrapper {
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
 
 /* Quản lý học viên trong lịch thi */
 .them-hv-section { background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:16px; }
@@ -31,5 +41,11 @@
 
 /* Bảng nhập kết quả thi */
 .kq-table th, .kq-table td { vertical-align: middle; }
-.kq-table thead th { background: #f8fafc; font-size: 12px; }
-.kq-table tbody td { padding: 8px 6px; }
+.kq-table thead th {
+  background: #f8fafc;
+  font-size: 12px;
+  padding: 10px 12px;
+  white-space: nowrap;
+}
+.kq-table tbody td { padding: 10px 8px; }
+.kq-table input[type="number"] { width: 80px !important; font-size: 14px !important; }

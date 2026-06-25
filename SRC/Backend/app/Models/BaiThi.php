@@ -9,10 +9,14 @@ class BaiThi extends Model
     protected $table = 'bai_thi';
 
     protected $fillable = [
-        'khoa_hoc_id', 'ten_bai_thi', 'loai', 'diem_dat', 'phi_thi_lai', 'thu_tu',
+        'khoa_hoc_id', 'ten_bai_thi', 'loai', 'diem_dat', 'diem_toi_da', 'phi_thi_lai', 'thu_tu',
     ];
 
-    protected $casts = ['diem_dat' => 'decimal:2', 'phi_thi_lai' => 'decimal:2'];
+    protected $casts = [
+        'diem_dat'    => 'decimal:2',
+        'diem_toi_da' => 'decimal:2',
+        'phi_thi_lai' => 'decimal:2',
+    ];
 
     public function khoaHoc() { return $this->belongsTo(KhoaHoc::class, 'khoa_hoc_id'); }
 }
