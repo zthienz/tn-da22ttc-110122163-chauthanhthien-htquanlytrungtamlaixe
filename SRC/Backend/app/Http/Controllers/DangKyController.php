@@ -18,7 +18,7 @@ class DangKyController extends Controller
         $request->validate([
             'ho_ten'        => 'required|string|max:100',
             'so_dien_thoai' => 'required|string|regex:/^0\d{9}$/',
-            'so_cccd'       => 'required|string|size:12|regex:/^\d{12}$/|unique:ho_so_hoc_vien,so_cccd',
+            'so_cccd'       => 'required|string|size:12|regex:/^\d{12}$/',
             'ngay_sinh'     => 'required|date',
             'khoa_hoc_id'   => 'required|exists:khoa_hoc,id',
             'email'         => 'nullable|string|regex:/@gmail\.com$/i',
@@ -26,6 +26,22 @@ class DangKyController extends Controller
             'ghi_chu'       => 'nullable|string',
             'anh_the'       => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
         ]);
+
+        // ── Kiểm tra trùng CCCD ──────────────────────────────────────────────
+        $trungCCCD = HoSoHocVien::where('so_cccd', $request->so_cccd)->first();
+        if ($trungCCCD) {
+            $hoTenKhop   = mb_strtolower(trim($trungCCCD->ho_ten))   === mb_strtolower(trim($request->ho_ten));
+            $ngaySinhKhop = \Carbon\Carbon::parse($trungCCCD->ngay_sinh)->toDateString()
+                            === \Carbon\Carbon::parse($request->ngay_sinh)->toDateString();
+
+            if (!$hoTenKhop || !$ngaySinhKhop) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Số CCCD này đã được đăng ký bởi một học viên khác. Vui lòng kiểm tra lại thông tin.',
+                ], 422);
+            }
+            // Cùng người → cho phép đăng ký thêm khóa học (không return lỗi)
+        }
 
         // Xử lý upload ảnh thẻ
         $anhThePath = null;

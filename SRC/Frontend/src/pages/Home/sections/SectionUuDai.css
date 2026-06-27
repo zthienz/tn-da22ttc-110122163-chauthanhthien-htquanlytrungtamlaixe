@@ -70,7 +70,8 @@
   gap: 12px;
 }
 .ud-form input[type="text"],
-.ud-form input[type="tel"] {
+.ud-form input[type="tel"],
+.ud-form textarea {
   width: 100%;
   padding: 12px 16px;
   border: 1px solid #ddd;
@@ -79,38 +80,47 @@
   background: #fff;
   outline: none;
   transition: border-color 0.2s;
+  box-sizing: border-box;
+  font-family: inherit;
 }
-.ud-form input:focus { border-color: #e53935; }
+.ud-form input:focus,
+.ud-form textarea:focus { border-color: #e53935; }
+.ud-form textarea { resize: vertical; }
 
-/* Radio group */
-.ud-radio-group {
-  background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 14px 16px;
-}
-.ud-radio-label {
-  font-size: 14px;
-  font-weight: 600;
-  color: #333;
-  margin-bottom: 10px;
-}
-.required { color: #e53935; }
-.ud-radio-item {
+.ud-form input.input-error,
+.ud-form textarea.input-error { border-color: #e53935; }
+
+/* Form group & label */
+.ud-form-group {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13.5px;
-  color: #444;
-  margin-bottom: 8px;
-  cursor: pointer;
+  flex-direction: column;
+  gap: 5px;
 }
-.ud-radio-item:last-child { margin-bottom: 0; }
-.ud-radio-item input[type="radio"] {
-  width: 16px;
-  height: 16px;
-  accent-color: #e53935;
-  cursor: pointer;
+.ud-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #444;
+}
+
+/* 2 cột SĐT + Email */
+.ud-form-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* Lỗi field */
+.ud-field-error {
+  font-size: 12px;
+  color: #e53935;
+  margin-top: 2px;
+}
+
+.required { color: #e53935; }
+
+/* Trạng thái thành công */
+.ud-success {
+  padding: 16px 0 8px;
 }
 
 /* Submit */
@@ -132,4 +142,5 @@
 
 @media (max-width: 768px) {
   .ud-grid { grid-template-columns: 1fr; }
+  .ud-form-row-2 { grid-template-columns: 1fr; }
 }

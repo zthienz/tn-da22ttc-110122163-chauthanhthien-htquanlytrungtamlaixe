@@ -465,13 +465,29 @@ class AdminController extends Controller
         $request->validate([
             'ho_ten'        => 'required|string|max:100',
             'ngay_sinh'     => 'required|date',
-            'so_cccd'       => 'required|string|size:12|regex:/^\d{12}$/|unique:ho_so_hoc_vien,so_cccd',
+            'so_cccd'       => 'required|string|size:12|regex:/^\d{12}$/',
             'khoa_hoc_id'   => 'required|exists:khoa_hoc,id',
             'so_dien_thoai' => 'nullable|string|regex:/^0\d{9}$/',
             'dia_chi'       => 'nullable|string',
             'email'         => 'nullable|string|regex:/@gmail\.com$/i',
             'anh_the'       => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
         ]);
+
+        // ── Kiểm tra trùng CCCD ──────────────────────────────────────────────
+        $trungCCCD = HoSoHocVien::where('so_cccd', $request->so_cccd)->first();
+        if ($trungCCCD) {
+            $hoTenKhop    = mb_strtolower(trim($trungCCCD->ho_ten)) === mb_strtolower(trim($request->ho_ten));
+            $ngaySinhKhop = \Carbon\Carbon::parse($trungCCCD->ngay_sinh)->toDateString()
+                            === \Carbon\Carbon::parse($request->ngay_sinh)->toDateString();
+
+            if (!$hoTenKhop || !$ngaySinhKhop) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Số CCCD này đã được đăng ký bởi học viên khác (họ tên hoặc ngày sinh không khớp). Vui lòng kiểm tra lại.',
+                ], 422);
+            }
+            // Cùng người → cho phép đăng ký thêm khóa học (tiếp tục)
+        }
 
         // ── Kiểm tra tuổi tối thiểu theo hạng bằng ──────────────────────────
         $tuoiToiThieu = [
@@ -793,13 +809,30 @@ class AdminController extends Controller
         $request->validate([
             'ho_ten'        => 'required|string|max:100',
             'ngay_sinh'     => 'required|date',
-            'so_cccd'       => 'required|string|size:12|regex:/^\d{12}$/|unique:ho_so_hoc_vien,so_cccd,' . $hoSoId,
+            'so_cccd'       => 'required|string|size:12|regex:/^\d{12}$/',
             'khoa_hoc_id'   => 'required|exists:khoa_hoc,id',
             'so_dien_thoai' => 'nullable|string|regex:/^0\d{9}$/',
             'dia_chi'       => 'nullable|string',
             'email'         => 'nullable|string|regex:/@gmail\.com$/i',
             'anh_the'       => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
         ]);
+
+        // ── Kiểm tra trùng CCCD (bỏ qua bản ghi hiện tại) ──────────────────
+        $trungCCCD = HoSoHocVien::where('so_cccd', $request->so_cccd)
+            ->where('id', '!=', $hoSoId)
+            ->first();
+        if ($trungCCCD) {
+            $hoTenKhop    = mb_strtolower(trim($trungCCCD->ho_ten)) === mb_strtolower(trim($request->ho_ten));
+            $ngaySinhKhop = \Carbon\Carbon::parse($trungCCCD->ngay_sinh)->toDateString()
+                            === \Carbon\Carbon::parse($request->ngay_sinh)->toDateString();
+
+            if (!$hoTenKhop || !$ngaySinhKhop) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Số CCCD này đã được đăng ký bởi học viên khác (họ tên hoặc ngày sinh không khớp). Vui lòng kiểm tra lại.',
+                ], 422);
+            }
+        }
 
         $anhThePath = $hoSo->anh_the;
         if ($request->hasFile('anh_the')) {

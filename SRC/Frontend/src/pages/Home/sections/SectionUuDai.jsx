@@ -9,34 +9,46 @@ const uuDaiItems = [
   'Điền form tư vấn để được hỗ trợ tốt nhất',
 ]
 
-const khoaOptions = [
-  'Học lái xe hạng A, A1',
-  'Học lái xe hạng B2 Số Sàn',
-  'Học lái xe hạng B1 Số Tự Động',
-  'Học lái xe hạng C1',
-]
+const BACKEND_URL = 'http://localhost:8000'
 
 const SectionUuDai = () => {
   const [form, setForm] = useState({
-    ho_ten: '', dien_thoai: '', khu_vuc: '', khoa_hoc: '',
+    ho_ten: '', so_dien_thoai: '', email: '', noi_dung: '',
   })
   const [loading, setLoading] = useState(false)
+  const [sent, setSent] = useState(false)
+  const [fieldErrors, setFieldErrors] = useState({})
 
-  const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value })
+  const handleChange = e => {
+    setForm({ ...form, [e.target.name]: e.target.value })
+    setFieldErrors({ ...fieldErrors, [e.target.name]: '' })
+  }
+
+  const validate = () => {
+    const errs = {}
+    if (!form.ho_ten.trim()) errs.ho_ten = 'Vui lòng nhập họ và tên.'
+    if (form.so_dien_thoai && !/^0\d{9}$/.test(form.so_dien_thoai))
+      errs.so_dien_thoai = 'Số điện thoại phải 10 số và bắt đầu bằng số 0.'
+    if (form.email && !/^[^\s@]+@gmail\.com$/.test(form.email))
+      errs.email = 'Email phải có dạng @gmail.com.'
+    if (!form.noi_dung.trim()) errs.noi_dung = 'Vui lòng nhập nội dung cần tư vấn.'
+    return errs
+  }
 
   const handleSubmit = async e => {
     e.preventDefault()
-    if (!form.ho_ten || !form.dien_thoai || !form.khoa_hoc) {
-      toast.error('Vui lòng điền đầy đủ thông tin bắt buộc')
-      return
-    }
+    const errs = validate()
+    if (Object.keys(errs).length > 0) { setFieldErrors(errs); return }
     setLoading(true)
     try {
-      await axios.post('http://localhost:8000/api/dang-ky-tu-van', form)
-      toast.success('Đăng ký thành công! Chúng tôi sẽ liên hệ bạn sớm nhất.')
-      setForm({ ho_ten: '', dien_thoai: '', khu_vuc: '', khoa_hoc: '' })
-    } catch {
-      toast.error('Có lỗi xảy ra, vui lòng thử lại sau.')
+      const res = await axios.post(`${BACKEND_URL}/api/lien-he`, form)
+      if (res.data.success) {
+        setSent(true)
+        setForm({ ho_ten: '', so_dien_thoai: '', email: '', noi_dung: '' })
+        setFieldErrors({})
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Có lỗi xảy ra, vui lòng thử lại sau.')
     } finally {
       setLoading(false)
     }
@@ -64,52 +76,74 @@ const SectionUuDai = () => {
         <div className="ud-right">
           <div className="ud-form-wrapper">
             <h3 className="ud-form-title">ĐĂNG KÝ TƯ VẤN MIỄN PHÍ</h3>
-            <form onSubmit={handleSubmit} className="ud-form">
-              <input
-                type="text"
-                name="ho_ten"
-                placeholder="Họ và tên"
-                value={form.ho_ten}
-                onChange={handleChange}
-                required
-              />
-              <input
-                type="tel"
-                name="dien_thoai"
-                placeholder="Điện thoại"
-                value={form.dien_thoai}
-                onChange={handleChange}
-                required
-              />
-              <input
-                type="text"
-                name="khu_vuc"
-                placeholder="Bạn ở khu vực nào?"
-                value={form.khu_vuc}
-                onChange={handleChange}
-              />
 
-              <div className="ud-radio-group">
-                <p className="ud-radio-label">🔷 Bạn quan tâm đến? <span className="required">*</span></p>
-                {khoaOptions.map((opt, i) => (
-                  <label key={i} className="ud-radio-item">
-                    <input
-                      type="radio"
-                      name="khoa_hoc"
-                      value={opt}
-                      checked={form.khoa_hoc === opt}
-                      onChange={handleChange}
-                      required
-                    />
-                    <span>{opt}</span>
-                  </label>
-                ))}
+            {sent ? (
+              <div className="ud-success">
+                <div style={{ fontSize: 48, textAlign: 'center' }}>✅</div>
+                <h4 style={{ textAlign: 'center', color: '#2e7d32', margin: '12px 0 8px' }}>Gửi thành công!</h4>
+                <p style={{ textAlign: 'center', fontSize: 14, color: '#555', lineHeight: 1.6 }}>
+                  Chúng tôi đã nhận được thông tin của bạn và sẽ liên hệ lại sớm nhất.
+                </p>
+                <button className="ud-submit" style={{ marginTop: 16 }} onClick={() => setSent(false)}>
+                  Đăng ký tư vấn khác
+                </button>
               </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="ud-form">
+                {/* Họ và tên */}
+                <div className="ud-form-group">
+                  <label className="ud-label">Họ và tên <span className="required">*</span></label>
+                  <input
+                    type="text" name="ho_ten"
+                    placeholder="Nguyễn Văn A"
+                    value={form.ho_ten} onChange={handleChange}
+                    className={fieldErrors.ho_ten ? 'input-error' : ''}
+                  />
+                  {fieldErrors.ho_ten && <span className="ud-field-error">{fieldErrors.ho_ten}</span>}
+                </div>
 
-              <button type="submit" className="ud-submit" disabled={loading}>
-                {loading ? 'Đang gửi...' : 'Đăng Ký Ngay'}
-              </button>
-            </form>
+                {/* SĐT + Email */}
+                <div className="ud-form-row-2">
+                  <div className="ud-form-group">
+                    <label className="ud-label">Số điện thoại</label>
+                    <input
+                      type="tel" name="so_dien_thoai"
+                      placeholder="0912 345 678"
+                      value={form.so_dien_thoai} onChange={handleChange}
+                      maxLength={10}
+                      className={fieldErrors.so_dien_thoai ? 'input-error' : ''}
+                    />
+                    {fieldErrors.so_dien_thoai && <span className="ud-field-error">{fieldErrors.so_dien_thoai}</span>}
+                  </div>
+                  <div className="ud-form-group">
+                    <label className="ud-label">Email</label>
+                    <input
+                      type="text" name="email"
+                      placeholder="example@gmail.com"
+                      value={form.email} onChange={handleChange}
+                      className={fieldErrors.email ? 'input-error' : ''}
+                    />
+                    {fieldErrors.email && <span className="ud-field-error">{fieldErrors.email}</span>}
+                  </div>
+                </div>
+
+                {/* Nội dung */}
+                <div className="ud-form-group">
+                  <label className="ud-label">Nội dung <span className="required">*</span></label>
+                  <textarea
+                    name="noi_dung" rows={4}
+                    placeholder="Nội dung cần tư vấn..."
+                    value={form.noi_dung} onChange={handleChange}
+                    className={fieldErrors.noi_dung ? 'input-error' : ''}
+                  />
+                  {fieldErrors.noi_dung && <span className="ud-field-error">{fieldErrors.noi_dung}</span>}
+                </div>
+
+                <button type="submit" className="ud-submit" disabled={loading}>
+                  {loading ? 'Đang gửi...' : 'Gửi Tin Nhắn'}
+                </button>
+              </form>
+            )}
           </div>
         </div>
 

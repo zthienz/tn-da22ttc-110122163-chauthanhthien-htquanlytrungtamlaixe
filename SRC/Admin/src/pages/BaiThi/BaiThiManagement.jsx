@@ -10,8 +10,8 @@ const emptyForm = {
   khoa_hoc_id: '',
   ten_bai_thi: '',
   loai: 'tot_nghiep',
-  điểm_dat: '',
-  điểm_toi_da: '',
+  diem_dat: '',
+  diem_toi_da: '',
   phi_thi_lai: '',
   thu_tu: 1,
 }
@@ -57,7 +57,7 @@ const BaiThiManagement = () => {
 
   const openEdit = (b) => {
     setEditing(b)
-    setForm({ khoa_hoc_id: String(b.khoa_hoc_id), ten_bai_thi: b.ten_bai_thi, loai: b.loai, điểm_dat: b.diem_dat, điểm_toi_da: b.diem_toi_da, phi_thi_lai: b.phi_thi_lai, thu_tu: b.thu_tu })
+    setForm({ khoa_hoc_id: String(b.khoa_hoc_id), ten_bai_thi: b.ten_bai_thi, loai: b.loai, diem_dat: b.diem_dat, diem_toi_da: b.diem_toi_da, phi_thi_lai: b.phi_thi_lai, thu_tu: b.thu_tu })
     setShowModal(true)
   }
 
@@ -144,8 +144,8 @@ const BaiThiManagement = () => {
               <span style={{ color: '#374151', fontWeight: 600 }}>{group.ten_khoa}</span>
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
-              <button className="btn btn-success btn-sm" onClick={() => openAdd(group.khoa_hoc_id, 'tot_nghiep')}>+ Bài TN</button>
-              <button className="btn btn-sm bt-btn-sh" onClick={() => openAdd(group.khoa_hoc_id, 'sat_hanh')}>+ Bài SH</button>
+              <button className="btn btn-success btn-sm" onClick={() => openAdd(group.khoa_hoc_id, 'tot_nghiep')}>+ Thêm bài thi tốt nghiệp</button>
+              <button className="btn btn-sm bt-btn-sh" onClick={() => openAdd(group.khoa_hoc_id, 'sat_hanh')}>+ Thêm bài thi sát hạch</button>
             </div>
           </div>
           <div className="bt-group-body">
@@ -179,7 +179,7 @@ const BaiThiManagement = () => {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                   <div className="form-group" style={{ gridColumn: '1 / -1' }}>
                     <label>Tên bài thi *</label>
-                    <input value={form.ten_bai_thi} onChange={e => f({ ten_bai_thi: e.target.value })} required placeholder="VD: Ly tHủyet, Mo phong, Sa hinh, Duong truong" />
+                    <input value={form.ten_bai_thi} onChange={e => f({ ten_bai_thi: e.target.value })} required placeholder="VD: Lý thuyết, Mô phỏng, Sa hình, Đường trường" />
                   </div>
                   <div className="form-group">
                     <label>Loại thi *</label>
@@ -194,12 +194,12 @@ const BaiThiManagement = () => {
                   </div>
                   <div className="form-group">
                     <label>Điểm tối đa *</label>
-                    <input type="number" step="0.01" min="1" value={form.diem_toi_da} onChange={e => f({ điểm_toi_da: e.target.value })} required placeholder="VD: 30, 50, 100" />
-                    <p style={{ fontSize: 11, color: '#6b7280', marginTop: 3 }}>LT A1/A:25 | LT B1/B2:30 | LT C1:35 | LT C:40 | LT D/E/CE:45 | Mo phong:50 | Sa hinh/Duong truong:100</p>
+                    <input type="number" step="0.01" min="1" value={form.diem_toi_da} onChange={e => f({ diem_toi_da: e.target.value })} required placeholder="VD: 30, 50, 100" />
+                    <p style={{ fontSize: 11, color: '#6b7280', marginTop: 3 }}>LT A1/A: 25 | LT B1/B2: 30 | LT C1: 35 | LT C: 40 | LT D/E/CE: 45 | Mô phỏng: 50 | Sa hình/Đường trường: 100</p>
                   </div>
                   <div className="form-group">
                     <label>Điểm đạt tối thiểu *</label>
-                    <input type="number" step="0.01" min="0" value={form.diem_dat} onChange={e => f({ điểm_dat: e.target.value })} required placeholder="VD: 27, 35, 80" />
+                    <input type="number" step="0.01" min="0" value={form.diem_dat} onChange={e => f({ diem_dat: e.target.value })} required placeholder="VD: 27, 35, 80" />
                     {form.diem_dat && form.diem_toi_da && (
                       parseFloat(form.diem_dat) > parseFloat(form.diem_toi_da)
                         ? <p style={{ fontSize: 12, color: '#dc2626', marginTop: 3, fontWeight: 600 }}>Điểm đạt không thể lớn hơn điểm tối đa!</p>
