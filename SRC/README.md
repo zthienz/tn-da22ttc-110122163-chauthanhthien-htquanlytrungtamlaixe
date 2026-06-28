@@ -1,24 +1,24 @@
-# Hệ Thống Quản Lý Đào Tạo Lái Xe – Trung Tâm Sao Việt
+﻿# He Thong Quan Ly Dao Tao Lai Xe - Trung Tam Sao Viet
 
-Đồ án tốt nghiệp – Sinh viên: Châu Thành Thiện (MSSV: 110122163)
-
----
-
-## Giới thiệu
-
-Hệ thống quản lý toàn diện cho trung tâm đào tạo lái xe, bao gồm 5 ứng dụng độc lập giao tiếp qua một REST API dùng chung. Hệ thống hỗ trợ 4 nhóm người dùng: quản trị viên, giảng viên, học viên và khách truy cập.
+Do an tot nghiep - Sinh vien: Chau Thanh Thien (MSSV: 110122163)
 
 ---
 
-## Kiến trúc hệ thống
+## Gioi thieu
+
+He thong quan ly toan dien cho trung tam dao tao lai xe, bao gom 5 ung dung doc lap giao tiep qua mot REST API dung chung. He thong ho tro 4 nhom nguoi dung: quan tri vien, giang vien, hoc vien va khach truy cap.
+
+---
+
+## Kien truc he thong
 
 ```
 SRC/
-├── Backend/      → Laravel 12 (PHP 8.2)  – REST API       – Port 8000
-├── Admin/        → React 19 + Vite       – Quản trị viên  – Port 5173
-├── Frontend/     → React 19 + Vite       – Trang quảng bá – Port 5174
-├── User/         → React 19 + Vite       – Cổng học viên  – Port 5175
-└── Teacher/      → React 19 + Vite       – Cổng giảng viên– Port 5176
+├── Backend/      → Laravel 12 (PHP 8.2)  – REST API        – Port 8000
+├── Admin/        → React 19 + Vite        – Quan tri vien  – Port 5173
+├── Frontend/     → React 19 + Vite        – Trang quang ba – Port 5174
+├── User/         → React 19 + Vite        – Cong hoc vien  – Port 5175
+└── Teacher/      → React 19 + Vite        – Cong giang vien– Port 5176
 ```
 
 ---
@@ -26,100 +26,100 @@ SRC/
 ## Technology Stack
 
 ### Backend
-| Thành phần | Công nghệ |
-|---|---|
-| Framework | Laravel 12 |
-| Ngôn ngữ | PHP 8.2 |
-| Xác thực | JWT (`tymon/jwt-auth`) + Laravel Sanctum |
-| Database | MySQL |
-| Mail | SMTP Gmail (PHPMailer + Laravel Mailer) |
-| Queue / Cache | Database driver |
-| AI | Google Gemini API |
+| Thanh phan  | Cong nghe                          |
+|-------------|------------------------------------|
+| Framework   | Laravel 12                         |
+| Ngon ngu    | PHP 8.2                            |
+| Xac thuc    | JWT (tymon/jwt-auth) + Sanctum     |
+| Database    | MySQL                              |
+| Mail        | SMTP Gmail (PHPMailer)             |
+| Queue/Cache | Database driver                    |
+| AI          | Google Gemini API                  |
 
-### Frontend (tất cả 4 ứng dụng React)
-| Thư viện | Phiên bản | Dùng ở |
-|---|---|---|
-| React | 19.1 | Tất cả |
-| Vite | 6.3 | Tất cả |
-| React Router DOM | 7.6 | Tất cả |
-| Axios | 1.9 | Tất cả |
-| React Toastify | 11.0 | Tất cả |
-| React Icons | 5.5 | Tất cả |
-| Recharts | 2.15 | Admin, User |
-| jsPDF + jsPDF-autotable + html2canvas | 4.x / 5.x / 1.4 | Admin |
-| @google/genai + @google/generative-ai | 2.x / 0.24 | Admin |
-
----
-
-## Phân quyền
-
-| Role | Ứng dụng | Port | Mô tả |
-|---|---|---|---|
-| Admin | Admin | 5173 | Toàn quyền quản lý hệ thống |
-| Giảng viên | Admin / Teacher | 5173 / 5176 | Quản lý lớp, điểm danh, xe |
-| Học viên | User | 5175 | Xem lịch học, kết quả thi, học phí |
-| Khách | Frontend | 5174 | Xem khóa học, đăng ký tư vấn, liên hệ |
-
-### Cơ chế đăng nhập
-- **Admin / Giảng viên:** Email + mật khẩu
-- **Học viên:** Số CCCD + ngày sinh
+### Frontend (tat ca 4 ung dung React)
+| Thu vien                              | Phien ban | Dung o         |
+|---------------------------------------|-----------|----------------|
+| React                                 | 19.1      | Tat ca         |
+| Vite                                  | 6.3       | Tat ca         |
+| React Router DOM                      | 7.6       | Tat ca         |
+| Axios                                 | 1.9       | Tat ca         |
+| React Toastify                        | 11.0      | Tat ca         |
+| React Icons                           | 5.5       | Tat ca         |
+| Recharts                              | 2.15      | Admin, User    |
+| jsPDF + jsPDF-autotable + html2canvas | 4.x       | Admin          |
+| @google/genai + @google/generative-ai | 2.x       | Admin          |
 
 ---
 
-## Chức năng chính
+## Phan quyen
+
+| Role        | Ung dung        | Port | Mo ta                          |
+|-------------|-----------------|------|--------------------------------|
+| Admin       | Admin           | 5173 | Toan quyen quan ly he thong    |
+| Giang vien  | Admin / Teacher | 5173/5176 | Quan ly lop, diem danh, xe |
+| Hoc vien    | User            | 5175 | Xem lich hoc, ket qua thi, hoc phi |
+| Khach       | Frontend        | 5174 | Xem khoa hoc, dang ky tu van   |
+
+### Co che dang nhap
+- **Admin / Giang vien:** Email + mat khau
+- **Hoc vien:** So CCCD + ngay sinh
+
+---
+
+## Chuc nang chinh
 
 ### Admin (port 5173)
 
-**Dành cho quản trị viên:**
-- Dashboard: thống kê tổng quan, biểu đồ doanh thu, học viên, kết quả thi
-- Hồ sơ học viên: tạo mới (offline & online), cập nhật, xóa, upload ảnh thẻ, duyệt trạng thái
-- Học phí: ghi nhận, thu phí thi lại
-- Tạo tài khoản học viên sau khi đóng học phí
-- Xếp lớp học viên
-- Khóa học đào tạo: quản lý theo tháng/năm, tạo lớp, phân học viên, phân xe
-- Lớp học: CRUD, đồng bộ trạng thái, khai giảng
-- Lịch học: CRUD, điểm danh
-- Thi: lịch thi, nhập kết quả, thêm/xóa học viên dự thi, cấp chứng chỉ
-- Bài thi: cấu hình điểm đạt/điểm tối đa theo hạng bằng
-- Cấp bằng: bằng tốt nghiệp + bằng lái xe
-- Giảng viên: CRUD, kích hoạt/vô hiệu hóa
-- Xe: CRUD, quản lý số km, trạng thái, phân xe cho lịch học, xử lý báo lỗi
-- Liên hệ: xem và xử lý yêu cầu từ khách
-- AI Assistant: tích hợp Google Gemini trực tiếp trên giao diện
-- Xuất PDF: báo cáo & danh sách
+**Danh cho quan tri vien:**
+- Dashboard: thong ke tong quan, bieu do doanh thu, hoc vien, ket qua thi
+- Ho so hoc vien: tao moi (offline & online), cap nhat, xoa, upload anh the, duyet trang thai
+- Hoc phi: ghi nhan, thu phi thi lai
+- Tao tai khoan hoc vien sau khi dong hoc phi
+- Xep lop hoc vien
+- Khoa hoc dao tao: quan ly theo thang/nam, tao lop, phan hoc vien, phan xe
+- Lop hoc: CRUD, dong bo trang thai, khai giang
+- Lich hoc: CRUD, diem danh
+- Thi: lich thi, nhap ket qua, them/xoa hoc vien du thi, cap chung chi
+- Bai thi: cau hinh diem dat/diem toi da theo hang bang
+- Cap bang: bang tot nghiep + bang lai xe
+- Giang vien: CRUD, kich hoat/vo hieu hoa
+- Xe: CRUD, quan ly so km, trang thai, phan xe cho lich hoc, xu ly bao loi
+- Lien he: xem va xu ly yeu cau tu khach
+- AI Assistant: tich hop Google Gemini truc tiep tren giao dien
+- Xuat PDF: bao cao & danh sach
 
-**Dành cho giảng viên (trong app Admin):**
-- Thông tin cá nhân
-- Lớp của tôi (danh sách học viên)
-- Lịch dạy theo tuần
-- Điểm danh
-- Xe của tôi + báo lỗi xe
+**Danh cho giang vien (trong app Admin):**
+- Thong tin ca nhan
+- Lop cua toi (danh sach hoc vien)
+- Lich day theo tuan
+- Diem danh
+- Xe cua toi + bao loi xe
 
-### Frontend – Trang quảng bá (port 5174)
-- Trang chủ
-- Danh sách khóa học + trang chi tiết theo slug
-- Đăng ký tư vấn (tạo hồ sơ online)
-- Tin tức
-- Liên hệ
+### Frontend - Trang quang ba (port 5174)
+- Trang chu
+- Danh sach khoa hoc + trang chi tiet theo slug
+- Dang ky tu van (tao ho so online)
+- Tin tuc
+- Lien he
 
-### User – Cổng học viên (port 5175)
-- Dashboard: tổng quan tiến độ học
-- Lịch học
-- Tiến độ học tập
-- Kết quả thi + chứng chỉ
-- Học phí
-- Hồ sơ cá nhân
+### User - Cong hoc vien (port 5175)
+- Dashboard: tong quan tien do hoc tap
+- Lich hoc
+- Tien do hoc tap
+- Ket qua thi + chung chi
+- Hoc phi
+- Ho so ca nhan
 
-### Teacher – Cổng giảng viên (port 5176)
+### Teacher - Cong giang vien (port 5176)
 - Dashboard
-- Thông tin cá nhân
-- Danh sách lớp học
-- Lịch dạy
-- Xe của tôi
+- Thong tin ca nhan
+- Danh sach lop hoc
+- Lich day
+- Xe cua toi
 
 ---
 
-## Yêu cầu hệ thống
+## Yeu cau he thong
 
 - PHP >= 8.2
 - Composer >= 2.x
@@ -129,24 +129,22 @@ SRC/
 
 ---
 
-## Cài đặt & Chạy
+## Cai dat & Chay
 
-### 1. Clone dự án
+### 1. Clone du an
 
 ```bash
-git clone <repository-url>
-cd ChauThanhThien-DoAnTotNghiep/SRC
+git clone https://github.com/zthienz/tn-da22ttc-110122163-chauthanhthien-htquanlytrungtamlaixe.git
+cd tn-da22ttc-110122163-chauthanhthien-htquanlytrungtamlaixe/SRC
 ```
 
-### 2. Backend (Laravel) – Port 8000
+### 2. Backend (Laravel) - Port 8000
 
 ```bash
 cd Backend
-
-# Sao chép file cấu hình
 cp .env.example .env
 
-# Chỉnh sửa .env — cấu hình database MySQL
+# Chinh sua .env - cau hinh database MySQL
 # DB_CONNECTION=mysql
 # DB_HOST=127.0.0.1
 # DB_PORT=3306
@@ -154,74 +152,58 @@ cp .env.example .env
 # DB_USERNAME=root
 # DB_PASSWORD=your_password
 
-# Cài dependencies
 composer install
-
-# Tạo khóa ứng dụng
 php artisan key:generate
-
-# Tạo khóa JWT
 php artisan jwt:secret
-
-# Chạy migration và seeder
 php artisan migrate --seed
-
-# Khởi động server
 php artisan serve --port=8000
 ```
 
-### 3. Admin – Port 5173
+### 3. Admin - Port 5173
 
 ```bash
 cd Admin
-
-# Tạo file .env
-cp .env.example .env   # hoặc tạo mới
-
-# Thêm Gemini API Key vào .env
+# Tao file .env va them:
 # VITE_API_URL=http://localhost:8000/api
 # VITE_GEMINI_API_KEY=your_gemini_api_key
 
 npm install
-npm run dev   # → http://localhost:5173
+npm run dev
 ```
 
-### 4. Frontend – Trang quảng bá – Port 5174
+### 4. Frontend - Port 5174
 
 ```bash
 cd Frontend
-
 # VITE_API_URL=http://localhost:8000/api
 
 npm install
-npm run dev   # → http://localhost:5174
+npm run dev
 ```
 
-### 5. User – Cổng học viên – Port 5175
+### 5. User - Port 5175
 
 ```bash
 cd User
-
 # VITE_API_URL=http://localhost:8000/api
 
 npm install
-npm run dev   # → http://localhost:5175
+npm run dev
 ```
 
-### 6. Teacher – Cổng giảng viên – Port 5176
+### 6. Teacher - Port 5176
 
 ```bash
 cd Teacher
-
 # VITE_API_URL=http://localhost:8000/api
 
 npm install
-npm run dev   # → http://localhost:5176
+npm run dev
 ```
 
 ---
 
-## Cấu hình .env Backend (các mục quan trọng)
+## Cau hinh .env Backend (cac muc quan trong)
 
 ```env
 APP_NAME="Quan Ly Lai Xe"
@@ -236,7 +218,7 @@ DB_DATABASE=truonglai_db
 DB_USERNAME=root
 DB_PASSWORD=
 
-JWT_SECRET=          # sinh bằng: php artisan jwt:secret
+JWT_SECRET=          # sinh bang: php artisan jwt:secret
 
 MAIL_MAILER=smtp
 MAIL_HOST=smtp.gmail.com
@@ -244,12 +226,7 @@ MAIL_PORT=587
 MAIL_USERNAME=your_email@gmail.com
 MAIL_PASSWORD=your_app_password
 MAIL_FROM_ADDRESS=your_email@gmail.com
-MAIL_FROM_NAME="Trung Tâm Sao Việt"
-
-# CORS – cho phép các frontend gọi API
-FRONTEND_URL=http://localhost:5174
-USER_URL=http://localhost:5175
-TEACHER_URL=http://localhost:5176
+MAIL_FROM_NAME="Trung Tam Sao Viet"
 ```
 
 ---
@@ -258,34 +235,19 @@ TEACHER_URL=http://localhost:5176
 
 Base URL: `http://localhost:8000/api`
 
-| Nhóm | Prefix | Xác thực |
-|---|---|---|
-| Công khai | `/khoa-hoc`, `/dang-ky-tu-van`, `/lien-he` | Không |
-| Học viên | `/auth/*`, `/hoc-vien/*`, `/thi/*`, `/hoc-phi/*` | JWT |
-| Admin + Giảng viên | `/admin/*` | JWT + role |
-| Giảng viên | `/giang-vien/*` | JWT + role |
+| Nhom             | Prefix                                          | Xac thuc        |
+|------------------|-------------------------------------------------|-----------------|
+| Cong khai        | /khoa-hoc, /dang-ky-tu-van, /lien-he           | Khong           |
+| Hoc vien         | /auth/*, /hoc-vien/*, /thi/*, /hoc-phi/*       | JWT             |
+| Admin/Giang vien | /admin/*                                        | JWT + role      |
+| Giang vien       | /giang-vien/*                                   | JWT + role      |
 
-Đăng nhập học viên: `POST /api/auth/login` (CCCD + ngày sinh)  
-Đăng nhập admin/giảng viên: `POST /api/admin/login` (email + password)
-
----
-
-## Build Production
-
-```bash
-# Backend
-cd Backend
-php artisan config:cache
-php artisan route:cache
-php artisan optimize
-
-# Mỗi frontend app
-npm run build   # tạo thư mục dist/
-```
+- Dang nhap hoc vien: `POST /api/auth/login` (CCCD + ngay sinh)
+- Dang nhap admin/giang vien: `POST /api/admin/login` (email + password)
 
 ---
 
-## Cấu trúc thư mục chi tiết
+## Cau truc thu muc chi tiet
 
 ```
 SRC/
@@ -326,9 +288,9 @@ SRC/
 
 ---
 
-## Tác giả
+## Tac gia
 
-**Châu Thành Thiện**  
-MSSV: 110122163  
-Đồ án tốt nghiệp – Hệ thống quản lý đào tạo lái xe  
-Trung Tâm Sao Việt
+**Chau Thanh Thien**
+MSSV: 110122163
+Do an tot nghiep - He thong quan ly dao tao lai xe
+Truong Dai hoc Tra Vinh - Khoa Ky thuat va Cong nghe
