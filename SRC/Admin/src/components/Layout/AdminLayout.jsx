@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Outlet } from 'react-router-dom'
 import Sidebar from '../Sidebar/Sidebar'
 import { useAdmin } from '../../context/AdminContext'
+import AIAssistant from '../AIAssistant/AIAssistant'
 import './AdminLayout.css'
 
 const AdminLayout = () => {
@@ -51,6 +52,9 @@ const AdminLayout = () => {
           <Outlet />
         </main>
       </div>
+
+      {/* AI Assistant — floating, chỉ hiện với Admin */}
+      <AIAssistant />
     </div>
   )
 }
