@@ -5,9 +5,35 @@ import { useAdmin } from '../../context/AdminContext'
 import '../KhoaHocDaoTao/KhoaHocDaoTao.css'
 
 const TS_MAP   = { chuan_bi:'badge-info', dang_hoc:'badge-success', da_ket_thuc:'badge-gray' }
-const TS_LABEL = { chuan_bi:'Chuẩn bị', dang_hoc:'Đang học', da_ket_thuc:'Kết thúc' }
-const HV_MAP   = { dang_hoc:'badge-success', hoan_thanh_tn:'badge-success', da_cap_bang:'badge-success' }
-const HV_LABEL = { dang_hoc:'Đang học', hoan_thanh_tn:'Hoàn thành TN', da_cap_bang:'Đã cấp bằng' }
+const TS_LABEL = { chuan_bi:'Chuẩn bị', dang_hoc:'Đang học', da_ket_thuc:'Đã kết thúc' }
+const HV_MAP = {
+  cho_dong_hoc_phi:      'badge-warning',
+  cho_mo_lop:            'badge-info',
+  chuan_bi_hoc:          'badge-info',
+  dang_hoc:              'badge-success',
+  du_dieu_kien_thi_tn:   'badge-blue',
+  chuan_bi_thi:          'badge-warning',
+  dang_thi_tn:           'badge-warning',
+  hoan_thanh_tn:         'badge-success',
+  du_dieu_kien_sat_hanh: 'badge-blue',
+  dang_thi_sat_hanh:     'badge-warning',
+  dau_sat_hanh:          'badge-success',
+  da_cap_bang:           'badge-success',
+}
+const HV_LABEL = {
+  cho_dong_hoc_phi:      'Chờ đóng HP',
+  cho_mo_lop:            'Chờ mở lớp',
+  chuan_bi_hoc:          'Chuẩn bị học',
+  dang_hoc:              'Đang học',
+  du_dieu_kien_thi_tn:   'Đủ ĐK thi TN',
+  chuan_bi_thi:          'Chuẩn bị thi',
+  dang_thi_tn:           'Đang thi TN',
+  hoan_thanh_tn:         'Hoàn thành TN',
+  du_dieu_kien_sat_hanh: 'Chờ thi sát hạch',
+  dang_thi_sat_hanh:     'Đang thi sát hạch',
+  dau_sat_hanh:          'Đậu sát hạch',
+  da_cap_bang:           'Đã cấp bằng',
+}
 
 const sectionTitle = { fontSize:13, fontWeight:700, color:'#0d47a1', textTransform:'uppercase', letterSpacing:'0.05em', paddingBottom:8, borderBottom:'2px solid #e0ecff', marginBottom:12 }
 const grid2  = { display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }
@@ -131,10 +157,43 @@ const LopHocManagement = () => {
       const res = await axios.post(`${backendUrl}/api/admin/lop-hoc/${lop.id}/dong-bo`, {}, { headers })
       if (res.data.success) {
         toast.success(res.data.message)
-        openView(lop)
-        fetchAll()
+        if (res.data.dong_lop) {
+          // Lớp vừa được đóng → đóng modal và refresh danh sách
+          setViewItem(null)
+          fetchAll()
+        } else {
+          openView(lop)
+          fetchAll()
+        }
       }
     } catch { toast.error('Đồng bộ thất bại') }
+  }
+
+  // ── Xóa học viên khỏi lớp ──
+  const xoaHocVienKhoiLop = async (lop, hvl) => {
+    const ten = hvl.ho_so?.ho_ten || 'học viên này'
+    if (!confirm(`Xóa "${ten}" khỏi lớp "${lop.ten_lop}"?\nHọc viên sẽ được chuyển về trạng thái chờ xếp lớp.`)) return
+    try {
+      const res = await axios.delete(
+        `${backendUrl}/api/admin/lop-hoc/${lop.id}/hoc-vien/${hvl.ho_so_id}`,
+        { headers }
+      )
+      if (res.data.success) {
+        toast.success(res.data.message)
+        if (res.data.dong_lop) {
+          // Lớp vừa tự đóng sau khi xóa HV → đóng modal, refresh danh sách
+          setViewItem(null)
+          fetchAll()
+        } else {
+          openView({ id: lop.id })
+          fetchAll()
+        }
+      } else {
+        toast.error(res.data.message)
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Xóa thất bại')
+    }
   }
 
   // ── Thêm học viên vào lớp ──
@@ -254,7 +313,7 @@ const LopHocManagement = () => {
           <span className="khdt-stat-icon">⚫</span>
           <div>
             <p className="khdt-stat-value">{list.filter(l => l.trang_thai === 'da_ket_thuc').length}</p>
-            <p className="khdt-stat-label">Kết thúc</p>
+            <p className="khdt-stat-label">Đã kết thúc</p>
           </div>
         </div>
       </div>
@@ -278,7 +337,7 @@ const LopHocManagement = () => {
           <option value="">Tất cả trạng thái</option>
           <option value="chuan_bi">Chuẩn bị</option>
           <option value="dang_hoc">Đang học</option>
-          <option value="da_ket_thuc">Kết thúc</option>
+          <option value="da_ket_thuc">Đã kết thúc</option>
         </select>
       </div>
 
@@ -462,36 +521,52 @@ const LopHocManagement = () => {
                         <span style={{fontWeight:600,color:'#374151'}}>
                           {viewItem.hoc_vien_lop?.length || 0} / {viewItem.si_so_toi_da} học viên
                         </span>
-                        {viewItem.trang_thai !== 'da_ket_thuc' && (
-                          <button className="btn btn-primary btn-sm"
-                            onClick={() => { setViewItem(null); openAddHV(viewItem) }}>
-                            ➕ Thêm học viên
-                          </button>
-                        )}
+                        <button className="btn btn-primary btn-sm"
+                          onClick={() => { setViewItem(null); openAddHV(viewItem) }}>
+                          ➕ Thêm học viên
+                        </button>
                       </div>
                       {(!viewItem.hoc_vien_lop || viewItem.hoc_vien_lop.length === 0) ? (
                         <div style={{textAlign:'center',padding:'40px',color:'#9ca3af'}}>
                           <p>Chưa có học viên nào trong lớp này</p>
-                          {viewItem.trang_thai !== 'da_ket_thuc' && (
-                            <button className="btn btn-primary btn-sm" style={{marginTop:12}}
-                              onClick={() => { setViewItem(null); openAddHV(viewItem) }}>
-                              ➕ Thêm học viên đầu tiên
-                            </button>
-                          )}
+                          <button className="btn btn-primary btn-sm" style={{marginTop:12}}
+                            onClick={() => { setViewItem(null); openAddHV(viewItem) }}>
+                            ➕ Thêm học viên đầu tiên
+                          </button>
                         </div>
                       ) : (
                         <table className="data-table">
-                          <thead><tr><th>#</th><th>Họ tên</th><th>CCCD</th><th>SĐT</th><th>Trạng thái</th></tr></thead>
+                          <thead><tr><th>#</th><th>Họ tên</th><th>CCCD</th><th>SĐT</th><th>Trạng thái</th><th></th></tr></thead>
                           <tbody>
-                            {viewItem.hoc_vien_lop.map((hvl, i) => (
-                              <tr key={hvl.id}>
-                                <td>{i+1}</td>
-                                <td><strong>{hvl.ho_so?.ho_ten || '—'}</strong></td>
-                                <td><code style={{fontSize:11}}>{hvl.ho_so?.so_cccd || '—'}</code></td>
-                                <td style={{fontSize:12}}>{hvl.ho_so?.so_dien_thoai || '—'}</td>
-                                <td><span className={`badge ${HV_MAP[hvl.ho_so?.trang_thai]||'badge-gray'}`}>{HV_LABEL[hvl.ho_so?.trang_thai]||hvl.ho_so?.trang_thai||'—'}</span></td>
-                              </tr>
-                            ))}
+                            {viewItem.hoc_vien_lop.map((hvl, i) => {
+                              // Chỉ cho phép xóa khi học viên chưa đến giai đoạn thi
+                              const coTheXoa = ['cho_mo_lop', 'chuan_bi_hoc', 'dang_hoc'].includes(hvl.ho_so?.trang_thai)
+                              return (
+                                <tr key={hvl.id}>
+                                  <td>{i+1}</td>
+                                  <td><strong>{hvl.ho_so?.ho_ten || '—'}</strong></td>
+                                  <td><code style={{fontSize:11}}>{hvl.ho_so?.so_cccd || '—'}</code></td>
+                                  <td style={{fontSize:12}}>{hvl.ho_so?.so_dien_thoai || '—'}</td>
+                                  <td><span className={`badge ${HV_MAP[hvl.ho_so?.trang_thai]||'badge-gray'}`}>{HV_LABEL[hvl.ho_so?.trang_thai]||hvl.ho_so?.trang_thai||'—'}</span></td>
+                                  <td>
+                                    {coTheXoa ? (
+                                      <button
+                                        className="btn btn-danger btn-sm"
+                                        title="Xóa học viên khỏi lớp"
+                                        onClick={() => xoaHocVienKhoiLop(viewItem, hvl)}
+                                      >🗑️</button>
+                                    ) : (
+                                      <button
+                                        className="btn btn-sm"
+                                        style={{background:'#f1f5f9',color:'#94a3b8',cursor:'not-allowed',border:'1px solid #e2e8f0'}}
+                                        title="Không thể xóa: học viên đã vào giai đoạn thi"
+                                        disabled
+                                      >🔒</button>
+                                    )}
+                                  </td>
+                                </tr>
+                              )
+                            })}
                           </tbody>
                         </table>
                       )}
@@ -505,13 +580,11 @@ const LopHocManagement = () => {
                   {viewItem.trang_thai === 'dang_hoc' && (
                     <button className="btn btn-outline" style={{borderColor:'#06b6d4',color:'#06b6d4'}}
                       onClick={() => dongBoTrangThai(viewItem)}
-                      title="Cập nhật trạng thái hồ sơ học viên trong lớp sang 'Đang học'">
+                      title="Đồng bộ trạng thái học viên — tự động đóng lớp nếu tất cả đã đậu sát hạch">
                       🔄 Đồng bộ HV
                     </button>
                   )}
-                  {viewItem.trang_thai !== 'da_ket_thuc' && (
-                    <button className="btn btn-primary" onClick={() => { setViewItem(null); openAddHV(viewItem) }}>➕ Thêm học viên</button>
-                  )}
+                  <button className="btn btn-primary" onClick={() => { setViewItem(null); openAddHV(viewItem) }}>➕ Thêm học viên</button>
                 </div>
               </>
             )}
@@ -539,6 +612,12 @@ const LopHocManagement = () => {
                 ℹ️ Chỉ hiển thị học viên đã đóng học phí, đang chờ mở lớp và đăng ký học <strong>Hạng {targetLop.khoa_hoc?.loai_bang || '—'}</strong>.
                 Đã chọn: <strong>{hvSelected.length}</strong> học viên
               </div>
+              {/* Cảnh báo khi lớp đã kết thúc */}
+              {targetLop.trang_thai === 'da_ket_thuc' && (
+                <div style={{background:'#fff7ed',border:'1px solid #fdba74',borderRadius:8,padding:'10px 14px',fontSize:13,color:'#9a3412',marginBottom:12}}>
+                  ⚠️ Lớp này đang ở trạng thái <strong>Đã kết thúc</strong>. Khi thêm học viên mới, lớp sẽ tự động chuyển về trạng thái <strong>Đang học</strong>.
+                </div>
+              )}
 
               <input className="search-input" style={{marginBottom:12,width:'100%'}}
                 placeholder="🔍 Tìm theo tên, CCCD, SĐT..."

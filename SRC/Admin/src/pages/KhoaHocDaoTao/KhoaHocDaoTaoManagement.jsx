@@ -13,7 +13,7 @@ const genMaKhoa = (thang, nam, hang) =>
 const TRANG_THAI_MAP = {
   chuan_bi:    { label: 'Chuẩn bị',  cls: 'badge-info' },
   dang_hoc:    { label: 'Đang học',   cls: 'badge-success' },
-  da_ket_thuc: { label: 'Kết thúc',   cls: 'badge-gray' },
+  da_ket_thuc: { label: 'Đã kết thúc', cls: 'badge-gray' },
 }
 
 const emptyKhoa = {

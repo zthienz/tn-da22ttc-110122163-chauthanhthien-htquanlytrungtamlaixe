@@ -28,7 +28,9 @@ const UserLayout = () => {
     du_dieu_kien_thi_tn:   { text: 'Đủ điều kiện thi TN',   cls: 'badge-blue' },
     chuan_bi_thi:          { text: 'Chuẩn bị thi',          cls: 'badge-warning' },
     hoan_thanh_tn:         { text: 'Hoàn thành tốt nghiệp', cls: 'badge-success' },
-    du_dieu_kien_sat_hanh: { text: 'Đủ điều kiện sát hạch', cls: 'badge-blue' },
+    du_dieu_kien_sat_hanh: { text: 'Chờ thi sát hạch',      cls: 'badge-blue' },
+    dang_thi_sat_hanh:     { text: 'Đang thi sát hạch',     cls: 'badge-warning' },
+    dau_sat_hanh:          { text: 'Đậu sát hạch',           cls: 'badge-success' },
     da_cap_bang:           { text: 'Đã cấp bằng lái',       cls: 'badge-success' },
   }[trangThai] || { text: '—', cls: 'badge-gray' }
 

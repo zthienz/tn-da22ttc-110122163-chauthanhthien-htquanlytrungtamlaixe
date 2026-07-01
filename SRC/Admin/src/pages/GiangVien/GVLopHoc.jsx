@@ -34,7 +34,7 @@ const GVLopHoc = () => {
   }
 
   const TS_MAP   = { chuan_bi:'badge-info', dang_hoc:'badge-success', da_ket_thuc:'badge-gray' }
-  const TS_LABEL = { chuan_bi:'Chuẩn bị', dang_hoc:'Đang học', da_ket_thuc:'Kết thúc' }
+  const TS_LABEL = { chuan_bi:'Chuẩn bị', dang_hoc:'Đang học', da_ket_thuc:'Đã kết thúc' }
 
   // Lấy xe từ lịch thực hành (unique)
   const xeList = [...new Map(

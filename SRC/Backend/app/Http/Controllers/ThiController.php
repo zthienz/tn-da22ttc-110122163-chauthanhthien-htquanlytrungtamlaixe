@@ -95,7 +95,7 @@ class ThiController extends Controller
         $lopIds        = LopHoc::whereIn('khoa_hoc_id', $khoaCungHang)->pluck('id');
         $daCoTrongLich = LichThiHocVien::where('lich_thi_id', $lichThiId)->pluck('ho_so_id');
 
-        $trangThaiDaQua = ['hoan_thanh_tn', 'du_dieu_kien_sat_hanh', 'dang_thi_sat_hanh', 'da_cap_bang'];
+        $trangThaiDaQua = ['hoan_thanh_tn', 'du_dieu_kien_sat_hanh', 'dang_thi_sat_hanh', 'dau_sat_hanh', 'da_cap_bang'];
 
         // Học viên đã đậu TN hoàn toàn
         $hoSoDaDauTN = collect();
@@ -164,6 +164,11 @@ class ThiController extends Controller
                 ->where('da_thu_phi', false)
                 ->exists();
 
+            // Kiểm tra ngày thi phải SAU ngày nộp hồ sơ
+            $ngayNopHoSo = \Carbon\Carbon::parse($hoSo->created_at)->startOfDay();
+            $ngayThi     = \Carbon\Carbon::parse($lichThi->ngay_thi)->startOfDay();
+            $lichThiTruocNopHoSo = $ngayThi->lt($ngayNopHoSo);
+
             return [
                 'ho_so_id'                 => $hoSo->id,
                 'ho_ten'                   => $hoSo->ho_ten,
@@ -177,6 +182,8 @@ class ThiController extends Controller
                 'du_buoi_ly_thuyet'        => $hvl->du_buoi_ly_thuyet,
                 'du_km_thuc_hanh'          => $hvl->du_km_thuc_hanh,
                 'co_phi_chua_thu'          => $coPhiChuaThu,
+                'lich_thi_truoc_nop_ho_so' => $lichThiTruocNopHoSo,
+                'ngay_nop_ho_so'           => $ngayNopHoSo->format('d/m/Y'),
             ];
         };
 
@@ -318,6 +325,8 @@ class ThiController extends Controller
             }
         }
 
+        $errors = [];  // thu thập lỗi ngày nộp hồ sơ
+
         foreach ($request->ho_so_ids as $hoSoId) {
             $duDK = HocVienLop::whereIn('lop_hoc_id', $lopIds)
                 ->where('ho_so_id', $hoSoId)
@@ -335,7 +344,7 @@ class ThiController extends Controller
             }
 
             if ($lichThi->loai_thi === 'tot_nghiep') {
-                $trangThaiDaQua = ['hoan_thanh_tn', 'du_dieu_kien_sat_hanh', 'dang_thi_sat_hanh', 'da_cap_bang'];
+                $trangThaiDaQua = ['hoan_thanh_tn', 'du_dieu_kien_sat_hanh', 'dang_thi_sat_hanh', 'dau_sat_hanh', 'da_cap_bang'];
                 $trangThaiHV    = HoSoHocVien::where('id', $hoSoId)->value('trang_thai');
                 if (in_array($trangThaiHV, $trangThaiDaQua)) continue;
             }
@@ -351,11 +360,27 @@ class ThiController extends Controller
 
             if ($coPhiChuaThu) continue;
 
+            // ── Kiểm tra: ngày thi phải SAU ngày nộp hồ sơ ────────────────
+            $hoSo        = HoSoHocVien::find($hoSoId);
+            $ngayNopHoSo = $hoSo ? \Carbon\Carbon::parse($hoSo->created_at)->startOfDay() : null;
+            $ngayThi     = \Carbon\Carbon::parse($lichThi->ngay_thi)->startOfDay();
+
+            if ($ngayNopHoSo && $ngayThi->lt($ngayNopHoSo)) {
+                $errors[] = [
+                    'ho_so_id'     => $hoSoId,
+                    'ho_ten'       => $hoSo->ho_ten,
+                    'ngay_nop'     => $ngayNopHoSo->format('d/m/Y'),
+                    'ngay_thi'     => $ngayThi->format('d/m/Y'),
+                ];
+                continue;  // không xếp học viên này vào lịch thi
+            }
+            // ────────────────────────────────────────────────────────────────
+
             LichThiHocVien::create(['lich_thi_id' => $lichThiId, 'ho_so_id' => $hoSoId]);
 
             if ($lichThi->loai_thi === 'sat_hanh') {
                 HoSoHocVien::where('id', $hoSoId)
-                    ->whereIn('trang_thai', ['hoan_thanh_tn', 'du_dieu_kien_sat_hanh'])
+                    ->whereIn('trang_thai', ['hoan_thanh_tn', 'du_dieu_kien_sat_hanh', 'dau_sat_hanh'])
                     ->update(['trang_thai' => 'chuan_bi_thi']);
             } else {
                 HoSoHocVien::where('id', $hoSoId)
@@ -366,11 +391,19 @@ class ThiController extends Controller
             $added++;
         }
 
-        return response()->json([
+        $response = [
             'success' => true,
             'message' => "Đã thêm {$added} học viên vào lịch thi.",
             'added'   => $added,
-        ]);
+        ];
+
+        if (!empty($errors)) {
+            $tenHV = collect($errors)->pluck('ho_ten')->join(', ');
+            $response['loi_ngay_nop'] = $errors;
+            $response['message'] .= " Có " . count($errors) . " học viên không được xếp vì ngày thi ({$errors[0]['ngay_thi']}) trước ngày nộp hồ sơ: {$tenHV}.";
+        }
+
+        return response()->json($response);
     }
 
     public function xoaHocVienKhoiLich(Request $request, $lichThiId, $hoSoId)
@@ -496,14 +529,22 @@ class ThiController extends Controller
 
                 if ($tatCaBaiDat) {
                     HoSoHocVien::where('id', $hoSoId)
-                        ->whereIn('trang_thai', ['chuan_bi_thi', 'hoan_thanh_tn', 'du_dieu_kien_sat_hanh'])
-                        ->update(['trang_thai' => 'du_dieu_kien_sat_hanh']);
+                        ->whereIn('trang_thai', ['chuan_bi_thi', 'hoan_thanh_tn', 'du_dieu_kien_sat_hanh', 'dang_thi_sat_hanh'])
+                        ->update(['trang_thai' => 'dau_sat_hanh']);
                 } else {
                     HoSoHocVien::where('id', $hoSoId)
                         ->where('trang_thai', 'chuan_bi_thi')
-                        ->update(['trang_thai' => 'hoan_thanh_tn']);
+                        ->update(['trang_thai' => 'du_dieu_kien_sat_hanh']);
                 }
             }
+        }
+
+        // ── Tự động chuyển trạng thái lớp học sang 'da_ket_thuc' ─────────────
+        // Nếu đây là kỳ thi sát hạch, kiểm tra lớp học của từng học viên vừa được
+        // cập nhật sang 'dau_sat_hanh' — nếu toàn bộ học viên trong lớp đó đều
+        // ở trạng thái 'dau_sat_hanh' thì tự động đóng lớp.
+        if ($lichThi->loai_thi === 'sat_hanh') {
+            $this->kiemTraVaDongLopNeuXongHet($hoSoIds->toArray());
         }
 
         return response()->json(['success' => true, 'message' => 'Nhập kết quả thi thành công']);
@@ -558,5 +599,37 @@ class ThiController extends Controller
             ->get();
 
         return response()->json(['success' => true, 'data' => $chungChi]);
+    }
+
+    // ── Helper: kiểm tra và tự động đóng lớp nếu toàn bộ học viên đậu sát hạch ──
+    /**
+     * Với danh sách ho_so_id vừa được cập nhật trạng thái, tìm lớp học tương ứng
+     * và kiểm tra xem tất cả học viên trong lớp có đều ở trạng thái 'dau_sat_hanh'
+     * hay không. Nếu đúng → chuyển lớp sang 'da_ket_thuc'.
+     */
+    private function kiemTraVaDongLopNeuXongHet(array $hoSoIds): void
+    {
+        // Tìm tất cả lop_hoc_id mà các học viên này thuộc về (chỉ lớp đang học)
+        $lopIds = \App\Models\HocVienLop::whereIn('ho_so_id', $hoSoIds)
+            ->whereHas('lopHoc', fn($q) => $q->where('trang_thai', 'dang_hoc'))
+            ->pluck('lop_hoc_id')
+            ->unique();
+
+        foreach ($lopIds as $lopId) {
+            // Lấy tất cả trạng thái học viên trong lớp này
+            $trangThaiHV = HoSoHocVien::whereHas('hocVienLop', fn($q) => $q->where('lop_hoc_id', $lopId))
+                ->pluck('trang_thai');
+
+            if ($trangThaiHV->isEmpty()) continue;
+
+            // Toàn bộ phải là 'dau_sat_hanh' mới đóng lớp
+            $tatCaDau = $trangThaiHV->every(fn($tt) => $tt === 'dau_sat_hanh');
+
+            if ($tatCaDau) {
+                \App\Models\LopHoc::where('id', $lopId)
+                    ->where('trang_thai', 'dang_hoc')
+                    ->update(['trang_thai' => 'da_ket_thuc']);
+            }
+        }
     }
 }

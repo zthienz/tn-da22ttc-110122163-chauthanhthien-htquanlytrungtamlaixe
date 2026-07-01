@@ -40,6 +40,80 @@ class LichHocController extends Controller
         $lop      = LopHoc::with(['giangVienLyThuyet.user', 'giangVienThucHanh.user', 'xeLop.xe'])->find($request->lop_hoc_id);
         $loaiBuoi = $request->loai_buoi;
 
+        // ── Kiểm tra trùng khung giờ trong cùng lớp ─────────────────────────
+        $trungLich = LichHoc::where('lop_hoc_id', $request->lop_hoc_id)
+            ->where('ngay_hoc', $request->ngay_hoc)
+            ->where('gio_bat_dau', '<', $request->gio_ket_thuc)
+            ->where('gio_ket_thuc', '>', $request->gio_bat_dau)
+            ->first();
+
+        if ($trungLich) {
+            $loaiLabel = $trungLich->loai_buoi === 'ly_thuyet' ? 'Lý thuyết' : 'Thực hành';
+            return response()->json([
+                'success' => false,
+                'message' => "Lớp này đã có buổi {$loaiLabel} vào {$trungLich->gio_bat_dau}–{$trungLich->gio_ket_thuc} ngày {$trungLich->ngay_hoc}. Vui lòng chọn khung giờ khác.",
+            ], 422);
+        }
+
+        // ── Kiểm tra xe thực hành bị trùng khung giờ với lớp khác ───────────
+        if ($request->loai_buoi === 'thuc_hanh' && $request->xe_id) {
+            $trungXe = LichHoc::where('xe_id', $request->xe_id)
+                ->where('loai_buoi', 'thuc_hanh')
+                ->where('ngay_hoc', $request->ngay_hoc)
+                ->where('gio_bat_dau', '<', $request->gio_ket_thuc)
+                ->where('gio_ket_thuc', '>', $request->gio_bat_dau)
+                ->with('lopHoc')
+                ->first();
+
+            if ($trungXe) {
+                $xe         = Xe::find($request->xe_id);
+                $tenLopTrung = $trungXe->lopHoc->ten_lop ?? "lớp #{$trungXe->lop_hoc_id}";
+                return response()->json([
+                    'success' => false,
+                    'message' => "Xe {$xe->bien_so} đã được phân công cho {$tenLopTrung} vào {$trungXe->gio_bat_dau}–{$trungXe->gio_ket_thuc} ngày {$trungXe->ngay_hoc}. Vui lòng chọn xe khác.",
+                ], 422);
+            }
+        }
+
+        // ── Kiểm tra trùng lịch dạy của giảng viên phụ trách ────────────────
+        // Lấy GV phụ trách buổi này (theo loại buổi)
+        $gvId = $loaiBuoi === 'ly_thuyet'
+            ? $lop?->giang_vien_ly_thuyet_id
+            : $lop?->giang_vien_thuc_hanh_id;
+
+        if ($gvId) {
+            // Lấy TẤT CẢ lớp mà GV này phụ trách (cả vai LT lẫn vai TH), trừ lớp đang tạo
+            $lopKhacIds = LopHoc::where('id', '!=', $request->lop_hoc_id)
+                ->where(function ($q) use ($gvId) {
+                    $q->where('giang_vien_ly_thuyet_id', $gvId)
+                      ->orWhere('giang_vien_thuc_hanh_id', $gvId);
+                })
+                ->pluck('id');
+
+            if ($lopKhacIds->isNotEmpty()) {
+                // Kiểm tra bất kỳ buổi nào (LT hoặc TH) của GV đó trùng khung giờ
+                $trungGV = LichHoc::whereIn('lop_hoc_id', $lopKhacIds)
+                    ->where('ngay_hoc', $request->ngay_hoc)
+                    ->where('gio_bat_dau', '<', $request->gio_ket_thuc)
+                    ->where('gio_ket_thuc', '>', $request->gio_bat_dau)
+                    ->with('lopHoc')
+                    ->first();
+
+                if ($trungGV) {
+                    $loaiLabel   = $loaiBuoi === 'ly_thuyet' ? 'Lý thuyết' : 'Thực hành';
+                    $loaiTrung   = $trungGV->loai_buoi === 'ly_thuyet' ? 'Lý thuyết' : 'Thực hành';
+                    $tenLopTrung = $trungGV->lopHoc->ten_lop ?? "lớp #{$trungGV->lop_hoc_id}";
+                    $gvTen = $loaiBuoi === 'ly_thuyet'
+                        ? $lop->giangVienLyThuyet?->user?->ho_ten
+                        : $lop->giangVienThucHanh?->user?->ho_ten;
+                    return response()->json([
+                        'success' => false,
+                        'message' => "GV {$loaiLabel} ({$gvTen}) đang có lịch dạy buổi {$loaiTrung} tại {$tenLopTrung} vào {$trungGV->gio_bat_dau}–{$trungGV->gio_ket_thuc} ngày {$trungGV->ngay_hoc}. Vui lòng chọn khung giờ khác.",
+                    ], 422);
+                }
+            }
+        }
+
         // ── Kiểm tra trạng thái giảng viên ──────────────────────────────────
         if ($loaiBuoi === 'ly_thuyet') {
             $gvLT = $lop->giangVienLyThuyet;
@@ -79,8 +153,89 @@ class LichHocController extends Controller
 
         $loaiBuoi   = $request->input('loai_buoi', $lichHoc->loai_buoi);
         $lopHocId   = $request->input('lop_hoc_id', $lichHoc->lop_hoc_id);
+        $ngayHoc    = $request->input('ngay_hoc',    $lichHoc->ngay_hoc);
+        $gioBatDau  = $request->input('gio_bat_dau', $lichHoc->gio_bat_dau);
+        $gioKetThuc = $request->input('gio_ket_thuc', $lichHoc->gio_ket_thuc);
 
-        $lop = LopHoc::with(['giangVienLyThuyet.user', 'giangVienThucHanh.user', 'xeLop.xe'])->find($lopHocId);
+        // ── Kiểm tra trùng khung giờ trong cùng lớp (bỏ qua bản ghi đang sửa) ──
+        $trungLich = LichHoc::where('lop_hoc_id', $lopHocId)
+            ->where('ngay_hoc', $ngayHoc)
+            ->where('id', '!=', $id)
+            ->where(function ($q) use ($gioBatDau, $gioKetThuc) {
+                $q->where('gio_bat_dau', '<', $gioKetThuc)
+                  ->where('gio_ket_thuc', '>', $gioBatDau);
+            })
+            ->first();
+
+        if ($trungLich) {
+            $loaiLabel = $trungLich->loai_buoi === 'ly_thuyet' ? 'Lý thuyết' : 'Thực hành';
+            return response()->json([
+                'success' => false,
+                'message' => "Lớp này đã có buổi {$loaiLabel} vào {$trungLich->gio_bat_dau}–{$trungLich->gio_ket_thuc} ngày {$trungLich->ngay_hoc}. Vui lòng chọn khung giờ khác.",
+            ], 422);
+        }
+
+        // ── Kiểm tra xe thực hành bị trùng khung giờ với lớp khác ───────────
+        $xeIdMoi = $request->has('xe_id') ? $request->xe_id : $lichHoc->xe_id;
+        if ($loaiBuoi === 'thuc_hanh' && $xeIdMoi) {
+            $trungXe = LichHoc::where('xe_id', $xeIdMoi)
+                ->where('loai_buoi', 'thuc_hanh')
+                ->where('ngay_hoc', $ngayHoc)
+                ->where('id', '!=', $id)
+                ->where('gio_bat_dau', '<', $gioKetThuc)
+                ->where('gio_ket_thuc', '>', $gioBatDau)
+                ->with('lopHoc')
+                ->first();
+
+            if ($trungXe) {
+                $xe          = Xe::find($xeIdMoi);
+                $tenLopTrung = $trungXe->lopHoc->ten_lop ?? "lớp #{$trungXe->lop_hoc_id}";
+                return response()->json([
+                    'success' => false,
+                    'message' => "Xe {$xe->bien_so} đã được phân công cho {$tenLopTrung} vào {$trungXe->gio_bat_dau}–{$trungXe->gio_ket_thuc} ngày {$trungXe->ngay_hoc}. Vui lòng chọn xe khác.",
+                ], 422);
+            }
+        }
+
+        // ── Kiểm tra trùng lịch dạy của giảng viên phụ trách ────────────────
+        $lop   = LopHoc::with(['giangVienLyThuyet.user', 'giangVienThucHanh.user', 'xeLop.xe'])->find($lopHocId);
+        $gvId  = $loaiBuoi === 'ly_thuyet'
+            ? $lop?->giang_vien_ly_thuyet_id
+            : $lop?->giang_vien_thuc_hanh_id;
+
+        if ($gvId) {
+            // Lấy TẤT CẢ lớp mà GV này phụ trách (cả vai LT lẫn vai TH), trừ lớp đang sửa
+            $lopKhacIds = LopHoc::where('id', '!=', $lopHocId)
+                ->where(function ($q) use ($gvId) {
+                    $q->where('giang_vien_ly_thuyet_id', $gvId)
+                      ->orWhere('giang_vien_thuc_hanh_id', $gvId);
+                })
+                ->pluck('id');
+
+            if ($lopKhacIds->isNotEmpty()) {
+                // Kiểm tra bất kỳ buổi nào (LT hoặc TH) của GV đó trùng khung giờ
+                $trungGV = LichHoc::whereIn('lop_hoc_id', $lopKhacIds)
+                    ->where('ngay_hoc', $ngayHoc)
+                    ->where('id', '!=', $id)
+                    ->where('gio_bat_dau', '<', $gioKetThuc)
+                    ->where('gio_ket_thuc', '>', $gioBatDau)
+                    ->with('lopHoc')
+                    ->first();
+
+                if ($trungGV) {
+                    $loaiLabel   = $loaiBuoi === 'ly_thuyet' ? 'Lý thuyết' : 'Thực hành';
+                    $loaiTrung   = $trungGV->loai_buoi === 'ly_thuyet' ? 'Lý thuyết' : 'Thực hành';
+                    $tenLopTrung = $trungGV->lopHoc->ten_lop ?? "lớp #{$trungGV->lop_hoc_id}";
+                    $gvTen = $loaiBuoi === 'ly_thuyet'
+                        ? $lop->giangVienLyThuyet?->user?->ho_ten
+                        : $lop->giangVienThucHanh?->user?->ho_ten;
+                    return response()->json([
+                        'success' => false,
+                        'message' => "GV {$loaiLabel} ({$gvTen}) đang có lịch dạy buổi {$loaiTrung} tại {$tenLopTrung} vào {$trungGV->gio_bat_dau}–{$trungGV->gio_ket_thuc} ngày {$trungGV->ngay_hoc}. Vui lòng chọn khung giờ khác.",
+                    ], 422);
+                }
+            }
+        }
 
         if ($loaiBuoi === 'ly_thuyet') {
             $gvLT = $lop?->giangVienLyThuyet;
@@ -200,12 +355,16 @@ class LichHocController extends Controller
             ->keyBy('ho_so_id');
 
         $result = $hocVienLopList->map(fn($hvl) => [
-            'ho_so_id' => $hvl->ho_so_id,
-            'ho_ten'   => $hvl->hoSo->ho_ten ?? '—',
-            'so_cccd'  => $hvl->hoSo->so_cccd ?? '—',
-            'co_mat'   => $diemDanhMap[$hvl->ho_so_id]->co_mat ?? false,
-            'km_chay'  => $diemDanhMap[$hvl->ho_so_id]->km_chay ?? '',
-            'ghi_chu'  => $diemDanhMap[$hvl->ho_so_id]->ghi_chu ?? '',
+            'ho_so_id'            => $hvl->ho_so_id,
+            'ho_ten'              => $hvl->hoSo->ho_ten ?? '—',
+            'so_cccd'             => $hvl->hoSo->so_cccd ?? '—',
+            'co_mat'              => $diemDanhMap[$hvl->ho_so_id]->co_mat ?? false,
+            'km_chay'             => $diemDanhMap[$hvl->ho_so_id]->km_chay ?? '',
+            'ghi_chu'             => $diemDanhMap[$hvl->ho_so_id]->ghi_chu ?? '',
+            // Tiến độ học viên — dùng để ẩn điểm danh khi đã đủ tiến độ
+            'du_buoi_ly_thuyet'   => (bool) $hvl->du_buoi_ly_thuyet,
+            'du_km_thuc_hanh'     => (bool) $hvl->du_km_thuc_hanh,
+            'du_dieu_kien_thi_tn' => (bool) $hvl->du_dieu_kien_thi_tn,
         ]);
 
         return response()->json([

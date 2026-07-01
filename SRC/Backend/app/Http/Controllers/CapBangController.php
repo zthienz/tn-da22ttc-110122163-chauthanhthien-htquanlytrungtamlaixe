@@ -45,7 +45,7 @@ class CapBangController extends Controller
         $filterTT  = $request->trang_thai; // cho_cap | da_cap
 
         // Tất cả trạng thái từ hoan_thanh_tn trở đi (đã đậu TN)
-        $trangThaiDauTN = ['hoan_thanh_tn', 'du_dieu_kien_sat_hanh', 'dang_thi_sat_hanh', 'da_cap_bang'];
+        $trangThaiDauTN = ['hoan_thanh_tn', 'du_dieu_kien_sat_hanh', 'dang_thi_sat_hanh', 'dau_sat_hanh', 'da_cap_bang'];
 
         $query = HoSoHocVien::with([
                 'khoaHoc',
@@ -99,7 +99,7 @@ class CapBangController extends Controller
         $hoSo = HoSoHocVien::findOrFail($hoSoId);
 
         // Cho phép cấp bằng TN với mọi trạng thái đã đậu TN
-        $trangThaiDauTN = ['hoan_thanh_tn', 'du_dieu_kien_sat_hanh', 'dang_thi_sat_hanh', 'da_cap_bang'];
+        $trangThaiDauTN = ['hoan_thanh_tn', 'du_dieu_kien_sat_hanh', 'dang_thi_sat_hanh', 'dau_sat_hanh', 'da_cap_bang'];
         if (!in_array($hoSo->trang_thai, $trangThaiDauTN)) {
             return response()->json([
                 'success' => false,
@@ -170,9 +170,9 @@ class CapBangController extends Controller
 
     // ── BẰNG LÁI XE ─────────────────────────────────────────────────────────
 
-    /**
+        /**
      * Danh sách học viên đủ điều kiện cấp bằng lái:
-     *   - Trạng thái du_dieu_kien_sat_hanh hoặc dang_thi_sat_hanh hoặc da_cap_bang
+     *   - Trạng thái dau_sat_hanh hoặc da_cap_bang
      *   - Đã thi đậu sát hạch (có ket_qua = 'dat' trong lịch thi loại sat_hanh)
      */
     public function danhSachCapBangLX(Request $request)
@@ -308,7 +308,7 @@ class CapBangController extends Controller
         DB::beginTransaction();
         try {
             $hoSo->bangLaiXe->delete();
-            $hoSo->update(['trang_thai' => 'du_dieu_kien_sat_hanh']);
+            $hoSo->update(['trang_thai' => 'dau_sat_hanh']);
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();

@@ -5,12 +5,18 @@ import { useAdmin } from '../../context/AdminContext'
 import './HocVienManagement.css'
 
 const TRANG_THAI_MAP = {
-  cho_dong_hoc_phi:      { text:'Chờ đóng HP',    cls:'badge-warning' },
-  cho_mo_lop:            { text:'Chờ mở lớp',      cls:'badge-info' },
-  dang_hoc:              { text:'Đang học',         cls:'badge-success' },
-  du_dieu_kien_thi_tn:   { text:'Đủ ĐK thi TN',    cls:'badge-blue' },
-  hoan_thanh_tn:         { text:'Hoàn thành TN',    cls:'badge-success' },
-  da_cap_bang:           { text:'Đã cấp bằng',      cls:'badge-success' },
+  cho_dong_hoc_phi:      { text:'Chờ đóng HP',         cls:'badge-warning' },
+  cho_mo_lop:            { text:'Chờ mở lớp',           cls:'badge-info' },
+  chuan_bi_hoc:          { text:'Chuẩn bị học',         cls:'badge-info' },
+  dang_hoc:              { text:'Đang học',              cls:'badge-success' },
+  du_dieu_kien_thi_tn:   { text:'Đủ ĐK thi TN',         cls:'badge-blue' },
+  chuan_bi_thi:          { text:'Chuẩn bị thi',         cls:'badge-warning' },
+  dang_thi_tn:           { text:'Đang thi TN',           cls:'badge-warning' },
+  hoan_thanh_tn:         { text:'Hoàn thành TN',         cls:'badge-success' },
+  du_dieu_kien_sat_hanh: { text:'Chờ thi sát hạch',     cls:'badge-blue' },
+  dang_thi_sat_hanh:     { text:'Đang thi sát hạch',    cls:'badge-warning' },
+  dau_sat_hanh:          { text:'Đậu sát hạch',          cls:'badge-success' },
+  da_cap_bang:           { text:'Đã cấp bằng',           cls:'badge-success' },
 }
 
 const HocVienManagement = () => {

@@ -121,6 +121,7 @@ Route::middleware(['auth.jwt', 'role:admin|giang_vien'])->prefix('admin')->group
     Route::put('/lop-hoc/{id}',             [LopHocController::class, 'update']);
     Route::delete('/lop-hoc/{id}',          [LopHocController::class, 'destroy']);
     Route::post('/lop-hoc/{id}/dong-bo',    [LopHocController::class, 'dongBoTrangThai']);
+    Route::delete('/lop-hoc/{lopId}/hoc-vien/{hoSoId}', [LopHocController::class, 'xoaHocVienKhoiLop']);
 
     // ── Lịch học ────────────────────────────────────────────────────────────
     Route::get('/lich-hoc',                 [LichHocController::class, 'index']);
@@ -163,6 +164,7 @@ Route::middleware(['auth.jwt', 'role:admin|giang_vien'])->prefix('admin')->group
     // ── Xe ──────────────────────────────────────────────────────────────────
     Route::get('/xe',                       [XeController::class, 'index']);
     Route::get('/xe/san-sang',              [XeController::class, 'xeSanSang']);
+    Route::get('/xe/ban-trong-khung-gio',   [XeController::class, 'xeBanTrongKhungGio']);
     Route::post('/xe/sync-km',              [XeController::class, 'syncKmXe']);
     Route::get('/xe/{id}',                  [XeController::class, 'show']);
     Route::post('/xe',                      [XeController::class, 'store']);

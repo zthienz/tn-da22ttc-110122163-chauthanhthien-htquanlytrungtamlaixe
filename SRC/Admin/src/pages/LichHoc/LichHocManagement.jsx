@@ -54,6 +54,7 @@ const LichHocManagement = () => {
   const [lichHoc, setLichHoc]   = useState([])
   const [lopList, setLopList]   = useState([])
   const [xeList, setXeList]     = useState([])
+  const [xeBanIds, setXeBanIds] = useState([])   // xe_id đang bận trong khung giờ đang chọn
   const [loading, setLoading]   = useState(true)
   const [base, setBase]         = useState(new Date())
   const [filterLop, setFilterLop] = useState('')
@@ -96,12 +97,30 @@ const LichHocManagement = () => {
 
   useEffect(() => { fetchLich() }, [fromDate, toDate, filterLop])
 
+  // Fetch danh sách xe bận khi modal mở và đủ thông tin ngày + giờ
+  useEffect(() => {
+    if (!showModal || !form.ngay_hoc || !form.gio_bat_dau || !form.gio_ket_thuc || form.loai_buoi !== 'thuc_hanh') {
+      setXeBanIds([])
+      return
+    }
+    const params = {
+      ngay_hoc:     form.ngay_hoc,
+      gio_bat_dau:  form.gio_bat_dau,
+      gio_ket_thuc: form.gio_ket_thuc,
+    }
+    if (editingLich) params.exclude_lich_hoc_id = editingLich.id
+    axios.get(`${backendUrl}/api/admin/xe/ban-trong-khung-gio`, { headers, params })
+      .then(r => { if (r.data.success) setXeBanIds(r.data.data.map(String)) })
+      .catch(() => setXeBanIds([]))
+  }, [showModal, form.ngay_hoc, form.gio_bat_dau, form.gio_ket_thuc, form.loai_buoi])
+
   const getLichByDate = date => lichHoc.filter(l => l.ngay_hoc === fmt(date))
   const isToday = date => fmt(date) === fmt(new Date())
 
   // ── CRUD ──
   const openAdd = (ngayHoc = '') => {
     setEditingLich(null)
+    setXeBanIds([])
     setForm({ lop_hoc_id:'', ngay_hoc: ngayHoc, gio_bat_dau:'', gio_ket_thuc:'', loai_buoi:'ly_thuyet', dia_diem:'', noi_dung:'', xe_id:'' })
     setShowModal(true)
   }
@@ -158,6 +177,7 @@ const LichHocManagement = () => {
 
   const openEdit = lh => {
     setEditingLich(lh)
+    setXeBanIds([])
     setForm({
       lop_hoc_id:   lh.lop_hoc_id || '',
       ngay_hoc:     lh.ngay_hoc || '',
@@ -462,6 +482,9 @@ const LichHocManagement = () => {
                     (loaiBang ? x.hang_bang === loaiBang : true)
                   )
                   const xeWarning = getXeWarning(form.lop_hoc_id, form.loai_buoi, form.xe_id)
+                  // Xe đang chọn có bị bận trong khung giờ này không
+                  const selectedXeBan = form.xe_id && xeBanIds.includes(String(form.xe_id))
+                  const hasTimeInfo   = form.ngay_hoc && form.gio_bat_dau && form.gio_ket_thuc
                   return (
                     <div className="form-group">
                       <label>🚗 Phân xe thực hành {loaiBang && <span style={{fontWeight:400,color:'#6b7280',fontSize:12}}>(Hạng {loaiBang})</span>}</label>
@@ -470,10 +493,32 @@ const LichHocManagement = () => {
                         {xeFiltered.length === 0 ? (
                           <option disabled>Không có xe phù hợp cho hạng {loaiBang}</option>
                         ) : (
-                          xeFiltered.map(x => <option key={x.id} value={x.id}>{x.bien_so} — {x.hang_xe} {x.dong_xe} (Hạng {x.hang_bang})</option>)
+                          xeFiltered.map(x => {
+                            const isBan = xeBanIds.includes(String(x.id))
+                            return (
+                              <option
+                                key={x.id}
+                                value={x.id}
+                                disabled={isBan}
+                                style={isBan ? {color:'#9ca3af'} : {}}
+                              >
+                                {x.bien_so} — {x.hang_xe} {x.dong_xe} (Hạng {x.hang_bang}){isBan ? ' — ⛔ Đã bận khung giờ này' : ''}
+                              </option>
+                            )
+                          })
                         )}
                       </select>
-                      {xeWarning && (
+                      {hasTimeInfo && xeBanIds.length > 0 && (
+                        <div style={{marginTop:4,fontSize:12,color:'#6b7280'}}>
+                          ℹ️ Các xe có dấu ⛔ đã được phân công cho lớp khác trong khung giờ này.
+                        </div>
+                      )}
+                      {selectedXeBan && (
+                        <div style={{marginTop:6,padding:'8px 12px',background:'#fee2e2',border:'1px solid #ef4444',borderRadius:6,fontSize:13,color:'#991b1b'}}>
+                          ⛔ Xe này đã được phân công cho lớp khác trong cùng khung giờ. Vui lòng chọn xe khác.
+                        </div>
+                      )}
+                      {xeWarning && !selectedXeBan && (
                         <div style={{marginTop:6,padding:'8px 12px',background:'#fef3c7',border:'1px solid #f59e0b',borderRadius:6,fontSize:13,color:'#92400e'}}>
                           {xeWarning}
                         </div>
@@ -491,8 +536,18 @@ const LichHocManagement = () => {
                 <button
                   type="submit"
                   className="btn btn-primary"
-                  disabled={!!getGvWarning(form.lop_hoc_id, form.loai_buoi) || !!getXeWarning(form.lop_hoc_id, form.loai_buoi, form.xe_id)}
-                  title={getGvWarning(form.lop_hoc_id, form.loai_buoi) || getXeWarning(form.lop_hoc_id, form.loai_buoi, form.xe_id) || ''}
+                  disabled={
+                    !!getGvWarning(form.lop_hoc_id, form.loai_buoi) ||
+                    !!getXeWarning(form.lop_hoc_id, form.loai_buoi, form.xe_id) ||
+                    (form.loai_buoi === 'thuc_hanh' && !!form.xe_id && xeBanIds.includes(String(form.xe_id)))
+                  }
+                  title={
+                    getGvWarning(form.lop_hoc_id, form.loai_buoi) ||
+                    getXeWarning(form.lop_hoc_id, form.loai_buoi, form.xe_id) ||
+                    (form.loai_buoi === 'thuc_hanh' && form.xe_id && xeBanIds.includes(String(form.xe_id))
+                      ? 'Xe này đã được phân công cho lớp khác trong cùng khung giờ'
+                      : '')
+                  }
                 >
                   {editingLich ? '💾 Cập nhật' : '➕ Tạo buổi học'}
                 </button>
@@ -564,65 +619,133 @@ const LichHocManagement = () => {
             <div className="modal-body">
               {diemDanhData.length === 0 ? (
                 <div className="empty-state"><span>👥</span><p>Chưa có học viên trong lớp này</p></div>
-              ) : (
-                <>
-                  <div className="dd-toolbar">
-                    <button className="btn btn-success btn-sm" onClick={() => setDiemDanhData(diemDanhData.map(d=>({...d,co_mat:true})))}>✅ Điểm danh tất cả</button>
-                    <button className="btn btn-outline btn-sm" onClick={() => setDiemDanhData(diemDanhData.map(d=>({...d,co_mat:false})))}>❌ Bỏ chọn tất cả</button>
-                    <span className="dd-count">{diemDanhData.filter(d=>d.co_mat).length}/{diemDanhData.length} có mặt</span>
-                  </div>
-                  <table className="data-table">
-                    <thead><tr>
-                      <th>Học viên</th>
-                      <th style={{textAlign:'center'}}>Có mặt</th>
-                      <th>Lý do vắng</th>
-                      {selectedLich.loai_buoi==='thuc_hanh'&&<th>Km chạy được</th>}
-                    </tr></thead>
-                    <tbody>
-                      {diemDanhData.map((d,i) => (
-                        <tr key={i} className={d.co_mat?'dd-present':''}>
-                          <td>
-                            <div className="dd-hv-info">
-                              <div className="dd-avatar">{d.ho_ten?.charAt(0).toUpperCase()}</div>
-                              <div>
-                                <p style={{fontWeight:700,fontSize:14}}>{d.ho_ten}</p>
-                                <p style={{fontSize:12,color:'#718096'}}>{d.so_cccd}</p>
-                              </div>
-                            </div>
-                          </td>
-                          <td style={{textAlign:'center'}}>
-                            <label className="dd-toggle">
-                              <input type="checkbox" checked={d.co_mat}
-                                onChange={e=>setDiemDanhData(diemDanhData.map((x,j)=>j===i?{...x,co_mat:e.target.checked,ghi_chu:e.target.checked?'':x.ghi_chu}:x))} />
-                              <span className="dd-toggle-slider"/>
-                            </label>
-                          </td>
-                          <td>
-                            {!d.co_mat ? (
-                              <input
-                                type="text"
-                                value={d.ghi_chu}
-                                onChange={e=>setDiemDanhData(diemDanhData.map((x,j)=>j===i?{...x,ghi_chu:e.target.value}:x))}
-                                placeholder="Nhập lý do vắng mặt..."
-                                style={{width:'100%',padding:'5px 8px',border:'1px solid #fca5a5',borderRadius:6,fontSize:12}}
-                              />
-                            ) : (
-                              <span style={{fontSize:12,color:'#9ca3af'}}>—</span>
-                            )}
-                          </td>
-                          {selectedLich.loai_buoi==='thuc_hanh'&&(
-                            <td>
-                              <input type="number" step="0.1" min="0" value={d.km_chay}
-                                onChange={e=>setDiemDanhData(diemDanhData.map((x,j)=>j===i?{...x,km_chay:e.target.value}:x))}
-                                placeholder="0.0 km" className="km-input" disabled={!d.co_mat} />
-                            </td>
-                          )}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </>
-              )}
+              ) : (() => {
+                // Phân loại học viên theo tiến độ của buổi học
+                const isDuTienDo = d =>
+                  selectedLich.loai_buoi === 'ly_thuyet'
+                    ? d.du_buoi_ly_thuyet === true
+                    : d.du_km_thuc_hanh   === true
+                const duTienDoList    = diemDanhData.filter(d =>  isDuTienDo(d))
+                const canDiemDanhList = diemDanhData.filter(d => !isDuTienDo(d))
+                const coMatCount = canDiemDanhList.filter(d => d.co_mat).length
+                return (
+                  <>
+                    <div className="dd-toolbar">
+                      <button className="btn btn-success btn-sm" onClick={() => setDiemDanhData(diemDanhData.map(d => isDuTienDo(d) ? d : {...d,co_mat:true}))}>✅ Điểm danh tất cả</button>
+                      <button className="btn btn-outline btn-sm" onClick={() => setDiemDanhData(diemDanhData.map(d => isDuTienDo(d) ? d : {...d,co_mat:false}))}>❌ Bỏ chọn tất cả</button>
+                      <span className="dd-count">{coMatCount}/{canDiemDanhList.length} có mặt</span>
+                    </div>
+
+                    {/* ── Học viên đã đủ tiến độ ── */}
+                    {duTienDoList.length > 0 && (
+                      <div style={{marginBottom:12}}>
+                        <div style={{display:'flex',alignItems:'center',gap:8,padding:'6px 12px',background:'#f0fdf4',borderRadius:8,marginBottom:6,fontSize:12,fontWeight:700,color:'#15803d'}}>
+                          <span>✅</span>
+                          <span>
+                            {selectedLich.loai_buoi === 'ly_thuyet'
+                              ? `Đủ tiến độ lý thuyết (${duTienDoList.length} học viên) — Không cần điểm danh`
+                              : `Đủ tiến độ thực hành (${duTienDoList.length} học viên) — Không cần điểm danh`}
+                          </span>
+                        </div>
+                        <table className="data-table">
+                          <thead><tr>
+                            <th>Học viên</th>
+                            <th style={{textAlign:'center'}}>Trạng thái</th>
+                          </tr></thead>
+                          <tbody>
+                            {duTienDoList.map((d) => {
+                              const i = diemDanhData.indexOf(d)
+                              return (
+                                <tr key={i} style={{background:'#f0fdf4',opacity:0.75}}>
+                                  <td>
+                                    <div className="dd-hv-info">
+                                      <div className="dd-avatar" style={{background:'#16a34a'}}>{d.ho_ten?.charAt(0).toUpperCase()}</div>
+                                      <div>
+                                        <p style={{fontWeight:700,fontSize:14}}>{d.ho_ten}</p>
+                                        <p style={{fontSize:12,color:'#718096'}}>{d.so_cccd}</p>
+                                      </div>
+                                    </div>
+                                  </td>
+                                  <td style={{textAlign:'center'}}>
+                                    <span style={{padding:'4px 12px',borderRadius:20,fontSize:12,fontWeight:700,background:'#dcfce7',color:'#15803d',border:'1px solid #86efac'}}>
+                                      {selectedLich.loai_buoi === 'ly_thuyet' ? '📖 Đủ tiến độ LT' : '🚗 Đủ tiến độ TH'}
+                                    </span>
+                                  </td>
+                                </tr>
+                              )
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+
+                    {/* ── Học viên chưa đủ tiến độ — cần điểm danh ── */}
+                    {canDiemDanhList.length > 0 && (
+                      <div>
+                        {duTienDoList.length > 0 && (
+                          <div style={{display:'flex',alignItems:'center',gap:8,padding:'6px 12px',background:'#fff7ed',borderRadius:8,marginBottom:6,fontSize:12,fontWeight:700,color:'#c2410c'}}>
+                            <span>⏳</span>
+                            <span>Chưa đủ tiến độ ({canDiemDanhList.length} học viên) — Cần điểm danh</span>
+                          </div>
+                        )}
+                        <table className="data-table">
+                          <thead><tr>
+                            <th>Học viên</th>
+                            <th style={{textAlign:'center'}}>Có mặt</th>
+                            <th>Lý do vắng</th>
+                            {selectedLich.loai_buoi==='thuc_hanh'&&<th>Km chạy được</th>}
+                          </tr></thead>
+                          <tbody>
+                            {canDiemDanhList.map((d) => {
+                              const i = diemDanhData.indexOf(d)
+                              return (
+                                <tr key={i} className={d.co_mat?'dd-present':''}>
+                                  <td>
+                                    <div className="dd-hv-info">
+                                      <div className="dd-avatar">{d.ho_ten?.charAt(0).toUpperCase()}</div>
+                                      <div>
+                                        <p style={{fontWeight:700,fontSize:14}}>{d.ho_ten}</p>
+                                        <p style={{fontSize:12,color:'#718096'}}>{d.so_cccd}</p>
+                                      </div>
+                                    </div>
+                                  </td>
+                                  <td style={{textAlign:'center'}}>
+                                    <label className="dd-toggle">
+                                      <input type="checkbox" checked={d.co_mat}
+                                        onChange={e=>setDiemDanhData(diemDanhData.map((x,j)=>j===i?{...x,co_mat:e.target.checked,ghi_chu:e.target.checked?'':x.ghi_chu}:x))} />
+                                      <span className="dd-toggle-slider"/>
+                                    </label>
+                                  </td>
+                                  <td>
+                                    {!d.co_mat ? (
+                                      <input
+                                        type="text"
+                                        value={d.ghi_chu}
+                                        onChange={e=>setDiemDanhData(diemDanhData.map((x,j)=>j===i?{...x,ghi_chu:e.target.value}:x))}
+                                        placeholder="Nhập lý do vắng mặt..."
+                                        style={{width:'100%',padding:'5px 8px',border:'1px solid #fca5a5',borderRadius:6,fontSize:12}}
+                                      />
+                                    ) : (
+                                      <span style={{fontSize:12,color:'#9ca3af'}}>—</span>
+                                    )}
+                                  </td>
+                                  {selectedLich.loai_buoi==='thuc_hanh'&&(
+                                    <td>
+                                      <input type="number" step="0.1" min="0" value={d.km_chay}
+                                        onChange={e=>setDiemDanhData(diemDanhData.map((x,j)=>j===i?{...x,km_chay:e.target.value}:x))}
+                                        placeholder="0.0 km" className="km-input" disabled={!d.co_mat} />
+                                    </td>
+                                  )}
+                                </tr>
+                              )
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </>
+                )
+              })()}
             </div>
             <div className="modal-footer">
               <button className="btn btn-outline" onClick={() => setShowDiemDanhModal(false)}>Hủy</button>

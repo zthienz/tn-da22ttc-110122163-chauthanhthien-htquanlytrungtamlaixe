@@ -40,8 +40,8 @@ const TRANG_THAI_MAP = {
   du_dieu_kien_thi_tn:   { text:'Đủ ĐK thi TN',       cls:'badge-blue' },
   chuan_bi_thi:          { text:'Chuẩn bị thi',        cls:'badge-warning' },
   hoan_thanh_tn:         { text:'Hoàn thành TN',       cls:'badge-success' },
-  // Các trạng thái sau khi đậu sát hạch → chỉ hiện ở trang Cấp Bằng
-  // du_dieu_kien_sat_hanh, dang_thi_sat_hanh, da_cap_bang không hiện ở đây
+  // Các trạng thái giai đoạn sát hạch → chỉ hiện ở trang Cấp Bằng
+  // du_dieu_kien_sat_hanh, dang_thi_sat_hanh, dau_sat_hanh, da_cap_bang không hiện ở đây
 }
 
 const HoSoManagement = () => {
@@ -57,6 +57,7 @@ const HoSoManagement = () => {
   const [showModal, setShowModal]         = useState(false)
   const [showHocPhiModal, setShowHocPhiModal] = useState(false)
   const [showXepLopModal, setShowXepLopModal] = useState(false)
+  const [xepLopForm, setXepLopForm] = useState({ lop_hoc_id: '' })
   // Modal thu phí thi lại
   const [showPhiThiLaiModal, setShowPhiThiLaiModal] = useState(false)
   const [phiThiLaiData, setPhiThiLaiData]           = useState([])
@@ -479,7 +480,12 @@ const HoSoManagement = () => {
                             )}
                             {hs.trang_thai_hoc_phi === 'da_dong' && hs.trang_thai === 'cho_mo_lop' && (
                               <button className="btn btn-primary btn-sm"
-                                onClick={() => { setSelected(hs); fetchLopList(); setShowXepLopModal(true) }}>
+                                onClick={() => {
+                                  setSelected(hs)
+                                  setXepLopForm({ lop_hoc_id: '' })
+                                  fetchLopList()
+                                  setShowXepLopModal(true)
+                                }}>
                                 🏫 Xếp lớp
                               </button>
                             )}
@@ -781,39 +787,144 @@ const HoSoManagement = () => {
       )}
 
       {/* Modal xếp lớp */}
-      {showXepLopModal && selected && (
-        <div className="modal-overlay" onClick={() => setShowXepLopModal(false)}>
-          <div className="modal" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>🏫 Xếp Lớp — {selected.ho_ten}</h3>
-              <button className="modal-close" onClick={() => setShowXepLopModal(false)}>✕</button>
+      {showXepLopModal && selected && (() => {
+        // Lọc lớp phù hợp: cùng loại bằng (loai_bang) và còn chỗ
+        const loaiBangHV = selected.khoa_hoc?.loai_bang
+        const lopPhuHop = lopList.filter(l =>
+          l.khoa_hoc?.loai_bang === loaiBangHV &&
+          (l.hoc_vien_count || 0) < (l.si_so_toi_da || 999)
+        )
+        const lopDayHoac = lopList.filter(l =>
+          l.khoa_hoc?.loai_bang === loaiBangHV &&
+          (l.hoc_vien_count || 0) >= (l.si_so_toi_da || 999)
+        )
+        return (
+          <div className="modal-overlay" onClick={() => setShowXepLopModal(false)}>
+            <div className="modal modal-xl" onClick={e => e.stopPropagation()}>
+              <div className="modal-header">
+                <h3>🏫 Xếp Lớp — {selected.ho_ten}</h3>
+                <button className="modal-close" onClick={() => setShowXepLopModal(false)}>✕</button>
+              </div>
+              <form onSubmit={handleXepLop}>
+                <div className="modal-body">
+                  {/* Thông tin học viên */}
+                  <div className="hocphi-info" style={{marginBottom: 16}}>
+                    <p>Học viên: <strong>{selected.ho_ten}</strong> — CCCD: <strong>{selected.so_cccd}</strong></p>
+                    <p>Khóa học: <strong>{selected.khoa_hoc?.ten_khoa}</strong>
+                      {selected.khoa_hoc?.loai_bang && (
+                        <span className="badge badge-blue" style={{marginLeft: 8}}>Hạng {selected.khoa_hoc.loai_bang}</span>
+                      )}
+                    </p>
+                    <p className="info-note" style={{marginTop: 8}}>
+                      ⚠️ Sau khi xếp lớp, hệ thống sẽ tự động tạo tài khoản học viên với:<br/>
+                      • Tài khoản: <strong>{selected.so_cccd}</strong> &nbsp;•&nbsp; Mật khẩu: <strong>Ngày sinh (DDMMYYYY)</strong>
+                    </p>
+                  </div>
+
+                  {/* Danh sách lớp phù hợp */}
+                  {lopList.filter(l => l.khoa_hoc?.loai_bang === loaiBangHV).length === 0 ? (
+                    <div style={{textAlign:'center', padding:'32px 0', color:'#6b7280'}}>
+                      <div style={{fontSize:40, marginBottom:8}}>🏫</div>
+                      <p>Chưa có lớp học nào cho khóa <strong>{selected.khoa_hoc?.ten_khoa}</strong>.</p>
+                      <p style={{fontSize:13}}>Vui lòng tạo lớp học trước tại trang Lớp Học.</p>
+                    </div>
+                  ) : (
+                    <>
+                      {lopPhuHop.length > 0 && (
+                        <>
+                          <p style={{fontWeight:600, marginBottom:10, color:'#374151'}}>
+                            📋 Chọn lớp để xếp ({lopPhuHop.length} lớp còn chỗ):
+                          </p>
+                          <div className="xeplop-lop-list">
+                            {lopPhuHop.map(l => {
+                              const isSelected = xepLopForm.lop_hoc_id === String(l.id)
+                              const phanTram = Math.round(((l.hoc_vien_count||0) / (l.si_so_toi_da||1)) * 100)
+                              return (
+                                <div
+                                  key={l.id}
+                                  className={`xeplop-lop-card ${isSelected ? 'selected' : ''}`}
+                                  onClick={() => setXepLopForm({ lop_hoc_id: String(l.id) })}
+                                >
+                                  <div className="xeplop-lop-card-header">
+                                    <span className="xeplop-lop-name">{l.ten_lop}</span>
+                                    <span className={`badge ${l.trang_thai === 'dang_hoc' ? 'badge-success' : l.trang_thai === 'da_ket_thuc' ? 'badge-gray' : 'badge-info'}`}>
+                                      {l.trang_thai === 'dang_hoc' ? 'Đang học' : l.trang_thai === 'chuan_bi' ? 'Chuẩn bị' : l.trang_thai === 'da_ket_thuc' ? 'Đã kết thúc' : l.trang_thai}
+                                    </span>
+                                  </div>
+                                  <div className="xeplop-lop-card-body">
+                                    <div className="xeplop-lop-info-row">
+                                      <span>📚 {l.khoa_hoc?.ten_khoa || '—'}</span>
+                                      <span>🎓 GV LT: {l.giang_vien_ly_thuyet?.user?.ho_ten || '—'}</span>
+                                    </div>
+                                    <div className="xeplop-lop-info-row">
+                                      <span>🚗 GV TH: {l.giang_vien_thuc_hanh?.user?.ho_ten || '—'}</span>
+                                      <span>📅 Khai giảng: {l.ngay_khai_giang ? new Date(l.ngay_khai_giang).toLocaleDateString('vi-VN') : '—'}</span>
+                                    </div>
+                                    <div className="xeplop-siso-row">
+                                      <span className="xeplop-siso-text">
+                                        👥 Sĩ số: <strong>{l.hoc_vien_count||0}</strong>/{l.si_so_toi_da}
+                                      </span>
+                                      <div className="xeplop-progress-bar">
+                                        <div className="xeplop-progress-fill" style={{width: `${phanTram}%`}} />
+                                      </div>
+                                    </div>
+                                  </div>
+                                  {isSelected && (
+                                    <div className="xeplop-selected-indicator">✅ Đã chọn lớp này</div>
+                                  )}
+                                </div>
+                              )
+                            })}
+                          </div>
+                        </>
+                      )}
+
+                      {/* Lớp đã đầy - chỉ hiển thị thông tin, không cho chọn */}
+                      {lopDayHoac.length > 0 && (
+                        <div style={{marginTop: 16}}>
+                          <p style={{fontWeight:600, marginBottom:8, color:'#9ca3af', fontSize:13}}>
+                            🔒 Lớp đã đầy ({lopDayHoac.length} lớp):
+                          </p>
+                          <div className="xeplop-lop-list">
+                            {lopDayHoac.map(l => (
+                              <div key={l.id} className="xeplop-lop-card disabled">
+                                <div className="xeplop-lop-card-header">
+                                  <span className="xeplop-lop-name" style={{color:'#9ca3af'}}>{l.ten_lop}</span>
+                                  <span className="badge badge-danger">Đã đầy</span>
+                                </div>
+                                <div className="xeplop-lop-card-body">
+                                  <div className="xeplop-siso-row">
+                                    <span className="xeplop-siso-text" style={{color:'#9ca3af'}}>
+                                      👥 Sĩ số: <strong>{l.hoc_vien_count||0}</strong>/{l.si_so_toi_da} (Đã đầy)
+                                    </span>
+                                    <div className="xeplop-progress-bar">
+                                      <div className="xeplop-progress-fill" style={{width:'100%', background:'#ef4444'}} />
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+                <div className="modal-footer">
+                  <button type="button" className="btn btn-outline" onClick={() => setShowXepLopModal(false)}>Hủy</button>
+                  <button
+                    type="submit"
+                    className="btn btn-primary"
+                    disabled={!xepLopForm.lop_hoc_id}
+                  >
+                    🏫 Xếp lớp & Tạo tài khoản
+                  </button>
+                </div>
+              </form>
             </div>
-            <form onSubmit={handleXepLop}>
-              <div className="modal-body">
-                <div className="hocphi-info">
-                  <p>Khóa học: <strong>{selected.khoa_hoc?.ten_khoa}</strong></p>
-                  <p className="info-note">⚠️ Sau khi xếp lớp, hệ thống sẽ tự động tạo tài khoản học viên với:<br/>
-                    • Tài khoản: <strong>{selected.so_cccd}</strong><br/>
-                    • Mật khẩu: <strong>Ngày sinh (DDMMYYYY)</strong>
-                  </p>
-                </div>
-                <div className="form-group"><label>Chọn lớp học *</label>
-                  <select value={xepLopForm.lop_hoc_id} onChange={e=>setXepLopForm({lop_hoc_id:e.target.value})} required>
-                    <option value="">-- Chọn lớp --</option>
-                    {lopList.filter(l => l.khoa_hoc_id === selected.khoa_hoc_id || true).map(l => (
-                      <option key={l.id} value={l.id}>{l.ten_lop} — {l.khoa_hoc?.ten_khoa} ({l.hoc_vien_count||0}/{l.si_so_toi_da})</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-              <div className="modal-footer">
-                <button type="button" className="btn btn-outline" onClick={() => setShowXepLopModal(false)}>Hủy</button>
-                <button type="submit" className="btn btn-primary">🏫 Xếp lớp & Tạo tài khoản</button>
-              </div>
-            </form>
           </div>
-        </div>
-      )}
+        )
+      })()}
 
       {/* ── MODAL XEM CHI TIẾT HỒ SƠ ── */}
       {viewItem !== null && (
@@ -963,34 +1074,142 @@ const HoSoManagement = () => {
                       </div>
                     )}
 
-                    {/* Lớp học */}
-                    {viewItem.hoc_vien_lop?.length > 0 && (
+                    {/* Lớp học + tiến độ */}
+                    {(() => {
+                      // hocVienLop là hasOne → trả về object đơn (hoặc null)
+                      // Normalize về array để map thống nhất
+                      const hvlRaw = viewItem.hoc_vien_lop
+                      const hvlList = !hvlRaw
+                        ? []
+                        : Array.isArray(hvlRaw) ? hvlRaw : [hvlRaw]
+                      if (hvlList.length === 0) return null
+                      return (
                       <div className="detail-section">
-                        <div className="detail-section-title">🏫 Lớp Học</div>
-                        {viewItem.hoc_vien_lop.map((hvl, i) => (
-                          <div key={i} className="detail-grid" style={{marginTop: i > 0 ? 10 : 8}}>
-                            <div className="detail-box">
-                              <div className="detail-label">Tên lớp</div>
-                              <div className="detail-value">{hvl.lop_hoc?.ten_lop || '—'}</div>
-                            </div>
-                            <div className="detail-box">
-                              <div className="detail-label">GV Lý thuyết</div>
-                              <div className="detail-value">{hvl.lop_hoc?.giang_vien_ly_thuyet?.user?.ho_ten || '—'}</div>
-                            </div>
-                            <div className="detail-box">
-                              <div className="detail-label">GV Thực hành</div>
-                              <div className="detail-value">{hvl.lop_hoc?.giang_vien_thuc_hanh?.user?.ho_ten || '—'}</div>
-                            </div>
-                            <div className="detail-box">
-                              <div className="detail-label">Trạng thái lớp</div>
-                              <div className="detail-value">
-                                <span className="badge badge-blue">{hvl.lop_hoc?.trang_thai || '—'}</span>
+                        <div className="detail-section-title">🏫 Lớp Học & Tiến Độ</div>
+                        {hvlList.map((hvl, i) => {
+                          const lop     = hvl.lop_hoc
+                          const khoaLop = lop?.khoa_hoc  // khóa đào tạo của lớp
+
+                          // Lấy ngưỡng từ khóa danh mục (whereNull ma_khoa) — giống backend
+                          // Nếu khoaLop là khóa đào tạo theo tháng (có ma_khoa) thì dùng khoa_hoc của hồ sơ
+                          const khoaNguong = (khoaLop?.ma_khoa ? viewItem.khoa_hoc : khoaLop) || viewItem.khoa_hoc
+
+                          const maxLT     = khoaNguong?.so_buoi_ly_thuyet_toi_thieu || 0
+                          const maxKm     = khoaNguong?.so_km_toi_thieu || 0
+                          const maxTH     = lop?.si_so_toi_da || 0   // dùng tạm; thực tế TH đo bằng km
+
+                          const daHocLT   = hvl.so_buoi_ly_thuyet_da_hoc || 0
+                          const daHocTH   = hvl.so_buoi_thuc_hanh_da_hoc || 0
+                          const daChayKm  = parseFloat(hvl.so_km_da_chay || 0)
+
+                          const pctLT     = maxLT > 0 ? Math.min(Math.round((daHocLT / maxLT) * 100), 100) : 0
+                          const pctKm     = maxKm > 0 ? Math.min(Math.round((daChayKm / maxKm) * 100), 100) : 0
+
+                          const duLT      = hvl.du_buoi_ly_thuyet
+                          const duKm      = hvl.du_km_thuc_hanh
+                          const duDK      = hvl.du_dieu_kien_thi_tn
+
+                          const TRANG_THAI_LOP = {
+                            chuan_bi: { text: 'Chuẩn bị', cls: 'badge-info' },
+                            dang_hoc: { text: 'Đang học', cls: 'badge-success' },
+                            da_ket_thuc: { text: 'Đã kết thúc', cls: 'badge-gray' },
+                          }
+                          const tsLop = TRANG_THAI_LOP[lop?.trang_thai] || { text: lop?.trang_thai, cls: 'badge-gray' }
+
+                          const hangKhongCanKm = ['A1', 'A']
+                          const canKm = !hangKhongCanKm.includes(viewItem.khoa_hoc?.loai_bang)
+
+                          return (
+                            <div key={i} className="tiendo-lop-card">
+                              {/* Header lớp */}
+                              <div className="tiendo-lop-header">
+                                <div className="tiendo-lop-title">
+                                  <span className="tiendo-lop-name">{lop?.ten_lop || '—'}</span>
+                                  <span className={`badge ${tsLop.cls}`}>{tsLop.text}</span>
+                                </div>
+                                {duDK && (
+                                  <span className="badge badge-success tiendo-du-dk">✅ Đủ ĐK thi TN</span>
+                                )}
+                              </div>
+
+                              {/* Thông tin lớp */}
+                              <div className="tiendo-lop-info">
+                                <span>🎓 GV LT: <strong>{lop?.giang_vien_ly_thuyet?.user?.ho_ten || '—'}</strong></span>
+                                <span>🚗 GV TH: <strong>{lop?.giang_vien_thuc_hanh?.user?.ho_ten || '—'}</strong></span>
+                                <span>📅 Xếp lớp: <strong>{hvl.ngay_xep_lop ? new Date(hvl.ngay_xep_lop).toLocaleDateString('vi-VN') : '—'}</strong></span>
+                              </div>
+
+                              {/* Tiến độ Lý thuyết */}
+                              <div className="tiendo-section">
+                                <div className="tiendo-row-header">
+                                  <span className="tiendo-label">📖 Lý thuyết</span>
+                                  <span className="tiendo-value">
+                                    <strong style={{color: duLT ? '#10b981' : '#1d4ed8'}}>{daHocLT}</strong>
+                                    {maxLT > 0 && <span style={{color:'#6b7280'}}>/{maxLT} buổi</span>}
+                                    {duLT && <span className="tiendo-check">✅</span>}
+                                  </span>
+                                </div>
+                                {maxLT > 0 && (
+                                  <div className="tiendo-bar-wrap">
+                                    <div className="tiendo-bar">
+                                      <div
+                                        className="tiendo-bar-fill"
+                                        style={{
+                                          width: `${pctLT}%`,
+                                          background: duLT ? '#10b981' : '#3b82f6'
+                                        }}
+                                      />
+                                    </div>
+                                    <span className="tiendo-pct">{pctLT}%</span>
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Tiến độ Thực hành */}
+                              <div className="tiendo-section">
+                                <div className="tiendo-row-header">
+                                  <span className="tiendo-label">🚗 Thực hành</span>
+                                  <span className="tiendo-value">
+                                    <strong style={{color: duKm ? '#10b981' : '#1d4ed8'}}>{daHocTH}</strong>
+                                    <span style={{color:'#6b7280'}}> buổi</span>
+                                    {canKm && (
+                                      <span style={{marginLeft:8}}>
+                                        <strong style={{color: duKm ? '#10b981' : '#1d4ed8'}}>
+                                          {daChayKm % 1 === 0 ? daChayKm : daChayKm.toFixed(1)}
+                                        </strong>
+                                        {maxKm > 0 && <span style={{color:'#6b7280'}}>/{maxKm} km</span>}
+                                        {duKm && <span className="tiendo-check">✅</span>}
+                                      </span>
+                                    )}
+                                    {!canKm && <span className="tiendo-check">✅</span>}
+                                  </span>
+                                </div>
+                                {canKm && maxKm > 0 && (
+                                  <div className="tiendo-bar-wrap">
+                                    <div className="tiendo-bar">
+                                      <div
+                                        className="tiendo-bar-fill"
+                                        style={{
+                                          width: `${pctKm}%`,
+                                          background: duKm ? '#10b981' : '#f59e0b'
+                                        }}
+                                      />
+                                    </div>
+                                    <span className="tiendo-pct">{pctKm}%</span>
+                                  </div>
+                                )}
+                                {!canKm && (
+                                  <p style={{fontSize:12, color:'#6b7280', marginTop:4}}>
+                                    Bằng hạng {viewItem.khoa_hoc?.loai_bang} không yêu cầu km thực hành
+                                  </p>
+                                )}
                               </div>
                             </div>
-                          </div>
-                        ))}
+                          )
+                        })}
                       </div>
-                    )}
+                      )
+                    })()}
 
                     {/* Kết quả thi */}
                     {viewItem.ket_qua_thi?.length > 0 && (

@@ -223,23 +223,117 @@ class LopHocController extends Controller
     /**
      * Đồng bộ lại trạng thái hồ sơ học viên theo trạng thái lớp hiện tại.
      * Dùng khi dữ liệu bị lệch (lớp đang học nhưng học viên vẫn ở cho_mo_lop).
+     * Đồng thời tự động đóng lớp nếu toàn bộ học viên đã đậu sát hạch.
      */
     public function dongBoTrangThai($id)
     {
         $lop = LopHoc::findOrFail($id);
 
-        $soHV = 0;
+        $soHV    = 0;
+        $dongLop = false;
 
         if ($lop->trang_thai === 'dang_hoc') {
+            // 1. Đồng bộ học viên còn kẹt ở trạng thái đầu sang dang_hoc
             $soHV = HoSoHocVien::whereHas('hocVienLop', fn($q) => $q->where('lop_hoc_id', $lop->id))
                 ->whereIn('trang_thai', ['cho_mo_lop', 'chuan_bi_hoc'])
                 ->update(['trang_thai' => 'dang_hoc']);
+
+            // 2. Kiểm tra xem toàn bộ học viên đã đậu sát hạch chưa → tự động đóng lớp
+            $trangThaiHV = HoSoHocVien::whereHas('hocVienLop', fn($q) => $q->where('lop_hoc_id', $lop->id))
+                ->pluck('trang_thai');
+
+            if ($trangThaiHV->isNotEmpty() && $trangThaiHV->every(fn($tt) => $tt === 'dau_sat_hanh')) {
+                $lop->update(['trang_thai' => 'da_ket_thuc']);
+                $dongLop = true;
+            }
+        }
+
+        $message = "Đã đồng bộ {$soHV} học viên sang trạng thái phù hợp với lớp [{$lop->ten_lop}]";
+        if ($dongLop) {
+            $message .= '. Toàn bộ học viên đã đậu sát hạch — lớp đã được chuyển sang Kết thúc.';
         }
 
         return response()->json([
-            'success' => true,
-            'message' => "Đã đồng bộ {$soHV} học viên sang trạng thái phù hợp với lớp [{$lop->ten_lop}]",
-            'so_hv_cap_nhat' => $soHV,
+            'success'         => true,
+            'message'         => $message,
+            'so_hv_cap_nhat'  => $soHV,
+            'dong_lop'        => $dongLop,
+        ]);
+    }
+
+    /**
+     * Xóa một học viên khỏi lớp học.
+     *
+     * Quy tắc:
+     * - Học viên phải còn ở các trạng thái đầu (chuan_bi_hoc, dang_hoc, cho_mo_lop).
+     *   Những trạng thái đã qua thi (du_dieu_kien_thi_tn trở đi) không cho phép xóa
+     *   vì đã có dữ liệu thi gắn liền.
+     * - Sau khi xóa, hồ sơ học viên được chuyển về 'cho_mo_lop' để có thể xếp lớp khác.
+     * - Nếu lớp không còn học viên nào → giữ nguyên trạng thái lớp (admin tự quyết).
+     */
+    public function xoaHocVienKhoiLop(Request $request, $lopId, $hoSoId)
+    {
+        $lop  = LopHoc::findOrFail($lopId);
+        $hoSo = HoSoHocVien::findOrFail($hoSoId);
+
+        // Kiểm tra học viên có thực sự trong lớp này không
+        $hvLop = \App\Models\HocVienLop::where('lop_hoc_id', $lopId)
+            ->where('ho_so_id', $hoSoId)
+            ->first();
+
+        if (!$hvLop) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Học viên không thuộc lớp học này.',
+            ], 404);
+        }
+
+        // Chặn xóa nếu học viên đã qua giai đoạn thi (có dữ liệu liên quan)
+        $trangThaiKhongChoPhep = [
+            'du_dieu_kien_thi_tn', 'chuan_bi_thi', 'dang_thi_tn', 'hoan_thanh_tn',
+            'du_dieu_kien_sat_hanh', 'dang_thi_sat_hanh', 'dau_sat_hanh', 'da_cap_bang',
+        ];
+
+        if (in_array($hoSo->trang_thai, $trangThaiKhongChoPhep)) {
+            return response()->json([
+                'success' => false,
+                'message' => "Không thể xóa học viên \"{$hoSo->ho_ten}\" khỏi lớp vì đã ở trạng thái \"{$hoSo->trang_thai}\" (đã có dữ liệu thi liên quan).",
+            ], 422);
+        }
+
+        DB::beginTransaction();
+        try {
+            // Xóa bản ghi phân lớp
+            $hvLop->delete();
+
+            // Chuyển hồ sơ về chờ xếp lớp
+            $hoSo->update(['trang_thai' => 'cho_mo_lop']);
+
+            // Sau khi xóa, kiểm tra lại toàn bộ HV còn lại trong lớp
+            // Nếu lớp đang ở 'dang_hoc' và tất cả HV còn lại đều 'dau_sat_hanh' → đóng lớp
+            if ($lop->trang_thai === 'dang_hoc') {
+                $trangThaiConLai = HoSoHocVien::whereHas(
+                    'hocVienLop', fn($q) => $q->where('lop_hoc_id', $lopId)
+                )->pluck('trang_thai');
+
+                if ($trangThaiConLai->isNotEmpty() && $trangThaiConLai->every(fn($tt) => $tt === 'dau_sat_hanh')) {
+                    $lop->update(['trang_thai' => 'da_ket_thuc']);
+                }
+            }
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Xóa thất bại: ' . $e->getMessage(),
+            ], 500);
+        }
+
+        return response()->json([
+            'success'  => true,
+            'message'  => "Đã xóa học viên \"{$hoSo->ho_ten}\" khỏi lớp \"{$lop->ten_lop}\". Hồ sơ đã được chuyển về chờ xếp lớp.",
+            'dong_lop' => $lop->fresh()->trang_thai === 'da_ket_thuc',
         ]);
     }
 }

@@ -88,6 +88,13 @@ const GVLichHoc = () => {
     setDdLoading(false)
   }
 
+  // Kiểm tra học viên đã đủ tiến độ cho buổi học này không
+  const isDuTienDo = (d, loaiBuoi) => {
+    if (loaiBuoi === 'ly_thuyet') return d.du_buoi_ly_thuyet === true
+    if (loaiBuoi === 'thuc_hanh') return d.du_km_thuc_hanh === true
+    return false
+  }
+
   const handleSaveDiemDanh = async () => {
     setSaving(true)
     try {
@@ -102,7 +109,9 @@ const GVLichHoc = () => {
     setSaving(false)
   }
 
-  const coMatCount = diemDanhData.filter(d => d.co_mat).length
+  const coMatCount = diemDanhData.filter(d => !isDuTienDo(d, selectedLich?.loai_buoi) && d.co_mat).length
+  const canDiemDanhList = diemDanhData.filter(d => !isDuTienDo(d, selectedLich?.loai_buoi))
+  const duTienDoList    = diemDanhData.filter(d =>  isDuTienDo(d, selectedLich?.loai_buoi))
 
   return (
     <div className="gvlh2-page">
@@ -303,9 +312,13 @@ const GVLichHoc = () => {
               ) : (
                 <>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14, flexWrap: 'wrap' }}>
-                    <button className="btn btn-success btn-sm" onClick={() => setDiemDanhData(prev => prev.map(d => ({ ...d, co_mat: true })))}>✅ Tất cả có mặt</button>
-                    <button className="btn btn-outline btn-sm" onClick={() => setDiemDanhData(prev => prev.map(d => ({ ...d, co_mat: false })))}>❌ Bỏ chọn tất cả</button>
-                    <span style={{ marginLeft: 'auto', fontSize: 13, fontWeight: 600, color: '#374151' }}>{coMatCount}/{diemDanhData.length} có mặt</span>
+                    <button className="btn btn-success btn-sm" onClick={() => setDiemDanhData(prev => prev.map(d =>
+                      isDuTienDo(d, selectedLich.loai_buoi) ? d : { ...d, co_mat: true }
+                    ))}>✅ Tất cả có mặt</button>
+                    <button className="btn btn-outline btn-sm" onClick={() => setDiemDanhData(prev => prev.map(d =>
+                      isDuTienDo(d, selectedLich.loai_buoi) ? d : { ...d, co_mat: false }
+                    ))}>❌ Bỏ chọn tất cả</button>
+                    <span style={{ marginLeft: 'auto', fontSize: 13, fontWeight: 600, color: '#374151' }}>{coMatCount}/{canDiemDanhList.length} có mặt</span>
                   </div>
                   <table className="data-table">
                     <thead>
@@ -317,46 +330,77 @@ const GVLichHoc = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {diemDanhData.map((d, i) => (
-                        <tr key={i} style={d.co_mat ? { background: '#f0fdf4' } : {}}>
-                          <td>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                              <div style={{ width: 34, height: 34, borderRadius: '50%', background: '#059669', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 14, flexShrink: 0 }}>
-                                {d.ho_ten?.charAt(0).toUpperCase()}
-                              </div>
-                              <div>
-                                <p style={{ fontWeight: 700, fontSize: 14 }}>{d.ho_ten}</p>
-                                <p style={{ fontSize: 12, color: '#718096' }}>{d.so_cccd}</p>
-                              </div>
-                            </div>
-                          </td>
-                          <td style={{ textAlign: 'center' }}>
-                            <div
-                              onClick={() => setDiemDanhData(prev => prev.map((x, j) => j === i ? { ...x, co_mat: !x.co_mat } : x))}
-                              style={{ position: 'relative', display: 'inline-block', width: 44, height: 24, cursor: 'pointer' }}
-                            >
-                              <span style={{ position: 'absolute', inset: 0, background: d.co_mat ? '#22c55e' : '#e2e8f0', borderRadius: 24, transition: '.2s' }}>
-                                <span style={{ position: 'absolute', width: 18, height: 18, borderRadius: '50%', background: '#fff', top: 3, left: d.co_mat ? 23 : 3, transition: '.2s', boxShadow: '0 1px 3px rgba(0,0,0,.2)' }} />
-                              </span>
-                            </div>
-                          </td>
-                          <td>
-                            {!d.co_mat && (
-                              <input type="text" value={d.ghi_chu} placeholder="Lý do vắng..."
-                                onChange={e => setDiemDanhData(diemDanhData.map((x, j) => j === i ? { ...x, ghi_chu: e.target.value } : x))}
-                                style={{ width: '100%', padding: '5px 8px', border: '1px solid #fca5a5', borderRadius: 6, fontSize: 12 }} />
-                            )}
-                          </td>
-                          {selectedLich.loai_buoi === 'thuc_hanh' && (
+                      {/* Học viên đã đủ tiến độ */}
+                      {duTienDoList.map((d, _i) => {
+                        const i = diemDanhData.indexOf(d)
+                        return (
+                          <tr key={i} style={{ background: '#f0fdf4', opacity: 0.75 }}>
                             <td>
-                              <input type="number" step="0.1" min="0" value={d.km_chay} disabled={!d.co_mat}
-                                onChange={e => setDiemDanhData(diemDanhData.map((x, j) => j === i ? { ...x, km_chay: e.target.value } : x))}
-                                placeholder="0.0 km"
-                                style={{ width: 90, padding: '5px 8px', border: '1px solid #e2e8f0', borderRadius: 6, fontSize: 13, background: d.co_mat ? '#fff' : '#f9fafb', color: d.co_mat ? '#111' : '#9ca3af' }} />
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                <div style={{ width: 34, height: 34, borderRadius: '50%', background: '#16a34a', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 14, flexShrink: 0 }}>
+                                  {d.ho_ten?.charAt(0).toUpperCase()}
+                                </div>
+                                <div>
+                                  <p style={{ fontWeight: 700, fontSize: 14 }}>{d.ho_ten}</p>
+                                  <p style={{ fontSize: 12, color: '#718096' }}>{d.so_cccd}</p>
+                                </div>
+                              </div>
                             </td>
-                          )}
-                        </tr>
-                      ))}
+                            <td style={{ textAlign: 'center' }} colSpan={selectedLich.loai_buoi === 'thuc_hanh' ? 3 : 2}>
+                              <span style={{
+                                padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 700,
+                                background: '#dcfce7', color: '#15803d', border: '1px solid #86efac'
+                              }}>
+                                {selectedLich.loai_buoi === 'ly_thuyet' ? '📖 Đủ tiến độ lý thuyết' : '🚗 Đủ tiến độ thực hành'}
+                              </span>
+                            </td>
+                          </tr>
+                        )
+                      })}
+                      {/* Học viên chưa đủ tiến độ — cần điểm danh */}
+                      {canDiemDanhList.map((d) => {
+                        const i = diemDanhData.indexOf(d)
+                        return (
+                          <tr key={i} style={d.co_mat ? { background: '#f0fdf4' } : {}}>
+                            <td>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                <div style={{ width: 34, height: 34, borderRadius: '50%', background: '#059669', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 14, flexShrink: 0 }}>
+                                  {d.ho_ten?.charAt(0).toUpperCase()}
+                                </div>
+                                <div>
+                                  <p style={{ fontWeight: 700, fontSize: 14 }}>{d.ho_ten}</p>
+                                  <p style={{ fontSize: 12, color: '#718096' }}>{d.so_cccd}</p>
+                                </div>
+                              </div>
+                            </td>
+                            <td style={{ textAlign: 'center' }}>
+                              <div
+                                onClick={() => setDiemDanhData(prev => prev.map((x, j) => j === i ? { ...x, co_mat: !x.co_mat } : x))}
+                                style={{ position: 'relative', display: 'inline-block', width: 44, height: 24, cursor: 'pointer' }}
+                              >
+                                <span style={{ position: 'absolute', inset: 0, background: d.co_mat ? '#22c55e' : '#e2e8f0', borderRadius: 24, transition: '.2s' }}>
+                                  <span style={{ position: 'absolute', width: 18, height: 18, borderRadius: '50%', background: '#fff', top: 3, left: d.co_mat ? 23 : 3, transition: '.2s', boxShadow: '0 1px 3px rgba(0,0,0,.2)' }} />
+                                </span>
+                              </div>
+                            </td>
+                            <td>
+                              {!d.co_mat && (
+                                <input type="text" value={d.ghi_chu} placeholder="Lý do vắng..."
+                                  onChange={e => setDiemDanhData(diemDanhData.map((x, j) => j === i ? { ...x, ghi_chu: e.target.value } : x))}
+                                  style={{ width: '100%', padding: '5px 8px', border: '1px solid #fca5a5', borderRadius: 6, fontSize: 12 }} />
+                              )}
+                            </td>
+                            {selectedLich.loai_buoi === 'thuc_hanh' && (
+                              <td>
+                                <input type="number" step="0.1" min="0" value={d.km_chay} disabled={!d.co_mat}
+                                  onChange={e => setDiemDanhData(diemDanhData.map((x, j) => j === i ? { ...x, km_chay: e.target.value } : x))}
+                                  placeholder="0.0 km"
+                                  style={{ width: 90, padding: '5px 8px', border: '1px solid #e2e8f0', borderRadius: 6, fontSize: 13, background: d.co_mat ? '#fff' : '#f9fafb', color: d.co_mat ? '#111' : '#9ca3af' }} />
+                              </td>
+                            )}
+                          </tr>
+                        )
+                      })}
                     </tbody>
                   </table>
                 </>

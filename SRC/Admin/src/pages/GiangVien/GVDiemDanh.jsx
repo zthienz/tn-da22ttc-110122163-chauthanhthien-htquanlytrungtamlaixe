@@ -48,6 +48,13 @@ const GVDiemDanh = () => {
     setLoading(false)
   }
 
+  // Kiểm tra học viên đã đủ tiến độ cho buổi học này không
+  const isDuTienDo = (d, loaiBuoi) => {
+    if (loaiBuoi === 'ly_thuyet') return d.du_buoi_ly_thuyet === true
+    if (loaiBuoi === 'thuc_hanh') return d.du_km_thuc_hanh === true
+    return false
+  }
+
   const handleSave = async () => {
     setSaving(true)
     try {
@@ -71,7 +78,10 @@ const GVDiemDanh = () => {
   const update = (i, field, val) =>
     setDiemDanhData(diemDanhData.map((x,j) => j===i ? {...x, [field]: val} : x))
 
-  const coMatCount = diemDanhData.filter(d => d.co_mat).length
+  // Chỉ đếm học viên chưa đủ tiến độ
+  const coMatCount = diemDanhData.filter(d => !isDuTienDo(d, selectedLich?.loai_buoi) && d.co_mat).length
+  const canDiemDanhList = diemDanhData.filter(d => !isDuTienDo(d, selectedLich?.loai_buoi))
+  const duTienDoList    = diemDanhData.filter(d =>  isDuTienDo(d, selectedLich?.loai_buoi))
 
   return (
     <div className="gv-diemdanh">
@@ -132,17 +142,21 @@ const GVDiemDanh = () => {
                 {selectedLich.loai_buoi==='ly_thuyet'?' 📖 Lý thuyết':' 🚗 Thực hành'}
               </p>
             </div>
-            <span className="dd-count-badge">{coMatCount}/{diemDanhData.length} có mặt</span>
+            <span className="dd-count-badge">{coMatCount}/{canDiemDanhList.length} có mặt</span>
           </div>
           <div className="card-body">
             {/* Toolbar */}
             <div className="dd-toolbar">
               <button className="btn btn-success btn-sm"
-                onClick={() => setDiemDanhData(diemDanhData.map(d=>({...d,co_mat:true})))}>
+                onClick={() => setDiemDanhData(diemDanhData.map(d =>
+                  isDuTienDo(d, selectedLich.loai_buoi) ? d : {...d, co_mat: true}
+                ))}>
                 ✅ Tất cả có mặt
               </button>
               <button className="btn btn-outline btn-sm"
-                onClick={() => setDiemDanhData(diemDanhData.map(d=>({...d,co_mat:false})))}>
+                onClick={() => setDiemDanhData(diemDanhData.map(d =>
+                  isDuTienDo(d, selectedLich.loai_buoi) ? d : {...d, co_mat: false}
+                ))}>
                 ❌ Bỏ chọn tất cả
               </button>
             </div>
@@ -152,51 +166,104 @@ const GVDiemDanh = () => {
               <div className="empty-state"><span>👥</span><p>Chưa có học viên trong lớp</p></div>
             ) : (
               <div className="dd-list">
-                {diemDanhData.map((d, i) => (
-                  <div key={i} className={`dd-item ${d.co_mat ? 'present' : 'absent'}`}>
-                    {/* Trái: avatar + tên */}
-                    <div className="dd-item-left">
-                      <div className="dd-avatar-sm">{d.ho_ten?.charAt(0).toUpperCase()}</div>
-                      <div>
-                        <p className="dd-name">{d.ho_ten}</p>
-                        <p className="dd-cccd">{d.so_cccd}</p>
-                      </div>
-                    </div>
 
-                    {/* Phải: toggle + km + ghi chú */}
-                    <div className="dd-item-right">
-                      <label className="dd-toggle">
-                        <input type="checkbox" checked={d.co_mat}
-                          onChange={e => update(i, 'co_mat', e.target.checked)} />
-                        <span className="dd-toggle-slider"/>
-                      </label>
-                      <span className={`dd-status ${d.co_mat?'present':'absent'}`}>
-                        {d.co_mat ? '✅ Có mặt' : '❌ Vắng'}
+                {/* ── Học viên đã đủ tiến độ ── */}
+                {duTienDoList.length > 0 && (
+                  <div style={{marginBottom: 12}}>
+                    <div style={{
+                      display: 'flex', alignItems: 'center', gap: 8, padding: '6px 12px',
+                      background: '#f0fdf4', borderRadius: 8, marginBottom: 6,
+                      fontSize: 12, fontWeight: 700, color: '#15803d'
+                    }}>
+                      <span>✅</span>
+                      <span>
+                        {selectedLich.loai_buoi === 'ly_thuyet'
+                          ? `Đủ tiến độ lý thuyết (${duTienDoList.length} học viên) — Không cần điểm danh`
+                          : `Đủ tiến độ thực hành (${duTienDoList.length} học viên) — Không cần điểm danh`}
                       </span>
-
-                      {/* Km — chỉ thực hành + có mặt */}
-                      {selectedLich.loai_buoi === 'thuc_hanh' && d.co_mat && (
-                        <div className="dd-km-wrap">
-                          <label>🚗 Km:</label>
-                          <input type="number" step="0.1" min="0" value={d.km_chay}
-                            onChange={e => update(i, 'km_chay', e.target.value)}
-                            placeholder="0.0" className="km-input" />
-                          <span>km</span>
-                        </div>
-                      )}
-
-                      {/* Ghi chú vắng — chỉ khi vắng mặt */}
-                      {!d.co_mat && (
-                        <input
-                          className="dd-ghichu-input"
-                          placeholder="Lý do vắng mặt (nếu có)..."
-                          value={d.ghi_chu}
-                          onChange={e => update(i, 'ghi_chu', e.target.value)}
-                        />
-                      )}
                     </div>
+                    {duTienDoList.map((d) => {
+                      const i = diemDanhData.indexOf(d)
+                      return (
+                        <div key={i} className="dd-item present" style={{opacity: 0.65, background: '#f0fdf4'}}>
+                          <div className="dd-item-left">
+                            <div className="dd-avatar-sm" style={{background: '#16a34a'}}>{d.ho_ten?.charAt(0).toUpperCase()}</div>
+                            <div>
+                              <p className="dd-name">{d.ho_ten}</p>
+                              <p className="dd-cccd">{d.so_cccd}</p>
+                            </div>
+                          </div>
+                          <div className="dd-item-right">
+                            <span style={{
+                              padding: '4px 10px', borderRadius: 20, fontSize: 12, fontWeight: 700,
+                              background: '#dcfce7', color: '#15803d', border: '1px solid #86efac'
+                            }}>
+                              {selectedLich.loai_buoi === 'ly_thuyet' ? '📖 Đủ tiến độ LT' : '🚗 Đủ tiến độ TH'}
+                            </span>
+                          </div>
+                        </div>
+                      )
+                    })}
                   </div>
-                ))}
+                )}
+
+                {/* ── Học viên chưa đủ tiến độ — cần điểm danh ── */}
+                {canDiemDanhList.length > 0 && (
+                  <div>
+                    {duTienDoList.length > 0 && (
+                      <div style={{
+                        display: 'flex', alignItems: 'center', gap: 8, padding: '6px 12px',
+                        background: '#fff7ed', borderRadius: 8, marginBottom: 6,
+                        fontSize: 12, fontWeight: 700, color: '#c2410c'
+                      }}>
+                        <span>⏳</span>
+                        <span>Chưa đủ tiến độ ({canDiemDanhList.length} học viên) — Cần điểm danh</span>
+                      </div>
+                    )}
+                    {canDiemDanhList.map((d) => {
+                      const i = diemDanhData.indexOf(d)
+                      return (
+                        <div key={i} className={`dd-item ${d.co_mat ? 'present' : 'absent'}`}>
+                          <div className="dd-item-left">
+                            <div className="dd-avatar-sm">{d.ho_ten?.charAt(0).toUpperCase()}</div>
+                            <div>
+                              <p className="dd-name">{d.ho_ten}</p>
+                              <p className="dd-cccd">{d.so_cccd}</p>
+                            </div>
+                          </div>
+                          <div className="dd-item-right">
+                            <label className="dd-toggle">
+                              <input type="checkbox" checked={d.co_mat}
+                                onChange={e => update(i, 'co_mat', e.target.checked)} />
+                              <span className="dd-toggle-slider"/>
+                            </label>
+                            <span className={`dd-status ${d.co_mat?'present':'absent'}`}>
+                              {d.co_mat ? '✅ Có mặt' : '❌ Vắng'}
+                            </span>
+                            {selectedLich.loai_buoi === 'thuc_hanh' && d.co_mat && (
+                              <div className="dd-km-wrap">
+                                <label>🚗 Km:</label>
+                                <input type="number" step="0.1" min="0" value={d.km_chay}
+                                  onChange={e => update(i, 'km_chay', e.target.value)}
+                                  placeholder="0.0" className="km-input" />
+                                <span>km</span>
+                              </div>
+                            )}
+                            {!d.co_mat && (
+                              <input
+                                className="dd-ghichu-input"
+                                placeholder="Lý do vắng mặt (nếu có)..."
+                                value={d.ghi_chu}
+                                onChange={e => update(i, 'ghi_chu', e.target.value)}
+                              />
+                            )}
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+
               </div>
             )}
 

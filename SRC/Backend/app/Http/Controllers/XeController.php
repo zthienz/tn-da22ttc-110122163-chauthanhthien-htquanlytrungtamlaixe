@@ -166,6 +166,40 @@ class XeController extends Controller
 
         return response()->json(['success' => true, 'data' => $xe]);
     }
+
+    /**
+     * Trả về danh sách xe_id đang bận (đã được phân công cho buổi học khác)
+     * trong cùng ngày và khung giờ chỉ định.
+     *
+     * Query params:
+     *   - ngay_hoc    (Y-m-d, bắt buộc)
+     *   - gio_bat_dau (H:i,   bắt buộc)
+     *   - gio_ket_thuc(H:i,   bắt buộc)
+     *   - exclude_lich_hoc_id (int, tuỳ chọn – bỏ qua buổi đang sửa)
+     */
+    public function xeBanTrongKhungGio(Request $request)
+    {
+        $request->validate([
+            'ngay_hoc'     => 'required|date',
+            'gio_bat_dau'  => 'required',
+            'gio_ket_thuc' => 'required',
+        ]);
+
+        $query = LichHoc::where('ngay_hoc', $request->ngay_hoc)
+            ->where('loai_buoi', 'thuc_hanh')
+            ->whereNotNull('xe_id')
+            ->where('gio_bat_dau', '<', $request->gio_ket_thuc)
+            ->where('gio_ket_thuc', '>', $request->gio_bat_dau);
+
+        // Khi sửa buổi học, bỏ qua chính buổi đó để không tự chặn xe của mình
+        if ($request->exclude_lich_hoc_id) {
+            $query->where('id', '!=', $request->exclude_lich_hoc_id);
+        }
+
+        $xeBanIds = $query->pluck('xe_id')->unique()->values();
+
+        return response()->json(['success' => true, 'data' => $xeBanIds]);
+    }
     // ═══════════════════════════════════════════════════════
     // ADMIN — Quản lý báo lỗi xe
     // ═══════════════════════════════════════════════════════

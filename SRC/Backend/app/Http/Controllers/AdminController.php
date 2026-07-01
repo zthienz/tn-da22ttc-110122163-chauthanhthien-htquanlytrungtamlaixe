@@ -401,7 +401,7 @@ class AdminController extends Controller
     public function hoSoList(Request $request)
     {
         // Các trạng thái sau khi đậu sát hạch → không hiện ở trang Hồ Sơ, chỉ hiện ở trang Cấp Bằng
-        $trangThaiCapBang = ['du_dieu_kien_sat_hanh', 'dang_thi_sat_hanh', 'da_cap_bang'];
+        $trangThaiCapBang = ['du_dieu_kien_sat_hanh', 'dang_thi_sat_hanh', 'dau_sat_hanh', 'da_cap_bang'];
 
         $query = HoSoHocVien::with(['khoaHoc', 'user'])
             ->when($request->trang_thai, fn($q) => $q->where('trang_thai', $request->trang_thai))
@@ -450,6 +450,7 @@ class AdminController extends Controller
             'khoaHoc',
             'user',
             'thanhToan',
+            'hocVienLop.lopHoc.khoaHoc',
             'hocVienLop.lopHoc.giangVienLyThuyet.user',
             'hocVienLop.lopHoc.giangVienThucHanh.user',
             'ketQuaThi.baiThi',
@@ -766,6 +767,13 @@ class AdminController extends Controller
                 }
             }
 
+            // Nếu lớp đang ở 'da_ket_thuc' (thêm học viên mới vào lớp đã kết thúc)
+            // → tự động mở lại lớp về 'dang_hoc' và chuyển học viên sang dang_hoc luôn
+            if ($lopHoc->trang_thai === 'da_ket_thuc') {
+                $lopHoc->update(['trang_thai' => 'dang_hoc']);
+                $hoSo->update(['trang_thai' => 'dang_hoc']);
+            }
+
             DB::commit();
 
             $ngaySinhFmt = \Carbon\Carbon::parse($hoSo->ngay_sinh)->format('dmY');
@@ -792,7 +800,7 @@ class AdminController extends Controller
     public function capNhatTrangThai(Request $request, $hoSoId)
     {
         $request->validate([
-            'trang_thai' => 'required|in:cho_dong_hoc_phi,cho_mo_lop,chuan_bi_hoc,dang_hoc,du_dieu_kien_thi_tn,chuan_bi_thi,dang_thi_tn,hoan_thanh_tn,du_dieu_kien_sat_hanh,dang_thi_sat_hanh,da_cap_bang',
+            'trang_thai' => 'required|in:cho_dong_hoc_phi,cho_mo_lop,chuan_bi_hoc,dang_hoc,du_dieu_kien_thi_tn,chuan_bi_thi,dang_thi_tn,hoan_thanh_tn,du_dieu_kien_sat_hanh,dang_thi_sat_hanh,dau_sat_hanh,da_cap_bang',
         ]);
 
         $hoSo = HoSoHocVien::findOrFail($hoSoId);

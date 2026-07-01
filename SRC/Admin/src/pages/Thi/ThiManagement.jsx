@@ -130,7 +130,19 @@ const ThiManagement = () => {
         { headers }
       )
       if (res.data.success) {
-        toast.success(res.data.message)
+        // Hiển thị lỗi ngày nộp hồ sơ nếu có học viên bị từ chối
+        if (res.data.loi_ngay_nop?.length > 0) {
+          const lichNgay = new Date(selectedLichForHV.ngay_thi).toLocaleDateString('vi-VN')
+          res.data.loi_ngay_nop.forEach(err => {
+            toast.error(
+              `❌ ${err.ho_ten}: Không thể xếp vào lịch thi ngày ${err.ngay_thi} vì học viên nộp hồ sơ ngày ${err.ngay_nop} (sau ngày thi)`,
+              { autoClose: 6000 }
+            )
+          })
+        }
+        if (res.data.added > 0) {
+          toast.success(res.data.added + ' học viên đã được thêm vào lịch thi')
+        }
         setSelectedHVIds([])
         // Reload danh sách
         const r2 = await axios.get(
@@ -278,8 +290,8 @@ const ThiManagement = () => {
   }
 
   const toggleSelectAll = () => {
-    // Chỉ chọn/bỏ chọn các học viên ĐỦ điều kiện và không có phí chưa thu
-    const eligible = filteredHVDuDK.filter(hv => !hv.co_phi_chua_thu).map(hv => hv.ho_so_id)
+    // Chỉ chọn/bỏ chọn các học viên ĐỦ điều kiện và không có phí chưa thu và không bị lỗi ngày
+    const eligible = filteredHVDuDK.filter(hv => !hv.co_phi_chua_thu && !hv.lich_thi_truoc_nop_ho_so).map(hv => hv.ho_so_id)
     if (selectedHVIds.length === eligible.length && eligible.length > 0) {
       setSelectedHVIds([])
     } else {
@@ -554,7 +566,7 @@ const ThiManagement = () => {
                               <th>
                                 <input
                                   type="checkbox"
-                                  checked={filteredHVDuDK.length > 0 && selectedHVIds.length === filteredHVDuDK.filter(hv => !hv.co_phi_chua_thu).length && filteredHVDuDK.filter(hv => !hv.co_phi_chua_thu).length > 0}
+                                  checked={filteredHVDuDK.length > 0 && selectedHVIds.length === filteredHVDuDK.filter(hv => !hv.co_phi_chua_thu && !hv.lich_thi_truoc_nop_ho_so).length && filteredHVDuDK.filter(hv => !hv.co_phi_chua_thu && !hv.lich_thi_truoc_nop_ho_so).length > 0}
                                   onChange={toggleSelectAll}
                                   title="Chọn tất cả học viên đủ điều kiện"
                                 />
@@ -574,8 +586,14 @@ const ThiManagement = () => {
                                     type="checkbox"
                                     checked={selectedHVIds.includes(hv.ho_so_id)}
                                     onChange={() => toggleSelectHV(hv.ho_so_id)}
-                                    disabled={hv.co_phi_chua_thu}
-                                    title={hv.co_phi_chua_thu ? 'Học viên còn phí thi lại chưa đóng' : ''}
+                                    disabled={hv.co_phi_chua_thu || hv.lich_thi_truoc_nop_ho_so}
+                                    title={
+                                      hv.co_phi_chua_thu
+                                        ? 'Học viên còn phí thi lại chưa đóng'
+                                        : hv.lich_thi_truoc_nop_ho_so
+                                          ? `Lịch thi (${new Date(selectedLichForHV.ngay_thi).toLocaleDateString('vi-VN')}) trước ngày nộp hồ sơ (${hv.ngay_nop_ho_so})`
+                                          : ''
+                                    }
                                   />
                                 </td>
                                 <td>{i + 1}</td>
@@ -584,6 +602,11 @@ const ThiManagement = () => {
                                   {hv.co_phi_chua_thu && (
                                     <div style={{ fontSize: 10, color: '#dc2626', marginTop: 2, fontWeight: 600 }}>
                                       🔒 Còn phí thi lại chưa đóng
+                                    </div>
+                                  )}
+                                  {hv.lich_thi_truoc_nop_ho_so && (
+                                    <div style={{ fontSize: 10, color: '#dc2626', marginTop: 2, fontWeight: 600 }}>
+                                      ⚠️ Lịch thi trước ngày nộp hồ sơ ({hv.ngay_nop_ho_so})
                                     </div>
                                   )}
                                 </td>
