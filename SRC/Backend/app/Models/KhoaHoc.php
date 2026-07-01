@@ -10,6 +10,7 @@ class KhoaHoc extends Model
 
     protected $fillable = [
         'ten_khoa', 'mo_ta', 'loai_bang', 'hoc_phi',
+        'tuoi_toi_thieu', 'tuoi_toi_da',
         'so_buoi_ly_thuyet_toi_thieu', 'so_km_toi_thieu',
         'si_so_toi_da', 'so_hv_mo_lop', 'is_active',
         // Khóa học đào tạo theo tháng

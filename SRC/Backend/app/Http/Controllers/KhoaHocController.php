@@ -44,13 +44,23 @@ class KhoaHocController extends Controller
         return response()->json(['success' => true, 'data' => $khoaHoc]);
     }
 
+    // Admin: Chi tiết 1 bằng lái
+    public function show($id)
+    {
+        $khoaHoc = KhoaHoc::withCount('lopHoc')->findOrFail($id);
+        return response()->json(['success' => true, 'data' => $khoaHoc]);
+    }
+
     // Admin: Tạo mới
     public function store(Request $request)
     {
         $request->validate([
-            'ten_khoa'  => 'required|string|max:150',
-            'loai_bang' => 'required|in:A1,A,B1,B2,C1,C,D,E,CE',
-            'hoc_phi'   => 'required|numeric|min:0',
+            'ten_khoa'                    => 'required|string|max:150',
+            'loai_bang'                   => 'required|string|max:10',
+            'hoc_phi'                     => 'required|numeric|min:0',
+            'so_buoi_ly_thuyet_toi_thieu' => 'required|integer|min:1',
+            'tuoi_toi_thieu'              => 'nullable|integer|min:1|max:100',
+            'tuoi_toi_da'                 => 'nullable|integer|min:1|max:100|gte:tuoi_toi_thieu',
         ]);
 
         $khoaHoc = KhoaHoc::create($request->all());
@@ -61,6 +71,14 @@ class KhoaHocController extends Controller
     public function update(Request $request, $id)
     {
         $khoaHoc = KhoaHoc::findOrFail($id);
+
+        if ($request->has('tuoi_toi_thieu') || $request->has('tuoi_toi_da')) {
+            $request->validate([
+                'tuoi_toi_thieu' => 'nullable|integer|min:1|max:100',
+                'tuoi_toi_da'    => 'nullable|integer|min:1|max:100',
+            ]);
+        }
+
         $khoaHoc->update($request->all());
         return response()->json(['success' => true, 'message' => 'Cập nhật thành công', 'data' => $khoaHoc]);
     }

@@ -105,12 +105,12 @@ const AdminDashboard = () => {
       {/* ── Stat cards ── */}
       <div className="dash-stat-grid">
         {[
-          { icon:'📋', label:'Tổng Hồ Sơ',      value: s.tongHoSo      || 0,  color:'#3b82f6', to:'/ho-so' },
-          { icon:'⏳', label:'Chờ Mở Lớp',       value: s.choMoLop      || 0,  color:'#f59e0b', to:'/ho-so' },
-          { icon:'📚', label:'Đang Học',          value: s.dangHoc       || 0,  color:'#10b981', to:'/lop-hoc' },
-          { icon:'🏫', label:'Khóa Học',          value: s.khoaHoc       || 0,  color:'#8b5cf6', to:'/khoa-hoc' },
-          { icon:'📅', label:'Lịch Học Hôm Nay', value: s.lichHoc       || 0,  color:'#06b6d4', to:'/lich-hoc' },
-          { icon:'💰', label:'Doanh Thu Tháng',  value: `${Number(s.doanhThu||0).toLocaleString('vi-VN')}đ`, color:'#ef4444', to:'/ho-so' },
+          { icon:'📋', label:'Tổng Hồ Sơ',        value: s.tongHoSo      || 0,  color:'#3b82f6', to:'/ho-so' },
+          { icon:'⏳', label:'Chờ Mở Lớp',         value: s.choMoLop      || 0,  color:'#f59e0b', to:'/ho-so' },
+          { icon:'📚', label:'Lớp Đang Học',        value: s.dangHoc       || 0,  color:'#10b981', to:'/lop-hoc' },
+          { icon:'🏫', label:'Khóa Học',            value: s.khoaHoc       || 0,  color:'#8b5cf6', to:'/khoa-hoc' },
+          { icon:'📅', label:'Lịch Học Hôm Nay',   value: s.lichHoc       || 0,  color:'#06b6d4', to:'/lich-hoc' },
+          { icon:'💰', label:'Doanh Thu Tháng',     value: `${Number(s.doanhThu||0).toLocaleString('vi-VN')}đ`, color:'#ef4444', to:'/hoc-phi' },
         ].map((card, i) => (
           <Link key={i} to={card.to} className="dash-stat-card" style={{'--c': card.color}}>
             <div className="dsc-icon">{card.icon}</div>
@@ -144,7 +144,13 @@ const AdminDashboard = () => {
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
                 <XAxis dataKey="label" tick={{ fontSize: 12 }} />
-                <YAxis tick={{ fontSize: 11 }} tickFormatter={v => v > 0 ? `${(v/1000000).toFixed(1)}M` : '0'} />
+                <YAxis tick={{ fontSize: 11 }} tickFormatter={v => {
+                  if (v === 0) return '0'
+                  if (v >= 1_000_000_000) return `${(v / 1_000_000_000).toFixed(1)} tỷ`
+                  if (v >= 1_000_000)     return `${(v / 1_000_000).toFixed(1)} tr`
+                  if (v >= 1_000)         return `${(v / 1_000).toFixed(0)} nghìn`
+                  return `${v}`
+                }} width={72} />
                 <Tooltip formatter={v => `${Number(v).toLocaleString('vi-VN')}đ`} labelStyle={{fontWeight:600}} />
                 <Area type="monotone" dataKey="revenue" stroke="#0d47a1" strokeWidth={2.5}
                   fill="url(#colorRevenue)" dot={{ r: 4, fill: '#0d47a1', strokeWidth: 0 }}

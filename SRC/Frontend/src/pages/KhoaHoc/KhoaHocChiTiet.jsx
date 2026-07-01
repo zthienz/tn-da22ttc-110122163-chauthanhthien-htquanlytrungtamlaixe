@@ -296,8 +296,9 @@ const BANG_INFO = {
 
 const KhoaHocChiTiet = () => {
   const { slug } = useParams()
-  const [khoaApi, setKhoaApi] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const [khoaApi, setKhoaApi]       = useState(null)
+  const [allKhoaHoc, setAllKhoaHoc] = useState([])
+  const [loading, setLoading]       = useState(true)
 
   const info = BANG_INFO[slug]
 
@@ -306,6 +307,7 @@ const KhoaHocChiTiet = () => {
     axios.get('http://localhost:8000/api/khoa-hoc')
       .then(res => {
         if (res.data.success) {
+          setAllKhoaHoc(res.data.data)
           const found = res.data.data.find(k => k.loai_bang === info.loai_bang)
           if (found) setKhoaApi(found)
         }
@@ -475,12 +477,17 @@ const KhoaHocChiTiet = () => {
         <div className="khct-more">
           <h3>Xem thêm các khóa học khác</h3>
           <div className="khct-more-links">
-            {Object.entries(BANG_INFO).filter(([k]) => k !== slug).map(([k, v]) => (
-              <Link key={k} to={`/khoa-hoc/${k}`} className="khct-more-item">
-                <img src={v.anh} alt={v.ten} />
-                <span>{v.ten}</span>
-              </Link>
-            ))}
+            {Object.entries(BANG_INFO).filter(([k]) => k !== slug).map(([k, v]) => {
+              // Ưu tiên tên từ API, fallback về tên hardcode
+              const apiItem = allKhoaHoc.find(kh => kh.loai_bang === v.loai_bang)
+              const tenHienThi = apiItem?.ten_khoa || v.ten
+              return (
+                <Link key={k} to={`/khoa-hoc/${k}`} className="khct-more-item">
+                  <img src={v.anh} alt={tenHienThi} />
+                  <span>{tenHienThi}</span>
+                </Link>
+              )
+            })}
           </div>
         </div>
       </div>

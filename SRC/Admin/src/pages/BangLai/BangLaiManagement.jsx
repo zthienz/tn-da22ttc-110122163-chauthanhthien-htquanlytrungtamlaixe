@@ -4,8 +4,7 @@ import { toast } from 'react-toastify'
 import { useAdmin } from '../../context/AdminContext'
 import './BangLaiManagement.css'
 
-// Danh sách hạng bằng lái
-const HANG_BANG_LIST = ['A1', 'A2', 'B1', 'B2', 'C', 'C1', 'D', 'E']
+// Không còn dùng HANG_BANG_LIST vì loai_bang là mã do người dùng nhập tự do
 
 const emptyForm = {
   ten_khoa: '',
@@ -13,15 +12,14 @@ const emptyForm = {
   hoc_phi: '',
   so_buoi_ly_thuyet_toi_thieu: '',
   so_km_toi_thieu: '',
-  si_so_toi_da: 30,
-  so_hv_mo_lop: 15,
+  tuoi_toi_thieu: '',
+  tuoi_toi_da: '',
   mo_ta: '',
   // Thông tin hiển thị trên frontend
   doi_tuong: '',
   loai_xe_mo_ta: '',
   thoi_han_bang: '',
   yeu_cau_truoc: '',
-  km_thuc_hanh_toi_thieu: '',
   quyen_lai_xe: '',
   quy_trinh_dao_tao: '',
   le_phi_sat_hach: '',
@@ -38,7 +36,6 @@ const BangLaiManagement = () => {
   const [form, setForm]           = useState(emptyForm)
   const [activeTab, setActiveTab] = useState('co_ban')
   const [search, setSearch]       = useState('')
-  const [filterHang, setFilterHang] = useState('')
   const headers = { Authorization: `Bearer ${token}` }
 
   const fetchList = async () => {
@@ -62,11 +59,20 @@ const BangLaiManagement = () => {
     setShowModal(true)
   }
 
-  const openEdit = (k) => {
+  const openEdit = async (k) => {
     setEditing(k)
-    setForm({ ...emptyForm, ...k })
     setActiveTab('co_ban')
     setShowModal(true)
+    setForm({ ...emptyForm, ...k }) // hiển thị ngay với data có sẵn
+    // Fetch lại chi tiết để đảm bảo có đủ các field text dài
+    try {
+      const res = await axios.get(`${backendUrl}/api/admin/khoa-hoc/${k.id}`, { headers })
+      if (res.data.success) {
+        setForm({ ...emptyForm, ...res.data.data })
+      }
+    } catch {
+      // giữ nguyên data cũ nếu fetch lỗi
+    }
   }
 
   const handleSave = async e => {
@@ -112,13 +118,11 @@ const BangLaiManagement = () => {
 
   const f = (v) => setForm(prev => ({ ...prev, ...v }))
 
-  const filtered = list.filter(k => {
-    const matchSearch = !search ||
-      k.ten_khoa?.toLowerCase().includes(search.toLowerCase()) ||
-      k.loai_bang?.toLowerCase().includes(search.toLowerCase())
-    const matchHang = !filterHang || k.loai_bang === filterHang
-    return matchSearch && matchHang
-  })
+  const filtered = list.filter(k =>
+    !search ||
+    k.ten_khoa?.toLowerCase().includes(search.toLowerCase()) ||
+    k.loai_bang?.toLowerCase().includes(search.toLowerCase())
+  )
 
   return (
     <div className="banglai-page">
@@ -160,10 +164,6 @@ const BangLaiManagement = () => {
       <div className="search-bar">
         <input className="search-input" placeholder="🔍 Tìm theo tên bằng lái, hạng..."
           value={search} onChange={e => setSearch(e.target.value)} />
-        <select className="search-input" style={{maxWidth:160}} value={filterHang} onChange={e => setFilterHang(e.target.value)}>
-          <option value="">Tất cả hạng</option>
-          {['A1','A2','B1','B2','C','C1','D','E'].map(h => <option key={h} value={h}>Hạng {h}</option>)}
-        </select>
       </div>
 
       {/* Table */}
@@ -181,7 +181,7 @@ const BangLaiManagement = () => {
                   <th>Học phí</th>
                   <th>LT tối thiểu</th>
                   <th>Km tối thiểu</th>
-                  <th>Sĩ số / lớp</th>
+                  <th>Giới hạn tuổi</th>
                   <th>Trạng thái</th>
                   <th>Thao tác</th>
                 </tr>
@@ -196,8 +196,14 @@ const BangLaiManagement = () => {
                     <td><span className="badge badge-blue">Hạng {k.loai_bang}</span></td>
                     <td>{Number(k.hoc_phi).toLocaleString('vi-VN')} VNĐ</td>
                     <td>{k.so_buoi_ly_thuyet_toi_thieu} buổi</td>
-                    <td>{k.so_km_toi_thieu} km</td>
-                    <td>{k.si_so_toi_da} HV</td>
+                    <td>{k.so_km_toi_thieu > 0 ? k.so_km_toi_thieu + ' km' : '—'}</td>
+                    <td>
+                      {k.tuoi_toi_thieu
+                        ? k.tuoi_toi_da
+                          ? `${k.tuoi_toi_thieu} – ${k.tuoi_toi_da} tuổi`
+                          : `Từ ${k.tuoi_toi_thieu} tuổi`
+                        : '—'}
+                    </td>
                     <td>
                       <span className={`badge ${k.is_active !== false ? 'badge-success' : 'badge-gray'}`}>
                         {k.is_active !== false ? '✅ Hiển thị' : '🚫 Đã ẩn'}
@@ -254,21 +260,26 @@ const BangLaiManagement = () => {
                 {/* Tab: Thông tin cơ bản */}
                 {activeTab === 'co_ban' && (
                   <div>
-                    <div className="form-group">
-                      <label>Tên bằng lái *</label>
-                      <input
-                        value={form.ten_khoa}
-                        onChange={e => f({ ten_khoa: e.target.value })}
-                        required
-                        placeholder="VD: Bằng lái xe hạng B1"
-                      />
-                    </div>
                     <div className="bl-form-grid">
+                      <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+                        <label>Tên bằng lái *</label>
+                        <input
+                          value={form.ten_khoa}
+                          onChange={e => f({ ten_khoa: e.target.value })}
+                          required
+                          placeholder="VD: Bằng lái xe hạng B1"
+                        />
+                      </div>
                       <div className="form-group">
-                        <label>Loại bằng *</label>
-                        <select value={form.loai_bang} onChange={e => f({ loai_bang: e.target.value })}>
-                          {HANG_BANG_LIST.map(b => <option key={b} value={b}>Hạng {b}</option>)}
-                        </select>
+                        <label>Mã hạng bằng * <span style={{ fontWeight: 400, color: '#6b7280' }}>(VD: A1, B2, C, D...)</span></label>
+                        <input
+                          value={form.loai_bang}
+                          onChange={e => f({ loai_bang: e.target.value.toUpperCase() })}
+                          required
+                          placeholder="VD: B1, B2, C, D, E, CE"
+                          maxLength={3}
+                          style={{ textTransform: 'uppercase' }}
+                        />
                       </div>
                       <div className="form-group">
                         <label>Học phí (VNĐ) *</label>
@@ -287,33 +298,50 @@ const BangLaiManagement = () => {
                           value={form.so_buoi_ly_thuyet_toi_thieu}
                           onChange={e => f({ so_buoi_ly_thuyet_toi_thieu: e.target.value })}
                           required
+                          placeholder="VD: 20"
+                          min={1}
                         />
                       </div>
                       <div className="form-group">
-                        <label>Km thực hành tối thiểu *</label>
+                        <label>Km thực hành tối thiểu</label>
                         <input
                           type="number"
                           value={form.so_km_toi_thieu}
                           onChange={e => f({ so_km_toi_thieu: e.target.value })}
-                          required
+                          placeholder="VD: 810 (nhập 0 nếu không có thực hành)"
+                          min={0}
                         />
                       </div>
                       <div className="form-group">
-                        <label>Sĩ số tối đa / lớp</label>
+                        <label>Tuổi tối thiểu</label>
                         <input
                           type="number"
-                          value={form.si_so_toi_da}
-                          onChange={e => f({ si_so_toi_da: e.target.value })}
+                          value={form.tuoi_toi_thieu}
+                          onChange={e => f({ tuoi_toi_thieu: e.target.value })}
+                          placeholder="VD: 18"
+                          min={1}
+                          max={100}
                         />
                       </div>
                       <div className="form-group">
-                        <label>HV tối thiểu để mở lớp</label>
+                        <label>Tuổi tối đa <span style={{ fontWeight: 400, color: '#6b7280' }}>(để trống = không giới hạn)</span></label>
                         <input
                           type="number"
-                          value={form.so_hv_mo_lop}
-                          onChange={e => f({ so_hv_mo_lop: e.target.value })}
+                          value={form.tuoi_toi_da}
+                          onChange={e => f({ tuoi_toi_da: e.target.value })}
+                          placeholder="VD: 55"
+                          min={1}
+                          max={100}
                         />
                       </div>
+                    </div>
+                    <div className="form-group">
+                      <label>Loại xe học viên sử dụng</label>
+                      <input
+                        value={form.loai_xe_mo_ta}
+                        onChange={e => f({ loai_xe_mo_ta: e.target.value })}
+                        placeholder="VD: Xe ô tô số tự động dưới 9 chỗ"
+                      />
                     </div>
                     <div className="form-group">
                       <label>Mô tả ngắn</label>
@@ -354,14 +382,6 @@ const BangLaiManagement = () => {
                         />
                       </div>
                       <div className="form-group">
-                        <label>🚗 Loại xe (mô tả)</label>
-                        <input
-                          value={form.loai_xe_mo_ta}
-                          onChange={e => f({ loai_xe_mo_ta: e.target.value })}
-                          placeholder="VD: Xe ô tô dưới 9 chỗ ngồi"
-                        />
-                      </div>
-                      <div className="form-group">
                         <label>📅 Thời hạn bằng</label>
                         <input
                           value={form.thoi_han_bang}
@@ -378,19 +398,11 @@ const BangLaiManagement = () => {
                         />
                       </div>
                       <div className="form-group">
-                        <label>📖 Lý thuyết tối thiểu (hiển thị)</label>
+                        <label>💰 Lệ phí sát hạch nhà nước (JSON)</label>
                         <input
-                          value={form.so_buoi_ly_thuyet_toi_thieu}
-                          onChange={e => f({ so_buoi_ly_thuyet_toi_thieu: e.target.value })}
-                          placeholder="VD: 18 buổi"
-                        />
-                      </div>
-                      <div className="form-group">
-                        <label>🛣️ Km thực hành tối thiểu (hiển thị)</label>
-                        <input
-                          value={form.so_km_toi_thieu}
-                          onChange={e => f({ so_km_toi_thieu: e.target.value })}
-                          placeholder="VD: 660 km"
+                          value={form.le_phi_sat_hach}
+                          onChange={e => f({ le_phi_sat_hach: e.target.value })}
+                          placeholder='[{"noi_dung":"Lý thuyết","muc_phi":"60.000đ"}]'
                         />
                       </div>
                     </div>
@@ -410,15 +422,6 @@ const BangLaiManagement = () => {
                         value={form.quy_trinh_dao_tao}
                         onChange={e => f({ quy_trinh_dao_tao: e.target.value })}
                         placeholder="Mỗi dòng là một bước. VD:&#10;Nộp hồ sơ&#10;Học lý thuyết&#10;Học thực hành&#10;Thi tốt nghiệp&#10;Thi sát hạch&#10;Nhận bằng"
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label>💰 Lệ phí sát hạch nhà nước (JSON)</label>
-                      <textarea
-                        rows={4}
-                        value={form.le_phi_sat_hach}
-                        onChange={e => f({ le_phi_sat_hach: e.target.value })}
-                        placeholder='VD: [{"noi_dung":"Sát hạch lý thuyết","muc_phi":"60.000đ"},{"noi_dung":"Sát hạch thực hành","muc_phi":"70.000đ"}]'
                       />
                     </div>
                   </div>
@@ -468,9 +471,10 @@ const BangLaiManagement = () => {
                   ['💰 Học phí', Number(viewItem.hoc_phi).toLocaleString('vi-VN') + ' VNĐ'],
                   ['🏫 Số lớp đang có', (viewItem.lop_hoc_count ?? 0) + ' lớp'],
                   ['📖 Buổi LT tối thiểu', viewItem.so_buoi_ly_thuyet_toi_thieu + ' buổi'],
-                  ['🚗 Km thực hành tối thiểu', viewItem.so_km_toi_thieu + ' km'],
-                  ['👥 Sĩ số tối đa / lớp', viewItem.si_so_toi_da + ' học viên'],
-                  ['🔑 HV tối thiểu mở lớp', viewItem.so_hv_mo_lop + ' học viên'],
+                  ['🛣️ Km thực hành tối thiểu', viewItem.so_km_toi_thieu > 0 ? viewItem.so_km_toi_thieu + ' km' : 'Không có thực hành'],
+                  ['🚗 Loại xe', viewItem.loai_xe_mo_ta || '—'],
+                  ['🎂 Tuổi tối thiểu', viewItem.tuoi_toi_thieu ? viewItem.tuoi_toi_thieu + ' tuổi' : '—'],
+                  ['🎂 Tuổi tối đa', viewItem.tuoi_toi_da ? viewItem.tuoi_toi_da + ' tuổi' : 'Không giới hạn'],
                 ].map(([k, v], i) => (
                   <div key={i} className="bl-detail-box">
                     <div className="bl-detail-label">{k}</div>

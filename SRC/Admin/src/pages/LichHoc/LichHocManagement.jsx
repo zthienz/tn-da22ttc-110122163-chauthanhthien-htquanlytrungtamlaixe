@@ -329,7 +329,21 @@ const LichHocManagement = () => {
                           </span>
                         </td>
                         <td style={{fontSize:12,color:'#374151'}}>{lh.dia_diem || '—'}</td>
-                        <td style={{fontSize:12,color:'#059669',fontWeight:600}}>{lh.xe?.bien_so || '—'}</td>
+                        <td style={{fontSize:12,color:'#059669',fontWeight:600}}>
+                          {lh.loai_buoi === 'thuc_hanh' && lh.xe ? (
+                            ['bao_tri','hong'].includes(lh.xe.trang_thai) ? (
+                              <span title={`Xe ${lh.xe.trang_thai === 'bao_tri' ? 'đang bảo trì' : 'đang hỏng'} — cần đổi xe khác`}
+                                style={{display:'inline-flex',alignItems:'center',gap:4,color:'#dc2626',fontWeight:700,cursor:'help'}}>
+                                ⚠️ {lh.xe.bien_so}
+                                <span style={{fontSize:10,background:'#fee2e2',color:'#dc2626',border:'1px solid #fca5a5',borderRadius:4,padding:'1px 5px',fontWeight:600}}>
+                                  {lh.xe.trang_thai === 'bao_tri' ? 'Bảo trì' : 'Hỏng'}
+                                </span>
+                              </span>
+                            ) : (
+                              <span style={{color:'#059669'}}>{lh.xe.bien_so}</span>
+                            )
+                          ) : (lh.xe?.bien_so || '—')}
+                        </td>
                         <td>
                           <div className="action-cell">
                             <button className="btn btn-success btn-sm" onClick={() => openDiemDanh(lh)} title="Điểm danh">✅</button>
@@ -406,6 +420,11 @@ const LichHocManagement = () => {
                           {lh.loai_buoi === 'ly_thuyet' ? '📖 LT' : '🚗 TH'}
                           {lh.dia_diem ? ` · ${lh.dia_diem}` : ''}
                         </p>
+                        {lh.loai_buoi === 'thuc_hanh' && lh.xe && ['bao_tri','hong'].includes(lh.xe.trang_thai) && (
+                          <p style={{fontSize:10,color:'#dc2626',fontWeight:700,marginTop:2,background:'#fee2e2',borderRadius:3,padding:'1px 4px',display:'inline-block'}}>
+                            ⚠️ Xe {lh.xe.bien_so} {lh.xe.trang_thai === 'bao_tri' ? 'bảo trì' : 'hỏng'}
+                          </p>
+                        )}
                         <div className="tt-ev-actions" onClick={e => e.stopPropagation()}>
                           <button className="tt-ev-btn" onClick={() => openDiemDanh(lh)} title="Điểm danh">✅</button>
                           <button className="tt-ev-btn" onClick={() => openEdit(lh)} title="Sửa">✏️</button>

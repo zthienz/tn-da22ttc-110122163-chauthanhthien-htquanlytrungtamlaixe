@@ -6,6 +6,8 @@ use App\Models\HoSoHocVien;
 use App\Models\LichHoc;
 use App\Models\HocVienLop;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Carbon\Carbon;
 
 class HocVienController extends Controller
 {
@@ -33,8 +35,54 @@ class HocVienController extends Controller
         $user = $request->auth_user;
         $hoSo = HoSoHocVien::where('user_id', $user->id)->firstOrFail();
 
-        $hoSo->update($request->only(['so_dien_thoai', 'dia_chi', 'email']));
-        $user->update($request->only(['so_dien_thoai']));
+        // ── Lấy giá trị cũ TRƯỚC khi update (getOriginal() sẽ không còn đúng sau update) ──
+        $oldCccd     = $hoSo->so_cccd;
+        $oldNgaySinh = $hoSo->ngay_sinh
+            ? \Carbon\Carbon::parse($hoSo->ngay_sinh)->toDateString()
+            : null;
+
+        // Cập nhật thông tin hồ sơ
+        $hoSo->update($request->only([
+            'ho_ten', 'so_dien_thoai', 'dia_chi', 'email', 'so_cccd', 'ngay_sinh',
+        ]));
+
+        // Đồng bộ vào bảng users
+        $userUpdates = [];
+        if ($request->filled('so_dien_thoai')) {
+            $userUpdates['so_dien_thoai'] = $request->so_dien_thoai;
+        }
+        if ($request->filled('ho_ten')) {
+            $userUpdates['ho_ten'] = $request->ho_ten;
+        }
+
+        // ── Đồng bộ tài khoản đăng nhập nếu CCCD thay đổi ──────────────────
+        if ($request->filled('so_cccd') && $request->so_cccd !== $oldCccd) {
+            $newEmail = 'cccd_' . $request->so_cccd;
+            // Kiểm tra CCCD mới chưa bị tài khoản khác dùng
+            $conflict = \App\Models\User::where('email', $newEmail)
+                ->where('id', '!=', $user->id)
+                ->exists();
+            if ($conflict) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Số CCCD này đã được dùng cho tài khoản khác. Vui lòng kiểm tra lại.',
+                ], 422);
+            }
+            $userUpdates['email'] = $newEmail;
+        }
+
+        // ── Đồng bộ mật khẩu nếu ngày sinh thay đổi ────────────────────────
+        if ($request->filled('ngay_sinh')) {
+            $newNgaySinh = \Carbon\Carbon::parse($request->ngay_sinh)->toDateString();
+            if ($newNgaySinh !== $oldNgaySinh) {
+                $newPass = \Carbon\Carbon::parse($request->ngay_sinh)->format('dmY');
+                $userUpdates['password'] = Hash::make($newPass);
+            }
+        }
+
+        if (!empty($userUpdates)) {
+            $user->update($userUpdates);
+        }
 
         return response()->json(['success' => true, 'message' => 'Cập nhật hồ sơ thành công']);
     }

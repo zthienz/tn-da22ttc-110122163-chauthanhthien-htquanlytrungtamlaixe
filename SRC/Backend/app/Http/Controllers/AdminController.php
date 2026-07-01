@@ -15,6 +15,7 @@ use App\Models\DiemDanh;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class AdminController extends Controller
 {
@@ -850,6 +851,10 @@ class AdminController extends Controller
             $anhThePath = 'hoc_vien/' . $fileName;
         }
 
+        // ── Lấy giá trị cũ TRƯỚC khi update để so sánh đồng bộ tài khoản ──
+        $oldCccd     = $hoSo->so_cccd;
+        $oldNgaySinh = Carbon::parse($hoSo->ngay_sinh)->toDateString();
+
         $hoSo->update([
             'ho_ten'        => $request->ho_ten,
             'ngay_sinh'     => $request->ngay_sinh,
@@ -860,6 +865,32 @@ class AdminController extends Controller
             'email'         => $request->email,
             'anh_the'       => $anhThePath,
         ]);
+
+        // ── Đồng bộ tài khoản đăng nhập nếu học viên đã có tài khoản ────────
+        if ($hoSo->user_id) {
+            $user        = User::find($hoSo->user_id);
+            $userUpdates = [];
+
+            // Đồng bộ họ tên
+            $userUpdates['ho_ten']        = $request->ho_ten;
+            $userUpdates['so_dien_thoai'] = $request->so_dien_thoai;
+
+            // Đồng bộ tài khoản (email) nếu CCCD thay đổi
+            if ($request->so_cccd !== $oldCccd) {
+                $userUpdates['email'] = 'cccd_' . $request->so_cccd;
+            }
+
+            // Đồng bộ mật khẩu nếu ngày sinh thay đổi
+            $newNgaySinh = Carbon::parse($request->ngay_sinh)->toDateString();
+            if ($newNgaySinh !== $oldNgaySinh) {
+                $newPass = Carbon::parse($request->ngay_sinh)->format('dmY');
+                $userUpdates['password'] = Hash::make($newPass);
+            }
+
+            if ($user && !empty($userUpdates)) {
+                $user->update($userUpdates);
+            }
+        }
 
         return response()->json(['success' => true, 'message' => 'Cập nhật hồ sơ thành công', 'data' => $hoSo->fresh()]);
     }
@@ -1327,6 +1358,377 @@ class AdminController extends Controller
             'success' => true,
             'message' => 'Đã khai giảng ' . count($ketQua) . ' lớp',
             'data'    => $ketQua,
+        ]);
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    // AI ANALYTICS — Các API thống kê linh hoạt phục vụ AI Assistant
+    // ════════════════════════════════════════════════════════════════
+
+    /**
+     * Thống kê doanh thu theo khoảng thời gian tùy chỉnh.
+     * Query params: tu_ngay, den_ngay (YYYY-MM-DD), nhom_theo (ngay|tuan|thang)
+     */
+    public function aiDoanhThuTheoKhoang(Request $request)
+    {
+        $request->validate([
+            'tu_ngay'   => 'required|date',
+            'den_ngay'  => 'required|date|after_or_equal:tu_ngay',
+            'nhom_theo' => 'nullable|in:ngay,tuan,thang',
+        ]);
+
+        $tuNgay  = \Carbon\Carbon::parse($request->tu_ngay)->startOfDay();
+        $denNgay = \Carbon\Carbon::parse($request->den_ngay)->endOfDay();
+        $nhomTheo = $request->nhom_theo ?? 'ngay';
+
+        // Tổng doanh thu toàn khoảng
+        $tongDoanhThu = ThanhToanHocPhi::where('trang_thai', 'thanh_cong')
+            ->whereBetween('ngay_thanh_toan', [$tuNgay, $denNgay])
+            ->sum('so_tien');
+
+        // Chi tiết theo loại phí
+        $theoLoai = ThanhToanHocPhi::where('trang_thai', 'thanh_cong')
+            ->whereBetween('ngay_thanh_toan', [$tuNgay, $denNgay])
+            ->selectRaw('loai_phi, SUM(so_tien) as tong, COUNT(*) as so_luong')
+            ->groupBy('loai_phi')
+            ->get();
+
+        // Chi tiết theo phương thức
+        $theoPhuongThuc = ThanhToanHocPhi::where('trang_thai', 'thanh_cong')
+            ->whereBetween('ngay_thanh_toan', [$tuNgay, $denNgay])
+            ->selectRaw('phuong_thuc, SUM(so_tien) as tong, COUNT(*) as so_luong')
+            ->groupBy('phuong_thuc')
+            ->get();
+
+        // Dữ liệu theo nhóm thời gian
+        $chiTiet = [];
+        $current = $tuNgay->copy();
+
+        while ($current->lte($denNgay)) {
+            switch ($nhomTheo) {
+                case 'thang':
+                    $start = $current->copy()->startOfMonth();
+                    $end   = $current->copy()->endOfMonth()->min($denNgay);
+                    $label = $current->format('m/Y');
+                    $next  = $current->addMonth();
+                    break;
+                case 'tuan':
+                    $start = $current->copy()->startOfWeek();
+                    $end   = $current->copy()->endOfWeek()->min($denNgay);
+                    $label = 'T' . $current->weekOfYear . '/' . $current->year;
+                    $next  = $current->addWeek();
+                    break;
+                default: // ngay
+                    $start = $current->copy()->startOfDay();
+                    $end   = $current->copy()->endOfDay();
+                    $label = $current->format('d/m/Y');
+                    $next  = $current->addDay();
+                    break;
+            }
+
+            $doanh = ThanhToanHocPhi::where('trang_thai', 'thanh_cong')
+                ->whereBetween('ngay_thanh_toan', [$start, $end])
+                ->sum('so_tien');
+
+            $chiTiet[] = ['label' => $label, 'doanh_thu' => (float) $doanh];
+
+            if ($nhomTheo === 'ngay' && $chiTiet && count($chiTiet) > 366) break;
+        }
+
+        return response()->json([
+            'success'          => true,
+            'tu_ngay'          => $tuNgay->format('d/m/Y'),
+            'den_ngay'         => $denNgay->format('d/m/Y'),
+            'tong_doanh_thu'   => (float) $tongDoanhThu,
+            'theo_loai_phi'    => $theoLoai,
+            'theo_phuong_thuc' => $theoPhuongThuc,
+            'chi_tiet'         => $chiTiet,
+        ]);
+    }
+
+    /**
+     * Thống kê học viên đăng ký/hoàn thành theo khoảng thời gian tùy chỉnh.
+     * Query params: tu_ngay, den_ngay, nhom_theo (ngay|tuan|thang)
+     */
+    public function aiHocVienTheoKhoang(Request $request)
+    {
+        $request->validate([
+            'tu_ngay'   => 'required|date',
+            'den_ngay'  => 'required|date|after_or_equal:tu_ngay',
+            'nhom_theo' => 'nullable|in:ngay,tuan,thang',
+        ]);
+
+        $tuNgay   = \Carbon\Carbon::parse($request->tu_ngay)->startOfDay();
+        $denNgay  = \Carbon\Carbon::parse($request->den_ngay)->endOfDay();
+        $nhomTheo = $request->nhom_theo ?? 'thang';
+
+        // Tổng đăng ký trong khoảng
+        $tongDangKy = HoSoHocVien::whereBetween('created_at', [$tuNgay, $denNgay])->count();
+
+        // Đăng ký theo nguồn (online/offline)
+        $theoNguon = HoSoHocVien::whereBetween('created_at', [$tuNgay, $denNgay])
+            ->selectRaw('nguon_dang_ky, COUNT(*) as so_luong')
+            ->groupBy('nguon_dang_ky')
+            ->get();
+
+        // Đăng ký theo hạng bằng
+        $theoHangBang = HoSoHocVien::with('khoaHoc')
+            ->whereBetween('created_at', [$tuNgay, $denNgay])
+            ->join('khoa_hoc', 'ho_so_hoc_vien.khoa_hoc_id', '=', 'khoa_hoc.id')
+            ->selectRaw('khoa_hoc.loai_bang, COUNT(*) as so_luong')
+            ->groupBy('khoa_hoc.loai_bang')
+            ->get();
+
+        // Số học viên hoàn thành (nhận bằng) trong khoảng
+        $tongHoanThanh = HoSoHocVien::whereIn('trang_thai', ['da_cap_bang'])
+            ->whereBetween('updated_at', [$tuNgay, $denNgay])
+            ->count();
+
+        // Phân bổ theo trạng thái hiện tại (snapshot)
+        $theoTrangThai = HoSoHocVien::whereBetween('created_at', [$tuNgay, $denNgay])
+            ->selectRaw('trang_thai, COUNT(*) as so_luong')
+            ->groupBy('trang_thai')
+            ->get();
+
+        // Chi tiết theo thời gian
+        $chiTiet = [];
+        $current = $tuNgay->copy();
+
+        while ($current->lte($denNgay)) {
+            switch ($nhomTheo) {
+                case 'thang':
+                    $start = $current->copy()->startOfMonth();
+                    $end   = $current->copy()->endOfMonth()->min($denNgay);
+                    $label = $current->format('m/Y');
+                    $current->addMonth();
+                    break;
+                case 'tuan':
+                    $start = $current->copy()->startOfWeek();
+                    $end   = $current->copy()->endOfWeek()->min($denNgay);
+                    $label = 'T' . $current->weekOfYear . '/' . $current->year;
+                    $current->addWeek();
+                    break;
+                default: // ngay
+                    $start = $current->copy()->startOfDay();
+                    $end   = $current->copy()->endOfDay();
+                    $label = $current->format('d/m/Y');
+                    $current->addDay();
+                    break;
+            }
+
+            $chiTiet[] = [
+                'label'       => $label,
+                'dang_ky'     => HoSoHocVien::whereBetween('created_at', [$start, $end])->count(),
+                'hoan_thanh'  => HoSoHocVien::where('trang_thai', 'da_cap_bang')
+                    ->whereBetween('updated_at', [$start, $end])->count(),
+            ];
+
+            if ($nhomTheo === 'ngay' && count($chiTiet) > 366) break;
+        }
+
+        return response()->json([
+            'success'         => true,
+            'tu_ngay'         => $tuNgay->format('d/m/Y'),
+            'den_ngay'        => $denNgay->format('d/m/Y'),
+            'tong_dang_ky'    => $tongDangKy,
+            'tong_hoan_thanh' => $tongHoanThanh,
+            'theo_nguon'      => $theoNguon,
+            'theo_hang_bang'  => $theoHangBang,
+            'theo_trang_thai' => $theoTrangThai,
+            'chi_tiet'        => $chiTiet,
+        ]);
+    }
+
+    /**
+     * Lấy toàn bộ lịch dạy của một giảng viên trong khoảng thời gian.
+     * Query params: giang_vien_id (required), tu_ngay, den_ngay
+     * Nếu không truyền ngày → lấy 30 ngày tới.
+     */
+    public function aiLichDayGiangVien(Request $request)
+    {
+        $request->validate([
+            'giang_vien_id' => 'required|exists:giang_vien,id',
+            'tu_ngay'       => 'nullable|date',
+            'den_ngay'      => 'nullable|date',
+        ]);
+
+        $gvId    = $request->giang_vien_id;
+        $tuNgay  = \Carbon\Carbon::parse($request->tu_ngay  ?? now())->startOfDay();
+        $denNgay = \Carbon\Carbon::parse($request->den_ngay ?? now()->addDays(30))->endOfDay();
+
+        $giangVien = \App\Models\GiangVien::with('user')->findOrFail($gvId);
+
+        // Lấy tất cả lớp mà GV này phụ trách (cả LT lẫn TH)
+        $lopIds = LopHoc::where(function ($q) use ($gvId) {
+            $q->where('giang_vien_ly_thuyet_id', $gvId)
+              ->orWhere('giang_vien_thuc_hanh_id', $gvId);
+        })->pluck('id');
+
+        // Lấy lịch học của các lớp đó trong khoảng thời gian
+        $lichHoc = LichHoc::with(['lopHoc.khoaHoc'])
+            ->whereIn('lop_hoc_id', $lopIds)
+            ->whereBetween('ngay_hoc', [$tuNgay->toDateString(), $denNgay->toDateString()])
+            ->orderBy('ngay_hoc')
+            ->orderBy('gio_bat_dau')
+            ->get()
+            ->map(function ($lh) use ($gvId) {
+                $vaiTro = '';
+                if ($lh->lopHoc->giang_vien_ly_thuyet_id == $gvId) {
+                    $vaiTro = 'ly_thuyet';
+                }
+                if ($lh->lopHoc->giang_vien_thuc_hanh_id == $gvId) {
+                    $vaiTro .= ($vaiTro ? '+' : '') . 'thuc_hanh';
+                }
+                return [
+                    'id'           => $lh->id,
+                    'ten_lop'      => $lh->lopHoc->ten_lop,
+                    'loai_bang'    => $lh->lopHoc->khoaHoc->loai_bang ?? null,
+                    'ngay_hoc'     => $lh->ngay_hoc->format('Y-m-d'),
+                    'thu_trong_tuan' => $lh->ngay_hoc->locale('vi')->dayName,
+                    'gio_bat_dau'  => $lh->gio_bat_dau,
+                    'gio_ket_thuc' => $lh->gio_ket_thuc,
+                    'loai_buoi'    => $lh->loai_buoi,
+                    'vai_tro_gv'   => $vaiTro,
+                    'dia_diem'     => $lh->dia_diem,
+                ];
+            });
+
+        // Tổng hợp theo ngày để dễ phân tích khoảng trống
+        $lichTheoNgay = $lichHoc->groupBy('ngay_hoc')->map(function ($buois) {
+            return $buois->map(fn($b) => [
+                'lop'          => $b['ten_lop'],
+                'gio'          => $b['gio_bat_dau'] . '–' . $b['gio_ket_thuc'],
+                'loai'         => $b['loai_buoi'],
+                'vai_tro'      => $b['vai_tro_gv'],
+            ])->values();
+        });
+
+        // Tính các ngày GV KHÔNG có lịch dạy trong khoảng
+        $ngayCoLich = $lichHoc->pluck('ngay_hoc')->unique()->values();
+        $ngayRanh   = [];
+        $cursor     = $tuNgay->copy();
+        while ($cursor->lte($denNgay)) {
+            $ds = $cursor->toDateString();
+            if (!$ngayCoLich->contains($ds)) {
+                $ngayRanh[] = [
+                    'ngay'          => $ds,
+                    'thu_trong_tuan' => $cursor->locale('vi')->dayName,
+                ];
+            }
+            $cursor->addDay();
+        }
+
+        return response()->json([
+            'success'      => true,
+            'giang_vien'   => [
+                'id'          => $giangVien->id,
+                'ho_ten'      => $giangVien->user->ho_ten ?? '—',
+                'chuyen_mon'  => $giangVien->chuyen_mon,
+                'trang_thai'  => $giangVien->trang_thai,
+            ],
+            'tu_ngay'        => $tuNgay->format('d/m/Y'),
+            'den_ngay'        => $denNgay->format('d/m/Y'),
+            'tong_buoi_day'  => $lichHoc->count(),
+            'lich_theo_ngay' => $lichTheoNgay,
+            'lich_chi_tiet'  => $lichHoc->values(),
+            'ngay_ranh'      => $ngayRanh,
+        ]);
+    }
+
+    /**
+     * Gợi ý khung giờ trống cho một giảng viên trong ngày/tuần cụ thể.
+     * Trả về: các khung giờ GV đang bận + phân tích khoảng trống khả dụng.
+     * Query params: giang_vien_id, ngay (YYYY-MM-DD), gio_bat_dau_du_kien, gio_ket_thuc_du_kien
+     */
+    public function aiGoiYLichDay(Request $request)
+    {
+        $request->validate([
+            'giang_vien_id'       => 'required|exists:giang_vien,id',
+            'ngay'                => 'required|date',
+            'gio_bat_dau_du_kien' => 'nullable|date_format:H:i',
+            'gio_ket_thuc_du_kien'=> 'nullable|date_format:H:i',
+        ]);
+
+        $gvId = $request->giang_vien_id;
+        $ngay = \Carbon\Carbon::parse($request->ngay)->toDateString();
+
+        $giangVien = \App\Models\GiangVien::with('user')->findOrFail($gvId);
+
+        // Lấy tất cả lớp GV phụ trách
+        $lopIds = LopHoc::where(function ($q) use ($gvId) {
+            $q->where('giang_vien_ly_thuyet_id', $gvId)
+              ->orWhere('giang_vien_thuc_hanh_id', $gvId);
+        })->pluck('id');
+
+        // Lịch trong ngày được yêu cầu
+        $lichTrongNgay = LichHoc::with('lopHoc')
+            ->whereIn('lop_hoc_id', $lopIds)
+            ->where('ngay_hoc', $ngay)
+            ->orderBy('gio_bat_dau')
+            ->get()
+            ->map(fn($lh) => [
+                'ten_lop'      => $lh->lopHoc->ten_lop ?? '—',
+                'gio_bat_dau'  => $lh->gio_bat_dau,
+                'gio_ket_thuc' => $lh->gio_ket_thuc,
+                'loai_buoi'    => $lh->loai_buoi,
+            ]);
+
+        // Tính khoảng trống trong ngày (giả sử ca làm việc 06:00–21:00)
+        $CA_BAT_DAU = '06:00';
+        $CA_KET_THUC = '21:00';
+
+        $khoangBan = $lichTrongNgay->map(fn($l) => [
+            'tu' => $l['gio_bat_dau'],
+            'den' => $l['gio_ket_thuc'],
+        ])->sortBy('tu')->values()->toArray();
+
+        $khoangTrong = [];
+        $current = $CA_BAT_DAU;
+
+        foreach ($khoangBan as $ban) {
+            if ($current < $ban['tu']) {
+                $khoangTrong[] = ['tu' => $current, 'den' => $ban['tu']];
+            }
+            if ($current < $ban['den']) {
+                $current = $ban['den'];
+            }
+        }
+        if ($current < $CA_KET_THUC) {
+            $khoangTrong[] = ['tu' => $current, 'den' => $CA_KET_THUC];
+        }
+
+        // Kiểm tra khung giờ dự kiến có khả dụng không
+        $kiemTraKhung = null;
+        if ($request->gio_bat_dau_du_kien && $request->gio_ket_thuc_du_kien) {
+            $gdBD = $request->gio_bat_dau_du_kien;
+            $gdKT = $request->gio_ket_thuc_du_kien;
+
+            $trung = $lichTrongNgay->first(fn($l) =>
+                $l['gio_bat_dau'] < $gdKT && $l['gio_ket_thuc'] > $gdBD
+            );
+
+            $kiemTraKhung = [
+                'gio_bat_dau'  => $gdBD,
+                'gio_ket_thuc' => $gdKT,
+                'kha_dung'     => is_null($trung),
+                'bi_trung_voi' => $trung ? $trung['ten_lop'] . ' (' . $trung['gio_bat_dau'] . '–' . $trung['gio_ket_thuc'] . ')' : null,
+            ];
+        }
+
+        return response()->json([
+            'success'       => true,
+            'giang_vien'    => [
+                'id'         => $giangVien->id,
+                'ho_ten'     => $giangVien->user->ho_ten ?? '—',
+                'chuyen_mon' => $giangVien->chuyen_mon,
+                'trang_thai' => $giangVien->trang_thai,
+            ],
+            'ngay'            => \Carbon\Carbon::parse($ngay)->locale('vi')->isoFormat('dddd, DD/MM/YYYY'),
+            'thu_trong_tuan'  => \Carbon\Carbon::parse($ngay)->locale('vi')->dayName,
+            'lich_trong_ngay' => $lichTrongNgay->values(),
+            'khung_gio_ban'   => $khoangBan,
+            'khung_gio_trong' => $khoangTrong,
+            'kiem_tra_khung'  => $kiemTraKhung,
         ]);
     }
 }

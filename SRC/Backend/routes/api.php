@@ -94,6 +94,7 @@ Route::middleware(['auth.jwt', 'role:admin|giang_vien'])->prefix('admin')->group
 
     // ── Khóa học (loại bằng lái - dùng cho trang BangLai) ──────────────────
     Route::get('/khoa-hoc',                 [KhoaHocController::class, 'index']);
+    Route::get('/khoa-hoc/{id}',            [KhoaHocController::class, 'show']);
     Route::post('/khoa-hoc',                [KhoaHocController::class, 'store']);
     Route::put('/khoa-hoc/{id}',            [KhoaHocController::class, 'update']);
     Route::delete('/khoa-hoc/{id}',         [KhoaHocController::class, 'destroy']);
@@ -190,6 +191,12 @@ Route::middleware(['auth.jwt', 'role:admin|giang_vien'])->prefix('admin')->group
     Route::get('/lien-he',                  [LienHeController::class, 'index']);
     Route::patch('/lien-he/{id}/xu-ly',     [LienHeController::class, 'xuLy']);
     Route::delete('/lien-he/{id}',          [LienHeController::class, 'destroy']);
+
+    // ── AI Analytics — Thống kê linh hoạt ───────────────────────────────────
+    Route::get('/ai/doanh-thu',             [AdminController::class, 'aiDoanhThuTheoKhoang']);
+    Route::get('/ai/hoc-vien',              [AdminController::class, 'aiHocVienTheoKhoang']);
+    Route::get('/ai/lich-day-giang-vien',   [AdminController::class, 'aiLichDayGiangVien']);
+    Route::get('/ai/goi-y-lich-day',        [AdminController::class, 'aiGoiYLichDay']);
 });
 
 // ═══════════════════════════════════════════════════════
